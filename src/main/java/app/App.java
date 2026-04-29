@@ -15,13 +15,14 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         primaryStage = stage;
-        primaryStage.setTitle("Santé & Bien-être");
-        setRoot("Login");
+        primaryStage.setTitle("OncoReminder - Gestion Utilisateurs");
+        setRoot("Utilisateur");
         primaryStage.show();
     }
 
     public static void setRoot(String fxml) throws IOException {
-        FXMLLoader loader = new FXMLLoader(App.class.getResource("/views/" + fxml + ".fxml"));
+        String path = fxml.equals("Utilisateur") ? "/gui/" + fxml + ".fxml" : "/views/" + fxml + ".fxml";
+        FXMLLoader loader = new FXMLLoader(App.class.getResource(path));
         Parent root = loader.load();
         Scene scene = new Scene(root);
         String css = App.class.getResource("/styles/styles.css").toExternalForm();
