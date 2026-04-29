@@ -16,6 +16,9 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
+/**
+ * Controller class for the Utilisateur management interface.
+ */
 public class UtilisateurController implements Initializable {
 
     @FXML
