@@ -9,6 +9,9 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Service class for managing Utilisateur entities and database operations.
+ */
 public class UtilisateurService {
     private Connection conn;
 
