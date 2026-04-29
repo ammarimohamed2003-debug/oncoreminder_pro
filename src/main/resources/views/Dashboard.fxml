@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.geometry.Pos?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.DashboardController" prefWidth="1000" prefHeight="700" styleClass="root">
+    
+    <!-- Sidebar -->
+    <left>
+        <VBox spacing="10" style="-fx-background-color: white; -fx-border-color: transparent #e2e8f0 transparent transparent;" prefWidth="250">
+            <padding>
+                <Insets top="30" right="20" bottom="30" left="20"/>
+            </padding>
+            <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 30 0;">
+                <Label text="🌿" style="-fx-font-size: 24px;"/>
+                <Label text="Santé &amp; Bien-être" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #276749;"/>
+            </HBox>
+
+            <Button text="📊 Tableau de bord" alignment="BASELINE_LEFT" prefWidth="Infinity" style="-fx-background-color: #e6fffa; -fx-text-fill: #276749; -fx-font-weight: bold; -fx-padding: 10 15; -fx-background-radius: 8;"/>
+            <Button text="🎯 Objectifs" alignment="BASELINE_LEFT" prefWidth="Infinity" style="-fx-background-color: transparent; -fx-text-fill: #4a5568; -fx-padding: 10 15;"/>
+            <Button text="❤️ Santé" alignment="BASELINE_LEFT" prefWidth="Infinity" style="-fx-background-color: transparent; -fx-text-fill: #4a5568; -fx-padding: 10 15;"/>
+
+            <VBox VBox.vgrow="ALWAYS" />
+
+            <Button text="Se déconnecter" onAction="#logout" alignment="BASELINE_LEFT" prefWidth="Infinity" style="-fx-background-color: transparent; -fx-text-fill: #e53e3e; -fx-padding: 10 15;"/>
+        </VBox>
+    </left>
+
+    <!-- Main Content -->
+    <center>
+        <VBox spacing="30">
+            <padding>
+                <Insets top="40" right="40" bottom="40" left="40"/>
+            </padding>
+            
+            <VBox spacing="5">
+                <Label text="Tableau de bord Santé" styleClass="title-text"/>
+                <Label text="Vue d'ensemble de votre santé et de votre bien-être" styleClass="subtitle-text"/>
+            </VBox>
+
+            <HBox spacing="20">
+                <!-- Health Stat -->
+                <HBox spacing="15" styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER_LEFT">
+                    <VBox alignment="CENTER" prefWidth="50" prefHeight="50" styleClass="icon-bg" style="-fx-background-color: #e6fffa;">
+                        <Label text="❤️" style="-fx-font-size: 20px;"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="Forme (Dernier Bilan)" styleClass="stat-label"/>
+                        <Label fx:id="formeLabel" text="8/10" styleClass="stat-value"/>
+                        <Label fx:id="stressLabel" text="Niveau de stress: 3/10" style="-fx-text-fill: #718096; -fx-font-size: 12px;"/>
+                    </VBox>
+                </HBox>
+
+                <!-- Goals Stat -->
+                <HBox spacing="15" styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER_LEFT">
+                    <VBox alignment="CENTER" prefWidth="50" prefHeight="50" styleClass="icon-bg" style="-fx-background-color: #fffaf0;">
+                        <Label text="🎯" style="-fx-font-size: 20px;"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="Objectifs actifs" styleClass="stat-label"/>
+                        <Label fx:id="objectifsLabel" text="5" styleClass="stat-value"/>
+                        <Label text="objectifs de bien-être en cours" style="-fx-text-fill: #718096; -fx-font-size: 12px;"/>
+                    </VBox>
+                </HBox>
+            </HBox>
+
+            <VBox alignment="CENTER" spacing="15" styleClass="card" style="-fx-padding: 40;">
+                <Label text="🌿" style="-fx-font-size: 36px;"/>
+                <Label text="Bienvenue sur votre espace bien-être" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2d3748;"/>
+                <Label text="Prenez soin de vous au quotidien. Fixez-vous des objectifs réalisables et suivez votre évolution santé en toute simplicité." wrapText="true" textAlignment="CENTER" style="-fx-text-fill: #718096;"/>
+                
+                <HBox alignment="CENTER" spacing="15" style="-fx-padding: 20 0 0 0;">
+                    <Button text="Mettre à jour mon bilan santé" styleClass="btn-primary"/>
+                    <Button text="Voir mes objectifs" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 11 20; -fx-font-size: 14px; -fx-text-fill: #4a5568; -fx-font-weight: bold; -fx-cursor: hand;"/>
+                </HBox>
+            </VBox>
+            
+        </VBox>
+    </center>
+
+</BorderPane>

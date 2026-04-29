@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AdminDashboardController" prefWidth="1000" prefHeight="700" styleClass="root">
+    
+    <!-- Sidebar -->
+    <left>
+        <VBox spacing="10" style="-fx-background-color: white; -fx-border-color: transparent #e2e8f0 transparent transparent;" prefWidth="250">
+            <padding>
+                <Insets top="30" right="20" bottom="30" left="20"/>
+            </padding>
+            <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 30 0;">
+                <Label text="🛡️" style="-fx-font-size: 24px;"/>
+                <Label text="Admin Panel" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #276749;"/>
+            </HBox>
+
+            <Button text="👥 Gestion Utilisateurs" alignment="BASELINE_LEFT" prefWidth="Infinity" style="-fx-background-color: #e6fffa; -fx-text-fill: #276749; -fx-font-weight: bold; -fx-padding: 10 15; -fx-background-radius: 8;"/>
+            <Button text="📊 Statistiques" alignment="BASELINE_LEFT" prefWidth="Infinity" style="-fx-background-color: transparent; -fx-text-fill: #4a5568; -fx-padding: 10 15;"/>
+
+            <VBox VBox.vgrow="ALWAYS" />
+
+            <Button text="Se déconnecter" onAction="#logout" alignment="BASELINE_LEFT" prefWidth="Infinity" style="-fx-background-color: transparent; -fx-text-fill: #e53e3e; -fx-padding: 10 15;"/>
+        </VBox>
+    </left>
+
+    <!-- Main Content -->
+    <center>
+        <VBox spacing="25">
+            <padding>
+                <Insets top="40" right="40" bottom="40" left="40"/>
+            </padding>
+            
+            <VBox spacing="5">
+                <Label text="Gestion des Utilisateurs" styleClass="title-text"/>
+                <Label text="Consultez, modifiez ou supprimez les comptes utilisateurs" styleClass="subtitle-text"/>
+            </VBox>
+
+            <VBox spacing="15" styleClass="card" VBox.vgrow="ALWAYS">
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <TextField fx:id="searchField" promptText="Rechercher par nom ou email..." styleClass="text-field" HBox.hgrow="ALWAYS" />
+                    <Button text="Actualiser" onAction="#refreshTable" styleClass="btn-primary" style="-fx-padding: 8 15;"/>
+                </HBox>
+
+                <TableView fx:id="userTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colId" text="ID" prefWidth="50" />
+                        <TableColumn fx:id="colNom" text="Nom" prefWidth="150" />
+                        <TableColumn fx:id="colPrenom" text="Prénom" prefWidth="150" />
+                        <TableColumn fx:id="colEmail" text="Email" prefWidth="250" />
+                        <TableColumn fx:id="colRole" text="Rôle" prefWidth="120" />
+                    </columns>
+                </TableView>
+
+                <HBox spacing="10" alignment="CENTER_RIGHT">
+                    <Button text="Supprimer" onAction="#handleDelete" style="-fx-background-color: #feb2b2; -fx-text-fill: #9b2c2c; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 20;"/>
+                    <Button text="Changer Rôle" onAction="#handleRoleToggle" styleClass="btn-primary" style="-fx-padding: 8 20;"/>
+                </HBox>
+            </VBox>
+        </VBox>
+    </center>
+
+</BorderPane>
