@@ -247,6 +247,15 @@
     -fx-font-weight: bold;
 }
 
+.stat-badge-warning {
+    -fx-background-color: #FEEBC8;
+    -fx-text-fill: #7B341E;
+    -fx-padding: 4 10;
+    -fx-background-radius: 20;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+
 .form-title {
     -fx-text-fill: #4A2D8F;
     -fx-font-size: 17px;

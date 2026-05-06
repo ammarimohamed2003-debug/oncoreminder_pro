@@ -18,6 +18,7 @@
                 </VBox>
                 <Region HBox.hgrow="ALWAYS" />
                 <HBox spacing="15.0" alignment="CENTER">
+                    <Button text="📰 Articles" onAction="#handleArticles" styleClass="btn-primary" prefWidth="120"/>
                     <Label fx:id="doctorNameLabel" text="Dr. Chargement..." styleClass="stat-label" />
                     <Button text="Déconnexion" onAction="#handleLogout" styleClass="btn-outline" />
                 </HBox>

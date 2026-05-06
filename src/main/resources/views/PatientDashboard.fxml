@@ -30,6 +30,7 @@
                 
                 <VBox spacing="8.0">
                     <Button text="🏠 Ma Santé" styleClass="btn-primary" maxWidth="Infinity" alignment="BASELINE_LEFT" />
+                    <Button text="📰 Articles" onAction="#handleArticles" styleClass="btn-secondary" maxWidth="Infinity" alignment="BASELINE_LEFT" />
                     <Button text="📅 Rendez-vous" styleClass="btn-secondary" maxWidth="Infinity" alignment="BASELINE_LEFT" />
                     <Button text="💊 Traitements" styleClass="btn-secondary" maxWidth="Infinity" alignment="BASELINE_LEFT" />
                     <Button text="⚙️ Paramètres" styleClass="btn-secondary" maxWidth="Infinity" alignment="BASELINE_LEFT" />

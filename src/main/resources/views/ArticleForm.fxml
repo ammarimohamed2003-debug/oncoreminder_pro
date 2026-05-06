@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane styleClass="root-pane" stylesheets="@../css/style.css"
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.oncoreminder.controllers.ArticleFormController">
+
+    <top>
+        <HBox spacing="20.0" styleClass="topbar" alignment="CENTER_LEFT">
+            <padding><Insets bottom="15" left="20" right="20" top="15"/></padding>
+            <VBox>
+                <Label text="OncoReminder Pro" styleClass="brand-title"/>
+                <Label text="Rédaction d'Article" styleClass="brand-subtitle"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Annuler" onAction="#handleCancel" styleClass="btn-outline" prefWidth="100"/>
+        </HBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true">
+            <VBox alignment="TOP_CENTER">
+                <padding><Insets bottom="40" left="40" right="40" top="30"/></padding>
+
+                <VBox spacing="25" styleClass="form-panel" maxWidth="800">
+                    <padding><Insets bottom="35" left="35" right="35" top="35"/></padding>
+
+                    <Label fx:id="formTitleLabel" text="Nouvel Article" styleClass="form-title"/>
+
+                    <VBox spacing="8">
+                        <Label text="Titre *" styleClass="field-label"/>
+                        <TextField fx:id="titreField" styleClass="field-input"
+                                   promptText="Titre de l'article"/>
+                    </VBox>
+
+                    <HBox spacing="20">
+                        <VBox spacing="8" HBox.hgrow="ALWAYS">
+                            <Label text="Organe / Spécialité" styleClass="field-label"/>
+                            <TextField fx:id="organeField" styleClass="field-input"
+                                       promptText="ex: Sein, Poumon..."/>
+                        </VBox>
+                        <VBox spacing="8" minWidth="180">
+                            <Label text="Statut" styleClass="field-label"/>
+                            <ComboBox fx:id="statutCombo" styleClass="field-combo" maxWidth="Infinity"/>
+                        </VBox>
+                    </HBox>
+
+                    <VBox spacing="8">
+                        <Label text="Contenu *" styleClass="field-label"/>
+                        <TextArea fx:id="contenuArea" styleClass="field-input"
+                                  prefHeight="250" wrapText="true"
+                                  promptText="Rédigez le contenu de votre article ici..."/>
+                    </VBox>
+
+                    <Label fx:id="errorLabel" text="" style="-fx-text-fill: #E53E3E; -fx-font-size: 12px;"
+                           visible="false" managed="false"/>
+
+                    <HBox spacing="15" alignment="CENTER_RIGHT">
+                        <Button text="Annuler" onAction="#handleCancel"
+                                styleClass="btn-outline" prefWidth="120"/>
+                        <Button text="Enregistrer" onAction="#handleSave"
+                                styleClass="btn-primary" prefWidth="160"/>
+                    </HBox>
+
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

@@ -90,6 +90,17 @@ public class DoctorDashboardController {
     }
 
     @FXML
+    void handleArticles(ActionEvent event) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/views/ArticleList.fxml"));
+            Stage stage = (Stage) doctorNameLabel.getScene().getWindow();
+            stage.setScene(new Scene(root));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
     void handleLogout(ActionEvent event) {
         UserSession.getInstance().logout();
         try {

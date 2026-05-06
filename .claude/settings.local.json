@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-Command *)",
+      "PowerShell($env:APPDATA)",
+      "PowerShell(Get-ChildItem *)",
+      "PowerShell(Start-Process \"C:\\\\Program Files\\\\JetBrains\\\\IntelliJ IDEA 2025.3.2\\\\bin\\\\idea64.exe\")"
+    ]
+  }
+}

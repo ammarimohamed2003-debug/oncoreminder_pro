@@ -1,0 +1,60 @@
+package com.oncoreminder.models;
+
+import java.time.LocalDate;
+
+public class Article {
+    private int id;
+    private String titre;
+    private String contenu;
+    private String statut; // BROUILLON, PUBLIE, ARCHIVE
+    private LocalDate datePublication;
+    private Integer cancerId;
+    private String organe;
+    private int likes;
+    private int medecinId;
+
+    public Article() {}
+
+    public Article(int id, String titre, String contenu, String statut, LocalDate datePublication,
+                   Integer cancerId, String organe, int likes, int medecinId) {
+        this.id = id;
+        this.titre = titre;
+        this.contenu = contenu;
+        this.statut = statut;
+        this.datePublication = datePublication;
+        this.cancerId = cancerId;
+        this.organe = organe;
+        this.likes = likes;
+        this.medecinId = medecinId;
+    }
+
+    public Article(String titre, String contenu, String statut, String organe, int medecinId) {
+        this.titre = titre;
+        this.contenu = contenu;
+        this.statut = statut;
+        this.organe = organe;
+        this.medecinId = medecinId;
+    }
+
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+    public String getTitre() { return titre; }
+    public void setTitre(String titre) { this.titre = titre; }
+    public String getContenu() { return contenu; }
+    public void setContenu(String contenu) { this.contenu = contenu; }
+    public String getStatut() { return statut; }
+    public void setStatut(String statut) { this.statut = statut; }
+    public LocalDate getDatePublication() { return datePublication; }
+    public void setDatePublication(LocalDate datePublication) { this.datePublication = datePublication; }
+    public Integer getCancerId() { return cancerId; }
+    public void setCancerId(Integer cancerId) { this.cancerId = cancerId; }
+    public String getOrgane() { return organe; }
+    public void setOrgane(String organe) { this.organe = organe; }
+    public int getLikes() { return likes; }
+    public void setLikes(int likes) { this.likes = likes; }
+    public int getMedecinId() { return medecinId; }
+    public void setMedecinId(int medecinId) { this.medecinId = medecinId; }
+
+    @Override
+    public String toString() { return titre + " [" + statut + "]"; }
+}
