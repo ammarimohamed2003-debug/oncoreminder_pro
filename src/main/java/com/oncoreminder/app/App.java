@@ -1,4 +1,4 @@
-package app;
+package com.oncoreminder.app;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -15,19 +15,20 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         primaryStage = stage;
-        primaryStage.setTitle("OncoReminder - Gestion Utilisateurs");
-        setRoot("Utilisateur");
+        primaryStage.setTitle("OncoReminder Pro");
+        setRoot("Login");
         primaryStage.show();
     }
 
     public static void setRoot(String fxml) throws IOException {
-        String path = fxml.equals("Utilisateur") ? "/gui/" + fxml + ".fxml" : "/views/" + fxml + ".fxml";
+        String path = "/views/" + fxml + ".fxml";
         FXMLLoader loader = new FXMLLoader(App.class.getResource(path));
         Parent root = loader.load();
         Scene scene = new Scene(root);
-        String css = App.class.getResource("/styles/styles.css").toExternalForm();
+        String css = App.class.getResource("/css/style.css").toExternalForm();
         scene.getStylesheets().add(css);
         primaryStage.setScene(scene);
+        primaryStage.centerOnScreen();
     }
 
     public static void main(String[] args) {

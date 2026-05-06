@@ -1,55 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
-<?import javafx.geometry.Pos?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.PasswordField?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.SignUpController" prefWidth="800" prefHeight="600" styleClass="root">
-    <VBox maxWidth="400" spacing="20" styleClass="card" alignment="CENTER">
-        <padding>
-            <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
-        </padding>
-
-        <VBox alignment="CENTER" spacing="5">
-            <Label text="Créer un compte" styleClass="title-text"/>
-            <Label text="Rejoignez notre plateforme de Santé &amp; Bien-être" styleClass="subtitle-text"/>
-        </VBox>
-
-        <VBox spacing="15" prefWidth="320">
-            <HBox spacing="10">
-                <VBox spacing="5" HBox.hgrow="ALWAYS">
-                    <Label text="Prénom" textFill="#4a5568"/>
-                    <TextField fx:id="prenomField" promptText="Jean" styleClass="text-field" prefHeight="40"/>
+<VBox alignment="CENTER" spacing="20.0" styleClass="root-pane" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.oncoreminder.controllers.SignUpController">
+    <children>
+        <VBox alignment="CENTER" spacing="15.0" styleClass="form-panel" maxWidth="450.0">
+            <padding>
+                <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+            </padding>
+            <children>
+                <Label text="Rejoindre OncoReminder" styleClass="form-title" />
+                
+                <HBox spacing="10.0">
+                    <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                        <Label text="Nom" styleClass="field-label" />
+                        <TextField fx:id="nomField" styleClass="field-input" />
+                    </VBox>
+                    <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                        <Label text="Prénom" styleClass="field-label" />
+                        <TextField fx:id="prenomField" styleClass="field-input" />
+                    </VBox>
+                </HBox>
+                
+                <VBox spacing="5.0">
+                    <Label text="Email" styleClass="field-label" />
+                    <TextField fx:id="emailField" styleClass="field-input" />
                 </VBox>
-                <VBox spacing="5" HBox.hgrow="ALWAYS">
-                    <Label text="Nom" textFill="#4a5568"/>
-                    <TextField fx:id="nomField" promptText="Dupont" styleClass="text-field" prefHeight="40"/>
+                
+                <VBox spacing="5.0">
+                    <Label text="Mot de passe" styleClass="field-label" />
+                    <PasswordField fx:id="passwordField" styleClass="field-input" />
                 </VBox>
-            </HBox>
-            
-            <VBox spacing="5">
-                <Label text="Email" textFill="#4a5568"/>
-                <TextField fx:id="emailField" promptText="nom@exemple.com" styleClass="text-field" prefHeight="40"/>
-            </VBox>
-            
-            <VBox spacing="5">
-                <Label text="Mot de passe" textFill="#4a5568"/>
-                <PasswordField fx:id="passwordField" promptText="••••••••" styleClass="password-field" prefHeight="40"/>
-            </VBox>
+                
+                <VBox spacing="5.0">
+                    <Label text="Je suis un..." styleClass="field-label" />
+                    <ComboBox fx:id="roleCombo" styleClass="field-combo" maxWidth="Infinity" />
+                </VBox>
+                
+                <Label fx:id="errorLabel" textFill="#e53e3e" />
+                
+                <Button fx:id="signUpButton" text="Créer mon compte" onAction="#handleSignUp" styleClass="btn-primary" maxWidth="Infinity" />
+                
+                <Hyperlink text="Déjà inscrit ? Se connecter" onAction="#goToLogin" styleClass="brand-subtitle" />
+            </children>
         </VBox>
-
-        <Label fx:id="errorLabel" textFill="#e53e3e" visible="false"/>
-
-        <Button text="S'inscrire" onAction="#handleSignUp" styleClass="btn-primary" maxWidth="Infinity" prefHeight="45"/>
-
-        <HBox alignment="CENTER" spacing="5">
-            <Label text="Déjà un compte ?" textFill="#718096"/>
-            <Button text="Se connecter" onAction="#goToLogin" styleClass="btn-link"/>
-        </HBox>
-    </VBox>
+    </children>
 </VBox>
