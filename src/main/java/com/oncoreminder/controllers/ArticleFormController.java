@@ -1,18 +1,13 @@
 package com.oncoreminder.controllers;
 
+import com.oncoreminder.app.App;
 import com.oncoreminder.models.Article;
 import com.oncoreminder.models.Utilisateur;
 import com.oncoreminder.services.ServiceArticle;
 import com.oncoreminder.utils.UserSession;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.stage.Stage;
-
-import java.io.IOException;
 
 public class ArticleFormController {
 
@@ -72,22 +67,12 @@ public class ArticleFormController {
         }
 
         articleToEdit = null;
-        navigateTo("ArticleList");
+        App.navigate("ArticleList");
     }
 
     @FXML
     void handleCancel(ActionEvent event) {
         articleToEdit = null;
-        navigateTo("ArticleList");
-    }
-
-    private void navigateTo(String view) {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/views/" + view + ".fxml"));
-            Stage stage = (Stage) titreField.getScene().getWindow();
-            stage.setScene(new Scene(root));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        App.navigate("ArticleList");
     }
 }

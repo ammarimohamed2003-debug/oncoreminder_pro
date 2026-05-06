@@ -27,9 +27,9 @@
         </VBox>
     </left>
     <center>
-        <VBox spacing="20.0">
+        <VBox spacing="15.0">
             <padding>
-                <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+                <Insets bottom="15.0" left="20.0" right="20.0" top="15.0" />
             </padding>
             <children>
                 <HBox spacing="20.0">

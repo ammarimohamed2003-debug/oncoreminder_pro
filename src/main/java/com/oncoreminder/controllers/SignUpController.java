@@ -1,17 +1,12 @@
 package com.oncoreminder.controllers;
 
+import com.oncoreminder.app.App;
 import com.oncoreminder.models.Utilisateur;
 import com.oncoreminder.services.ServiceUtilisateur;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.stage.Stage;
-
-import java.io.IOException;
 
 public class SignUpController {
 
@@ -44,41 +39,30 @@ public class SignUpController {
             showError("Tous les champs sont obligatoires.");
             return;
         }
-
         if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
             showError("Format d'email invalide.");
             return;
         }
-
         if (password.length() < 6) {
             showError("Le mot de passe doit contenir au moins 6 caractères.");
             return;
         }
-
         if (serviceUtilisateur.emailExists(email)) {
             showError("Cet email est déjà utilisé.");
             return;
         }
 
-        Utilisateur user = new Utilisateur(nom, prenom, email, password, role);
-        serviceUtilisateur.add(user);
+        serviceUtilisateur.add(new Utilisateur(nom, prenom, email, password, role));
+        App.navigate("Login");
+    }
 
-        goToLogin(null);
+    @FXML
+    void goToLogin(ActionEvent event) {
+        App.navigate("Login");
     }
 
     private void showError(String message) {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
-    }
-
-    @FXML
-    void goToLogin(ActionEvent event) {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/views/Login.fxml"));
-            Stage stage = (Stage) signUpButton.getScene().getWindow();
-            stage.setScene(new Scene(root));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }

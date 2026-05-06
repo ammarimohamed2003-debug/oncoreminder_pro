@@ -10,64 +10,66 @@
             fx:controller="com.oncoreminder.controllers.ArticleFormController">
 
     <top>
-        <HBox spacing="20.0" styleClass="topbar" alignment="CENTER_LEFT">
-            <padding><Insets bottom="15" left="20" right="20" top="15"/></padding>
+        <HBox spacing="15" styleClass="topbar" alignment="CENTER_LEFT">
+            <padding><Insets bottom="12" left="20" right="20" top="12"/></padding>
             <VBox>
                 <Label text="OncoReminder Pro" styleClass="brand-title"/>
                 <Label text="Rédaction d'Article" styleClass="brand-subtitle"/>
             </VBox>
             <Region HBox.hgrow="ALWAYS"/>
-            <Button text="Annuler" onAction="#handleCancel" styleClass="btn-outline" prefWidth="100"/>
+            <Button text="Annuler" onAction="#handleCancel" styleClass="btn-outline" prefWidth="110"/>
         </HBox>
     </top>
 
     <center>
-        <ScrollPane fitToWidth="true">
-            <VBox alignment="TOP_CENTER">
-                <padding><Insets bottom="40" left="40" right="40" top="30"/></padding>
+        <!-- Formulaire centré, taille fixe identique ajout et modification -->
+        <StackPane>
+            <VBox styleClass="form-panel"
+                  prefWidth="860" maxWidth="860" minWidth="600"
+                  StackPane.alignment="CENTER">
+                <padding><Insets bottom="40" left="50" right="50" top="35"/></padding>
+                <spacing>22</spacing>
 
-                <VBox spacing="25" styleClass="form-panel" maxWidth="800">
-                    <padding><Insets bottom="35" left="35" right="35" top="35"/></padding>
+                <Label fx:id="formTitleLabel" text="Nouvel Article" styleClass="form-title"/>
 
-                    <Label fx:id="formTitleLabel" text="Nouvel Article" styleClass="form-title"/>
-
-                    <VBox spacing="8">
-                        <Label text="Titre *" styleClass="field-label"/>
-                        <TextField fx:id="titreField" styleClass="field-input"
-                                   promptText="Titre de l'article"/>
-                    </VBox>
-
-                    <HBox spacing="20">
-                        <VBox spacing="8" HBox.hgrow="ALWAYS">
-                            <Label text="Organe / Spécialité" styleClass="field-label"/>
-                            <TextField fx:id="organeField" styleClass="field-input"
-                                       promptText="ex: Sein, Poumon..."/>
-                        </VBox>
-                        <VBox spacing="8" minWidth="180">
-                            <Label text="Statut" styleClass="field-label"/>
-                            <ComboBox fx:id="statutCombo" styleClass="field-combo" maxWidth="Infinity"/>
-                        </VBox>
-                    </HBox>
-
-                    <VBox spacing="8">
-                        <Label text="Contenu *" styleClass="field-label"/>
-                        <TextArea fx:id="contenuArea" styleClass="field-input"
-                                  prefHeight="250" wrapText="true"
-                                  promptText="Rédigez le contenu de votre article ici..."/>
-                    </VBox>
-
-                    <Label fx:id="errorLabel" text="" style="-fx-text-fill: #E53E3E; -fx-font-size: 12px;"
-                           visible="false" managed="false"/>
-
-                    <HBox spacing="15" alignment="CENTER_RIGHT">
-                        <Button text="Annuler" onAction="#handleCancel"
-                                styleClass="btn-outline" prefWidth="120"/>
-                        <Button text="Enregistrer" onAction="#handleSave"
-                                styleClass="btn-primary" prefWidth="160"/>
-                    </HBox>
-
+                <VBox spacing="8">
+                    <Label text="Titre *" styleClass="field-label"/>
+                    <TextField fx:id="titreField" styleClass="field-input"
+                               promptText="Titre de l'article" prefHeight="40"/>
                 </VBox>
+
+                <HBox spacing="20">
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label text="Organe / Spécialité" styleClass="field-label"/>
+                        <TextField fx:id="organeField" styleClass="field-input"
+                                   promptText="ex: Sein, Poumon..." prefHeight="40"/>
+                    </VBox>
+                    <VBox spacing="8" prefWidth="200">
+                        <Label text="Statut" styleClass="field-label"/>
+                        <ComboBox fx:id="statutCombo" styleClass="field-combo"
+                                  maxWidth="Infinity" prefHeight="40"/>
+                    </VBox>
+                </HBox>
+
+                <VBox spacing="8" VBox.vgrow="ALWAYS">
+                    <Label text="Contenu *" styleClass="field-label"/>
+                    <TextArea fx:id="contenuArea" styleClass="field-input"
+                              prefHeight="300" wrapText="true"
+                              promptText="Rédigez le contenu de votre article ici..."/>
+                </VBox>
+
+                <Label fx:id="errorLabel" text=""
+                       style="-fx-text-fill: #E53E3E; -fx-font-size: 12px;"
+                       visible="false" managed="false" wrapText="true"/>
+
+                <HBox spacing="15" alignment="CENTER_RIGHT">
+                    <Button text="Annuler" onAction="#handleCancel"
+                            styleClass="btn-outline" prefWidth="130" prefHeight="42"/>
+                    <Button text="Enregistrer" onAction="#handleSave"
+                            styleClass="btn-primary" prefWidth="170" prefHeight="42"/>
+                </HBox>
+
             </VBox>
-        </ScrollPane>
+        </StackPane>
     </center>
 </BorderPane>

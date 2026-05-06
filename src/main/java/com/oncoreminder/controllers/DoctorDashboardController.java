@@ -1,20 +1,16 @@
 package com.oncoreminder.controllers;
 
+import com.oncoreminder.app.App;
 import com.oncoreminder.models.Utilisateur;
 import com.oncoreminder.services.ServiceUtilisateur;
 import com.oncoreminder.utils.UserSession;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.stage.Stage;
 import javafx.geometry.Pos;
 import javafx.geometry.Insets;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -91,24 +87,12 @@ public class DoctorDashboardController {
 
     @FXML
     void handleArticles(ActionEvent event) {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/views/ArticleList.fxml"));
-            Stage stage = (Stage) doctorNameLabel.getScene().getWindow();
-            stage.setScene(new Scene(root));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        App.navigate("ArticleList");
     }
 
     @FXML
     void handleLogout(ActionEvent event) {
         UserSession.getInstance().logout();
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/views/Login.fxml"));
-            Stage stage = (Stage) doctorNameLabel.getScene().getWindow();
-            stage.setScene(new Scene(root));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        App.navigate("Login");
     }
 }

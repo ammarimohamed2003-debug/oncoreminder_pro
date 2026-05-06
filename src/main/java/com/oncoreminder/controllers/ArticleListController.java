@@ -1,5 +1,6 @@
 package com.oncoreminder.controllers;
 
+import com.oncoreminder.app.App;
 import com.oncoreminder.models.Article;
 import com.oncoreminder.models.Commentaire;
 import com.oncoreminder.models.Utilisateur;
@@ -8,16 +9,11 @@ import com.oncoreminder.services.ServiceCommentaire;
 import com.oncoreminder.utils.UserSession;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.stage.Stage;
 
-import java.io.IOException;
 import java.util.List;
 
 public class ArticleListController {
@@ -38,7 +34,7 @@ public class ArticleListController {
     @FXML private Button publishBtn;
     @FXML private Button archiveBtn;
     @FXML private VBox commentsContainer;
-    @FXML private TextField commentField;
+    @FXML private TextArea commentField;
 
     private final ServiceArticle serviceArticle = new ServiceArticle();
     private final ServiceCommentaire serviceCommentaire = new ServiceCommentaire();
@@ -221,14 +217,14 @@ public class ArticleListController {
     @FXML
     void handleNewArticle(ActionEvent event) {
         ArticleFormController.setArticleToEdit(null);
-        navigateTo("ArticleForm");
+        App.navigate("ArticleForm");
     }
 
     @FXML
     void handleEdit(ActionEvent event) {
         if (selectedArticle == null) return;
         ArticleFormController.setArticleToEdit(selectedArticle);
-        navigateTo("ArticleForm");
+        App.navigate("ArticleForm");
     }
 
     @FXML
@@ -292,23 +288,12 @@ public class ArticleListController {
     @FXML
     void handleBack(ActionEvent event) {
         Utilisateur user = UserSession.getInstance().getCurrentUser();
-        String view = "MEDECIN".equals(user.getRole()) ? "DoctorDashboard" : "PatientDashboard";
-        navigateTo(view);
+        App.navigate("MEDECIN".equals(user.getRole()) ? "DoctorDashboard" : "PatientDashboard");
     }
 
     @FXML
     void handleLogout(ActionEvent event) {
         UserSession.getInstance().logout();
-        navigateTo("Login");
-    }
-
-    private void navigateTo(String view) {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/views/" + view + ".fxml"));
-            Stage stage = (Stage) userNameLabel.getScene().getWindow();
-            stage.setScene(new Scene(root));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        App.navigate("Login");
     }
 }

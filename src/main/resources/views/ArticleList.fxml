@@ -10,14 +10,14 @@
             fx:controller="com.oncoreminder.controllers.ArticleListController">
 
     <top>
-        <HBox spacing="20.0" styleClass="topbar" alignment="CENTER_LEFT">
-            <padding><Insets bottom="15" left="20" right="20" top="15"/></padding>
+        <HBox spacing="15" styleClass="topbar" alignment="CENTER_LEFT">
+            <padding><Insets bottom="12" left="20" right="20" top="12"/></padding>
             <VBox>
                 <Label text="OncoReminder Pro" styleClass="brand-title"/>
                 <Label text="Articles Médicaux" styleClass="brand-subtitle"/>
             </VBox>
             <Region HBox.hgrow="ALWAYS"/>
-            <HBox spacing="12" alignment="CENTER">
+            <HBox spacing="10" alignment="CENTER">
                 <Button fx:id="newArticleBtn" text="+ Nouvel Article" onAction="#handleNewArticle"
                         styleClass="btn-primary" prefWidth="140"/>
                 <Label fx:id="userNameLabel" text="Chargement..." styleClass="stat-label"/>
@@ -28,86 +28,95 @@
     </top>
 
     <center>
-        <HBox spacing="20">
-            <padding><Insets bottom="20" left="20" right="20" top="20"/></padding>
+        <HBox spacing="15">
+            <padding><Insets bottom="15" left="15" right="15" top="15"/></padding>
 
-            <!-- Liste articles -->
-            <VBox spacing="12" prefWidth="360" minWidth="300">
-                <HBox fx:id="filterBar" spacing="10" alignment="CENTER_LEFT">
+            <!-- Liste articles (gauche) -->
+            <VBox spacing="10" prefWidth="340" minWidth="300">
+                <HBox fx:id="filterBar" spacing="8" alignment="CENTER_LEFT">
                     <Button text="Tous" onAction="#filterAll" styleClass="btn-outline" prefWidth="100"/>
                     <Button text="Mes Articles" onAction="#filterMine" styleClass="btn-outline" prefWidth="120"/>
                 </HBox>
-                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
-                    <VBox fx:id="articleListContainer" spacing="10">
-                        <padding><Insets bottom="10" left="5" right="5" top="5"/></padding>
+                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" hbarPolicy="NEVER">
+                    <VBox fx:id="articleListContainer" spacing="8">
+                        <padding><Insets bottom="8" left="4" right="4" top="4"/></padding>
                     </VBox>
                 </ScrollPane>
             </VBox>
 
-            <!-- Détail article + commentaires -->
-            <VBox styleClass="form-panel" HBox.hgrow="ALWAYS" spacing="0">
-                <padding><Insets bottom="25" left="25" right="25" top="25"/></padding>
+            <!-- Détail article + commentaires (droite, scrollable) -->
+            <VBox styleClass="form-panel" HBox.hgrow="ALWAYS">
+                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" hbarPolicy="NEVER"
+                            style="-fx-background-color: transparent; -fx-background: transparent;">
+                    <VBox spacing="14">
+                        <padding><Insets bottom="25" left="25" right="25" top="25"/></padding>
 
-                <Label fx:id="placeholderLabel" text="Sélectionnez un article pour voir son contenu"
-                       styleClass="form-title" alignment="CENTER" maxWidth="Infinity"/>
+                        <Label fx:id="placeholderLabel" text="Sélectionnez un article pour voir son contenu"
+                               styleClass="form-title" alignment="CENTER" maxWidth="Infinity"/>
 
-                <VBox fx:id="detailContent" spacing="14" visible="false" managed="false">
+                        <VBox fx:id="detailContent" spacing="14" visible="false" managed="false">
 
-                    <!-- En-tête article -->
-                    <HBox spacing="12" alignment="CENTER_LEFT">
-                        <Label fx:id="articleTitreLabel" text="" styleClass="form-title"
-                               wrapText="true" HBox.hgrow="ALWAYS"/>
-                        <Label fx:id="statutBadge" text="" styleClass="stat-badge-info"/>
-                    </HBox>
+                            <!-- En-tête -->
+                            <HBox spacing="12" alignment="CENTER_LEFT">
+                                <Label fx:id="articleTitreLabel" text="" styleClass="form-title"
+                                       wrapText="true" HBox.hgrow="ALWAYS"/>
+                                <Label fx:id="statutBadge" text="" styleClass="stat-badge-info"/>
+                            </HBox>
 
-                    <HBox spacing="20" alignment="CENTER_LEFT">
-                        <Label fx:id="dateLabel" text="" styleClass="stat-label"/>
-                        <Label fx:id="organeLabel" text="" styleClass="stat-label"/>
-                    </HBox>
+                            <HBox spacing="20" alignment="CENTER_LEFT">
+                                <Label fx:id="dateLabel" text="" styleClass="stat-label"/>
+                                <Label fx:id="organeLabel" text="" styleClass="stat-label"/>
+                            </HBox>
 
-                    <Separator/>
+                            <Separator/>
 
-                    <!-- Contenu -->
-                    <TextArea fx:id="contenuArea" editable="false" wrapText="true"
-                              prefHeight="140" styleClass="field-input"/>
+                            <!-- Contenu article -->
+                            <TextArea fx:id="contenuArea" editable="false" wrapText="true"
+                                      prefHeight="130" styleClass="field-input"/>
 
-                    <!-- Actions like + médecin -->
-                    <HBox spacing="10" alignment="CENTER_LEFT">
-                        <Button text="❤ J'aime" onAction="#handleLike" styleClass="btn-outline" prefWidth="90"/>
-                        <Label fx:id="likesLabel" text="0 likes" styleClass="stat-label"/>
-                        <Region HBox.hgrow="ALWAYS"/>
-                        <HBox fx:id="medecinActions" spacing="8" alignment="CENTER" visible="false" managed="false">
-                            <Button text="Modifier" onAction="#handleEdit" styleClass="btn-outline" prefWidth="85"/>
-                            <Button fx:id="publishBtn" text="Publier" onAction="#handlePublish"
-                                    styleClass="btn-primary" prefWidth="80"/>
-                            <Button fx:id="archiveBtn" text="Archiver" onAction="#handleArchive"
-                                    styleClass="btn-warning" prefWidth="85"/>
-                            <Button text="Supprimer" onAction="#handleDelete"
-                                    styleClass="btn-danger" prefWidth="95"/>
-                        </HBox>
-                    </HBox>
+                            <Separator/>
 
-                    <Separator/>
+                            <!-- Ligne 1 : Like -->
+                            <HBox spacing="12" alignment="CENTER_LEFT">
+                                <Button text="❤  J'aime" onAction="#handleLike"
+                                        styleClass="btn-outline" prefWidth="120" prefHeight="38"/>
+                                <Label fx:id="likesLabel" text="0 likes" styleClass="stat-label"/>
+                            </HBox>
 
-                    <!-- Commentaires -->
-                    <Label text="Commentaires" styleClass="section-title"/>
+                            <!-- Ligne 2 : Actions médecin -->
+                            <HBox fx:id="medecinActions" spacing="10" alignment="CENTER_LEFT"
+                                  visible="false" managed="false">
+                                <Button text="Modifier" onAction="#handleEdit"
+                                        styleClass="btn-outline" prefWidth="110" prefHeight="36"/>
+                                <Button fx:id="publishBtn" text="Publier" onAction="#handlePublish"
+                                        styleClass="btn-primary" prefWidth="100" prefHeight="36"/>
+                                <Button fx:id="archiveBtn" text="Archiver" onAction="#handleArchive"
+                                        styleClass="btn-warning" prefWidth="110" prefHeight="36"/>
+                                <Button text="Supprimer" onAction="#handleDelete"
+                                        styleClass="btn-danger" prefWidth="110" prefHeight="36"/>
+                            </HBox>
 
-                    <ScrollPane fitToWidth="true" prefHeight="180">
-                        <VBox fx:id="commentsContainer" spacing="8">
-                            <padding><Insets bottom="5" left="5" right="5" top="5"/></padding>
+                            <Separator/>
+
+                            <!-- Commentaires -->
+                            <Label text="Commentaires" styleClass="section-title"/>
+
+                            <VBox fx:id="commentsContainer" spacing="10" minHeight="120"/>
+
+                            <!-- Ajouter commentaire -->
+                            <HBox spacing="12" alignment="CENTER">
+                                <TextArea fx:id="commentField" promptText="Votre commentaire..."
+                                          styleClass="field-input" HBox.hgrow="ALWAYS"
+                                          prefHeight="70" wrapText="true"/>
+                                <Button text="Commenter" onAction="#handleAddComment"
+                                        styleClass="btn-primary" prefWidth="120" prefHeight="70"/>
+                            </HBox>
+
                         </VBox>
-                    </ScrollPane>
-
-                    <!-- Ajouter un commentaire -->
-                    <HBox spacing="10" alignment="CENTER">
-                        <TextField fx:id="commentField" promptText="Votre commentaire..."
-                                   styleClass="field-input" HBox.hgrow="ALWAYS"/>
-                        <Button text="Commenter" onAction="#handleAddComment"
-                                styleClass="btn-primary" prefWidth="110"/>
-                    </HBox>
-
-                </VBox>
+                    </VBox>
+                </ScrollPane>
             </VBox>
+
         </HBox>
     </center>
 </BorderPane>
