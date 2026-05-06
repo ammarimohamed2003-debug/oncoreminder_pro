@@ -6,7 +6,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Text?>
 
-<BorderPane styleClass="root-pane" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.oncoreminder.controllers.PatientDashboardController">
+<BorderPane styleClass="root-pane bg-dashboard" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.oncoreminder.controllers.PatientDashboardController">
     <left>
         <VBox spacing="15.0" styleClass="form-panel" prefWidth="280.0">
             <padding>

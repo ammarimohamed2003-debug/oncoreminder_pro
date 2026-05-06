@@ -109,7 +109,7 @@ public class PatientDashboardController {
 
     @FXML
     void handleArticles(ActionEvent event) {
-        App.navigate("ArticleList");
+        App.navigate("PatientArticleList");
     }
 
     @FXML

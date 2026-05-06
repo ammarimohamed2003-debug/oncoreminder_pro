@@ -38,8 +38,6 @@ public class MyDataBase {
     private void initializeTables() {
         System.out.println("Initialisation des tables en cours...");
         String[] queries = {
-            "DROP TABLE IF EXISTS `log_connexions`", // Drop logs first because of FK
-            "DROP TABLE IF EXISTS `utilisateur`", 
             "CREATE TABLE IF NOT EXISTS `utilisateur` (" +
             "  `id` int(11) NOT NULL AUTO_INCREMENT," +
             "  `nom` varchar(255) NOT NULL," +

@@ -9,11 +9,86 @@
     -fx-background-color: #EBF4FF;
 }
 
+/* ══════════════ AUTH SPLIT SCREEN ══════════════ */
+
+.auth-left {
+    -fx-background-color: linear-gradient(to bottom, #0F0626 0%, #2D1B69 55%, #0D5C57 100%);
+}
+
+.auth-right {
+    -fx-background-color: #FFFFFF;
+}
+
+.auth-tagline {
+    -fx-text-fill: rgba(255,255,255,0.70);
+    -fx-font-size: 14px;
+    -fx-text-alignment: center;
+}
+
+.auth-title {
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 34px;
+    -fx-font-weight: bold;
+}
+
+.auth-subtitle {
+    -fx-text-fill: #2BBCB0;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.auth-feature-label {
+    -fx-text-fill: rgba(255,255,255,0.80);
+    -fx-font-size: 13px;
+}
+
+.auth-right-title {
+    -fx-text-fill: #4A2D8F;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.auth-right-sub {
+    -fx-text-fill: #888;
+    -fx-font-size: 13px;
+}
+
+/* ══════════════ PAGE BACKGROUNDS ══════════════ */
+
+/* Login / SignUp — fond sombre purple → teal */
+.bg-auth {
+    -fx-background-color: linear-gradient(to bottom right,
+        #0F0626 0%, #2D1B69 45%, #0D5C57 100%);
+}
+
+/* Dashboards — fond clair dégradé lavande */
+.bg-dashboard {
+    -fx-background-color: linear-gradient(to bottom right,
+        #EBF4FF 0%, #F2ECFF 100%);
+}
+
+/* Articles — fond clair dégradé teal */
+.bg-articles {
+    -fx-background-color: linear-gradient(to bottom right,
+        #E8F8F7 0%, #EBF4FF 100%);
+}
+
+/* Form panel sur fond sombre (login/signup) */
+.form-panel-auth {
+    -fx-background-color: rgba(255,255,255,0.97);
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: rgba(255,255,255,0.3);
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 40, 0, 0, 12);
+}
+
 /* ══════════════ TOP BAR ══════════════ */
 .topbar {
-    -fx-background-color: #FFFFFF;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 12, 0, 0, 4);
-    -fx-border-width: 0;
+    -fx-background-color: linear-gradient(to right, #FFFFFF 0%, #F8F4FF 100%);
+    -fx-border-color: transparent transparent #D6CBFF transparent;
+    -fx-border-width: 0 0 2 0;
+    -fx-effect: dropshadow(gaussian, rgba(91,53,165,0.15), 14, 0, 0, 4);
 }
 
 .brand-title {

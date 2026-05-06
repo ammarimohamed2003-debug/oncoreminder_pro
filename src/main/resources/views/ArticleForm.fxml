@@ -2,9 +2,10 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
 <?import javafx.geometry.Insets?>
 
-<BorderPane styleClass="root-pane" stylesheets="@../css/style.css"
+<BorderPane styleClass="root-pane bg-articles" stylesheets="@../css/style.css"
             xmlns="http://javafx.com/javafx/17"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.oncoreminder.controllers.ArticleFormController">
@@ -12,61 +13,143 @@
     <top>
         <HBox spacing="15" styleClass="topbar" alignment="CENTER_LEFT">
             <padding><Insets bottom="12" left="20" right="20" top="12"/></padding>
-            <VBox>
-                <Label text="OncoReminder Pro" styleClass="brand-title"/>
-                <Label text="Rédaction d'Article" styleClass="brand-subtitle"/>
-            </VBox>
+            <HBox spacing="12" alignment="CENTER_LEFT">
+                <StackPane>
+                    <Circle radius="20" fill="rgba(43,188,176,0.20)"/>
+                    <Label text="⚕" style="-fx-font-size: 18px; -fx-text-fill: #2BBCB0;"/>
+                </StackPane>
+                <VBox>
+                    <Label text="OncoReminder Pro" styleClass="brand-title"/>
+                    <Label text="Rédaction d'Article" styleClass="brand-subtitle"/>
+                </VBox>
+            </HBox>
             <Region HBox.hgrow="ALWAYS"/>
             <Button text="Annuler" onAction="#handleCancel" styleClass="btn-outline" prefWidth="110"/>
         </HBox>
     </top>
 
     <center>
-        <!-- Formulaire centré, taille fixe identique ajout et modification -->
         <StackPane>
             <VBox styleClass="form-panel"
-                  prefWidth="860" maxWidth="860" minWidth="600"
+                  prefWidth="1100" maxWidth="1200" minWidth="700"
                   StackPane.alignment="CENTER">
-                <padding><Insets bottom="40" left="50" right="50" top="35"/></padding>
-                <spacing>22</spacing>
+                <padding><Insets bottom="30" left="40" right="40" top="30"/></padding>
+                <spacing>14</spacing>
 
                 <Label fx:id="formTitleLabel" text="Nouvel Article" styleClass="form-title"/>
 
-                <VBox spacing="8">
-                    <Label text="Titre *" styleClass="field-label"/>
-                    <TextField fx:id="titreField" styleClass="field-input"
-                               promptText="Titre de l'article" prefHeight="40"/>
-                </VBox>
-
-                <HBox spacing="20">
-                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                <!-- Titre + Organe + Statut -->
+                <HBox spacing="15">
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Titre *" styleClass="field-label"/>
+                        <TextField fx:id="titreField" styleClass="field-input"
+                                   promptText="Titre de l'article" prefHeight="38"/>
+                    </VBox>
+                    <VBox spacing="6" prefWidth="200">
                         <Label text="Organe / Spécialité" styleClass="field-label"/>
                         <TextField fx:id="organeField" styleClass="field-input"
-                                   promptText="ex: Sein, Poumon..." prefHeight="40"/>
+                                   promptText="ex: Sein, Poumon..." prefHeight="38"/>
                     </VBox>
-                    <VBox spacing="8" prefWidth="200">
+                    <VBox spacing="6" prefWidth="160">
                         <Label text="Statut" styleClass="field-label"/>
                         <ComboBox fx:id="statutCombo" styleClass="field-combo"
-                                  maxWidth="Infinity" prefHeight="40"/>
+                                  maxWidth="Infinity" prefHeight="38"/>
                     </VBox>
                 </HBox>
 
-                <VBox spacing="8" VBox.vgrow="ALWAYS">
-                    <Label text="Contenu *" styleClass="field-label"/>
-                    <TextArea fx:id="contenuArea" styleClass="field-input"
-                              prefHeight="300" wrapText="true"
-                              promptText="Rédigez le contenu de votre article ici..."/>
+                <!-- Zone éditeur -->
+                <VBox spacing="0" VBox.vgrow="ALWAYS">
+                    <Label text="Contenu *" styleClass="field-label"
+                           style="-fx-padding: 0 0 6 0;"/>
+
+                    <!-- ── Barre d'outils ── -->
+                    <VBox style="-fx-background-color: #F0EDF8; -fx-background-radius: 8 8 0 0; -fx-border-color: #D6CBFF; -fx-border-radius: 8 8 0 0; -fx-border-width: 1 1 0 1; -fx-padding: 6 10 6 10;" spacing="5">
+
+                        <!-- Ligne 1 : style texte + structure -->
+                        <HBox spacing="4" alignment="CENTER_LEFT">
+                            <!-- Style -->
+                            <Button text="G"  onAction="#fmtBold"      style="-fx-font-weight:bold;  -fx-font-size:13; -fx-background-color:white; -fx-border-color:#C0AFF0; -fx-border-radius:5; -fx-cursor:hand; -fx-min-width:28; -fx-min-height:26;"/>
+                            <Button text="I"  onAction="#fmtItalic"    style="-fx-font-style:italic; -fx-font-size:13; -fx-background-color:white; -fx-border-color:#C0AFF0; -fx-border-radius:5; -fx-cursor:hand; -fx-min-width:28; -fx-min-height:26;"/>
+                            <Button text="S̲"  onAction="#fmtUnderline" style="-fx-font-size:13; -fx-background-color:white; -fx-border-color:#C0AFF0; -fx-border-radius:5; -fx-cursor:hand; -fx-min-width:28; -fx-min-height:26;"/>
+                            <Button text="S̶"  onAction="#fmtStrike"    style="-fx-font-size:13; -fx-background-color:white; -fx-border-color:#C0AFF0; -fx-border-radius:5; -fx-cursor:hand; -fx-min-width:28; -fx-min-height:26;"/>
+                            <Button text="`c`" onAction="#fmtCode"     style="-fx-font-family:monospace; -fx-font-size:11; -fx-background-color:#F7F0FF; -fx-border-color:#C0AFF0; -fx-border-radius:5; -fx-cursor:hand; -fx-min-height:26;"/>
+                            <Button text="==hl==" onAction="#fmtHighlight" style="-fx-font-size:10; -fx-background-color:#FEFCBF; -fx-border-color:#C0AFF0; -fx-border-radius:5; -fx-cursor:hand; -fx-min-height:26;"/>
+                            <Button text="x²" onAction="#fmtSup"       style="-fx-font-size:11; -fx-background-color:white; -fx-border-color:#C0AFF0; -fx-border-radius:5; -fx-cursor:hand; -fx-min-width:28; -fx-min-height:26;"/>
+                            <Button text="x₂" onAction="#fmtSub"       style="-fx-font-size:11; -fx-background-color:white; -fx-border-color:#C0AFF0; -fx-border-radius:5; -fx-cursor:hand; -fx-min-width:28; -fx-min-height:26;"/>
+                            <Separator orientation="VERTICAL" prefHeight="18"/>
+                            <!-- Structure -->
+                            <Button text="H1"  onAction="#fmtH1"       style="-fx-font-size:11; -fx-background-color:white; -fx-border-color:#C0AFF0; -fx-border-radius:5; -fx-cursor:hand; -fx-min-width:30; -fx-min-height:26;"/>
+                            <Button text="H2"  onAction="#fmtH2"       style="-fx-font-size:11; -fx-background-color:white; -fx-border-color:#C0AFF0; -fx-border-radius:5; -fx-cursor:hand; -fx-min-width:30; -fx-min-height:26;"/>
+                            <Separator orientation="VERTICAL" prefHeight="18"/>
+                            <Button text="• "  onAction="#fmtList"      style="-fx-font-size:11; -fx-background-color:white; -fx-border-color:#C0AFF0; -fx-border-radius:5; -fx-cursor:hand; -fx-min-height:26;"/>
+                            <Button text="1. " onAction="#fmtNumList"   style="-fx-font-size:11; -fx-background-color:white; -fx-border-color:#C0AFF0; -fx-border-radius:5; -fx-cursor:hand; -fx-min-height:26;"/>
+                            <Button text="❝ "  onAction="#fmtQuote"     style="-fx-font-size:11; -fx-background-color:white; -fx-border-color:#C0AFF0; -fx-border-radius:5; -fx-cursor:hand; -fx-min-height:26;"/>
+                            <Button text="— "  onAction="#fmtHr"        style="-fx-font-size:11; -fx-background-color:white; -fx-border-color:#C0AFF0; -fx-border-radius:5; -fx-cursor:hand; -fx-min-height:26;"/>
+                            <Button text="≡ "  onAction="#fmtCenter"    style="-fx-font-size:13; -fx-background-color:white; -fx-border-color:#C0AFF0; -fx-border-radius:5; -fx-cursor:hand; -fx-min-height:26;"/>
+                            <Separator orientation="VERTICAL" prefHeight="18"/>
+                            <Button text="✕ Effacer" onAction="#fmtClear"
+                                    style="-fx-font-size:10; -fx-background-color:#FFF5F5; -fx-text-fill:#E53E3E; -fx-border-color:#FCA5A5; -fx-border-radius:5; -fx-cursor:hand; -fx-min-height:26;"/>
+                        </HBox>
+
+                        <!-- Ligne 2 : taille + couleurs -->
+                        <HBox spacing="4" alignment="CENTER_LEFT">
+                            <Label text="Taille :" style="-fx-text-fill:#7060A0; -fx-font-size:11;"/>
+                            <Button text="A-"  onAction="#fmtSmall"  style="-fx-font-size:10; -fx-background-color:white; -fx-border-color:#C0AFF0; -fx-border-radius:5; -fx-cursor:hand; -fx-min-width:28; -fx-min-height:26;"/>
+                            <Button text="A"   onAction="#fmtNormal" style="-fx-font-size:12; -fx-background-color:white; -fx-border-color:#C0AFF0; -fx-border-radius:5; -fx-cursor:hand; -fx-min-width:28; -fx-min-height:26;"/>
+                            <Button text="A+"  onAction="#fmtBig"    style="-fx-font-size:14; -fx-background-color:white; -fx-border-color:#C0AFF0; -fx-border-radius:5; -fx-cursor:hand; -fx-min-width:32; -fx-min-height:26;"/>
+                            <Button text="A++" onAction="#fmtXl"     style="-fx-font-size:15; -fx-font-weight:bold; -fx-background-color:white; -fx-border-color:#C0AFF0; -fx-border-radius:5; -fx-cursor:hand; -fx-min-width:36; -fx-min-height:26;"/>
+                            <Separator orientation="VERTICAL" prefHeight="18"/>
+                            <Label text="Couleur :" style="-fx-text-fill:#7060A0; -fx-font-size:11;"/>
+                            <Button onAction="#fmtRed"    style="-fx-background-color:#E53E3E; -fx-background-radius:50; -fx-min-width:20; -fx-max-width:20; -fx-min-height:20; -fx-max-height:20; -fx-cursor:hand; -fx-border-color:white; -fx-border-radius:50; -fx-border-width:2;"/>
+                            <Button onAction="#fmtOrange" style="-fx-background-color:#DD6B20; -fx-background-radius:50; -fx-min-width:20; -fx-max-width:20; -fx-min-height:20; -fx-max-height:20; -fx-cursor:hand; -fx-border-color:white; -fx-border-radius:50; -fx-border-width:2;"/>
+                            <Button onAction="#fmtGreen"  style="-fx-background-color:#38A169; -fx-background-radius:50; -fx-min-width:20; -fx-max-width:20; -fx-min-height:20; -fx-max-height:20; -fx-cursor:hand; -fx-border-color:white; -fx-border-radius:50; -fx-border-width:2;"/>
+                            <Button onAction="#fmtBlue"   style="-fx-background-color:#3182CE; -fx-background-radius:50; -fx-min-width:20; -fx-max-width:20; -fx-min-height:20; -fx-max-height:20; -fx-cursor:hand; -fx-border-color:white; -fx-border-radius:50; -fx-border-width:2;"/>
+                            <Button onAction="#fmtPurple" style="-fx-background-color:#6B46C1; -fx-background-radius:50; -fx-min-width:20; -fx-max-width:20; -fx-min-height:20; -fx-max-height:20; -fx-cursor:hand; -fx-border-color:white; -fx-border-radius:50; -fx-border-width:2;"/>
+                            <Button onAction="#fmtTeal"   style="-fx-background-color:#2BBCB0; -fx-background-radius:50; -fx-min-width:20; -fx-max-width:20; -fx-min-height:20; -fx-max-height:20; -fx-cursor:hand; -fx-border-color:white; -fx-border-radius:50; -fx-border-width:2;"/>
+                            <Button onAction="#fmtGray"   style="-fx-background-color:#718096; -fx-background-radius:50; -fx-min-width:20; -fx-max-width:20; -fx-min-height:20; -fx-max-height:20; -fx-cursor:hand; -fx-border-color:white; -fx-border-radius:50; -fx-border-width:2;"/>
+                            <Button onAction="#fmtBlack"  style="-fx-background-color:#1A202C; -fx-background-radius:50; -fx-min-width:20; -fx-max-width:20; -fx-min-height:20; -fx-max-height:20; -fx-cursor:hand; -fx-border-color:white; -fx-border-radius:50; -fx-border-width:2;"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label text="Sélectionnez du texte puis cliquez un bouton"
+                                   style="-fx-text-fill:#A090C0; -fx-font-size:10;"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- ── Split : éditeur | aperçu ── -->
+                    <HBox spacing="0" VBox.vgrow="ALWAYS">
+
+                        <!-- Éditeur -->
+                        <VBox HBox.hgrow="ALWAYS" spacing="0">
+                            <Label text="✏  Éditeur"
+                                   style="-fx-font-size:11; -fx-text-fill:#5B35A5; -fx-background-color:#EDE8F8; -fx-padding:4 10; -fx-border-color:#D6CBFF; -fx-border-width:0 1 1 1;"/>
+                            <TextArea fx:id="contenuArea" VBox.vgrow="ALWAYS"
+                                      prefHeight="280" wrapText="true"
+                                      promptText="Rédigez ici... (**gras**, *italic*, ## Titre, [red]couleur[/red])"
+                                      style="-fx-font-family:monospace; -fx-font-size:12; -fx-background-radius:0 0 0 8; -fx-border-color:#D6CBFF; -fx-border-width:0 1 1 1; -fx-border-radius:0 0 0 8;"/>
+                        </VBox>
+
+                        <!-- Aperçu en direct -->
+                        <VBox HBox.hgrow="ALWAYS" spacing="0">
+                            <Label text="👁  Aperçu en direct"
+                                   style="-fx-font-size:11; -fx-text-fill:#2BBCB0; -fx-background-color:#E8F8F7; -fx-padding:4 10; -fx-border-color:#D6CBFF; -fx-border-width:0 1 1 0;"/>
+                            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" hbarPolicy="NEVER"
+                                        prefHeight="280"
+                                        style="-fx-background-color:white; -fx-background:white; -fx-border-color:#D6CBFF; -fx-border-width:0 1 1 0; -fx-border-radius:0 0 8 0;">
+                                <VBox fx:id="previewContainer" spacing="6">
+                                    <padding><Insets bottom="12" left="12" right="12" top="12"/></padding>
+                                </VBox>
+                            </ScrollPane>
+                        </VBox>
+
+                    </HBox>
                 </VBox>
 
                 <Label fx:id="errorLabel" text=""
-                       style="-fx-text-fill: #E53E3E; -fx-font-size: 12px;"
+                       style="-fx-text-fill:#E53E3E; -fx-font-size:12;"
                        visible="false" managed="false" wrapText="true"/>
 
                 <HBox spacing="15" alignment="CENTER_RIGHT">
-                    <Button text="Annuler" onAction="#handleCancel"
-                            styleClass="btn-outline" prefWidth="130" prefHeight="42"/>
-                    <Button text="Enregistrer" onAction="#handleSave"
-                            styleClass="btn-primary" prefWidth="170" prefHeight="42"/>
+                    <Button text="Annuler"     onAction="#handleCancel" styleClass="btn-outline"  prefWidth="130" prefHeight="40"/>
+                    <Button text="Enregistrer" onAction="#handleSave"   styleClass="btn-primary"  prefWidth="170" prefHeight="40"/>
                 </HBox>
 
             </VBox>
