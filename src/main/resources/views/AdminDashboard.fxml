@@ -5,7 +5,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.shape.Circle?>
 
-<BorderPane styleClass="root-pane" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.oncoreminder.controllers.AdminDashboardController">
+<BorderPane styleClass="root-pane bg-dashboard" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.oncoreminder.controllers.AdminDashboardController">
     <left>
         <VBox spacing="10.0" styleClass="form-panel" prefWidth="250.0">
             <padding>
@@ -13,7 +13,11 @@
             </padding>
             <children>
                 <VBox alignment="CENTER" spacing="10.0">
-                    <Circle radius="40.0" fill="#EBF4FF" stroke="#5B35A5" strokeWidth="2.0" />
+                    <StackPane>
+                        <Circle radius="40.0" fill="rgba(43,188,176,0.15)"/>
+                        <Circle radius="28.0" fill="rgba(43,188,176,0.25)"/>
+                        <Label text="⚕" style="-fx-font-size: 28px; -fx-text-fill: #2BBCB0;"/>
+                    </StackPane>
                     <Label fx:id="adminNameLabel" text="Admin" styleClass="brand-title" />
                     <Label text="Administrateur" styleClass="brand-subtitle" />
                 </VBox>
@@ -27,9 +31,9 @@
         </VBox>
     </left>
     <center>
-        <VBox spacing="20.0">
+        <VBox spacing="15.0">
             <padding>
-                <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+                <Insets bottom="15.0" left="20.0" right="20.0" top="15.0" />
             </padding>
             <children>
                 <HBox spacing="20.0">

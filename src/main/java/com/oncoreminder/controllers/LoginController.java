@@ -1,17 +1,12 @@
 package com.oncoreminder.controllers;
 
+import com.oncoreminder.app.App;
 import com.oncoreminder.models.Utilisateur;
 import com.oncoreminder.services.ServiceUtilisateur;
 import com.oncoreminder.utils.UserSession;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.stage.Stage;
-
-import java.io.IOException;
 
 public class LoginController {
 
@@ -41,55 +36,25 @@ public class LoginController {
 
         if (user != null) {
             UserSession.getInstance().login(user);
-            redirectToDashboard(user.getRole());
+            switch (user.getRole()) {
+                case "ADMIN":   App.navigate("AdminDashboard"); break;
+                case "MEDECIN": App.navigate("DoctorDashboard"); break;
+                case "PATIENT": App.navigate("PatientDashboard"); break;
+                default: showError("Rôle inconnu.");
+            }
         } else {
             showError("Email ou mot de passe incorrect.");
         }
     }
 
-    private void redirectToDashboard(String role) {
-        String fxmlFile = "";
-        switch (role) {
-            case "ADMIN":
-                fxmlFile = "/views/AdminDashboard.fxml";
-                break;
-            case "MEDECIN":
-                fxmlFile = "/views/DoctorDashboard.fxml";
-                break;
-            case "PATIENT":
-                fxmlFile = "/views/PatientDashboard.fxml";
-                break;
-            default:
-                showError("Rôle inconnu.");
-                return;
-        }
-
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource(fxmlFile));
-            Stage stage = (Stage) loginButton.getScene().getWindow();
-            Scene scene = new Scene(root);
-            scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
-            stage.setScene(scene);
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-            showError("Erreur de chargement du tableau de bord.");
-        }
+    @FXML
+    void goToSignUp(ActionEvent event) {
+        App.navigate("SignUp");
     }
 
     private void showError(String message) {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
-    }
-
-    @FXML
-    void goToSignUp(ActionEvent event) {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/views/SignUp.fxml"));
-            Stage stage = (Stage) loginButton.getScene().getWindow();
-            stage.setScene(new Scene(root));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        errorLabel.setManaged(true);
     }
 }

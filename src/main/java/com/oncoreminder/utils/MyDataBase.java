@@ -38,8 +38,6 @@ public class MyDataBase {
     private void initializeTables() {
         System.out.println("Initialisation des tables en cours...");
         String[] queries = {
-            "DROP TABLE IF EXISTS `log_connexions`", // Drop logs first because of FK
-            "DROP TABLE IF EXISTS `utilisateur`", 
             "CREATE TABLE IF NOT EXISTS `utilisateur` (" +
             "  `id` int(11) NOT NULL AUTO_INCREMENT," +
             "  `nom` varchar(255) NOT NULL," +
@@ -82,6 +80,16 @@ public class MyDataBase {
                 "ALTER TABLE `utilisateur` ADD COLUMN `poids` double DEFAULT NULL",
                 "ALTER TABLE `utilisateur` ADD COLUMN `taille` double DEFAULT NULL"
             };
+
+            String[] articleAlters = {
+                "ALTER TABLE `article` ADD COLUMN `tags` VARCHAR(500) DEFAULT NULL",
+                "ALTER TABLE `article` ADD COLUMN `views` INT DEFAULT 0",
+                "ALTER TABLE `article` ADD COLUMN `icd_code` VARCHAR(20) DEFAULT NULL",
+                "ALTER TABLE `commentaire` ADD COLUMN `likes` INT DEFAULT 0"
+            };
+            for (String alter : articleAlters) {
+                try { stmt.execute(alter); } catch (SQLException ignored) {}
+            }
 
             for (String alter : alterQueries) {
                 try {

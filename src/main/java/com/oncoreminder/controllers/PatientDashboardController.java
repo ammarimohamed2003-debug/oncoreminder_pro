@@ -1,17 +1,12 @@
 package com.oncoreminder.controllers;
 
+import com.oncoreminder.app.App;
 import com.oncoreminder.models.Utilisateur;
 import com.oncoreminder.services.ServiceUtilisateur;
 import com.oncoreminder.utils.UserSession;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.stage.Stage;
-
-import java.io.IOException;
 
 public class PatientDashboardController {
 
@@ -113,14 +108,13 @@ public class PatientDashboardController {
     }
 
     @FXML
+    void handleArticles(ActionEvent event) {
+        App.navigate("PatientArticleList");
+    }
+
+    @FXML
     void handleLogout(ActionEvent event) {
         UserSession.getInstance().logout();
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/views/Login.fxml"));
-            Stage stage = (Stage) patientNameLabel.getScene().getWindow();
-            stage.setScene(new Scene(root));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        App.navigate("Login");
     }
 }

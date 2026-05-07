@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane styleClass="root-pane bg-articles" stylesheets="@../css/style.css"
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.oncoreminder.controllers.ArticleListController">
+
+    <top>
+        <HBox spacing="15" styleClass="topbar" alignment="CENTER_LEFT">
+            <padding><Insets bottom="12" left="20" right="20" top="12"/></padding>
+            <HBox spacing="12" alignment="CENTER_LEFT">
+                <StackPane>
+                    <Circle radius="20" fill="rgba(43,188,176,0.20)"/>
+                    <Label text="⚕" style="-fx-font-size: 18px; -fx-text-fill: #2BBCB0;"/>
+                </StackPane>
+                <VBox>
+                    <Label text="OncoReminder Pro" styleClass="brand-title"/>
+                    <Label text="Articles Médicaux" styleClass="brand-subtitle"/>
+                </VBox>
+            </HBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <HBox spacing="10" alignment="CENTER">
+                <Button fx:id="newArticleBtn" text="+ Nouvel Article" onAction="#handleNewArticle"
+                        styleClass="btn-primary" prefWidth="140"/>
+                <Label fx:id="userNameLabel" text="Chargement..." styleClass="stat-label"/>
+                <Button text="Retour" onAction="#handleBack" styleClass="btn-outline" prefWidth="80"/>
+                <Button text="Déconnexion" onAction="#handleLogout" styleClass="btn-outline" prefWidth="110"/>
+            </HBox>
+        </HBox>
+    </top>
+
+    <center>
+        <HBox spacing="15">
+            <padding><Insets bottom="15" left="15" right="15" top="15"/></padding>
+
+            <!-- Liste articles (gauche) -->
+            <VBox spacing="8" prefWidth="340" minWidth="300">
+                <TextField fx:id="searchField" promptText="🔍 Rechercher un article..."
+                           styleClass="field-input"/>
+                <HBox fx:id="filterBar" spacing="8" alignment="CENTER_LEFT">
+                    <Button text="Tous" onAction="#filterAll" styleClass="btn-outline" prefWidth="100"/>
+                    <Button text="Mes Articles" onAction="#filterMine" styleClass="btn-outline" prefWidth="120"/>
+                </HBox>
+                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" hbarPolicy="NEVER">
+                    <VBox fx:id="articleListContainer" spacing="8">
+                        <padding><Insets bottom="8" left="4" right="4" top="4"/></padding>
+                    </VBox>
+                </ScrollPane>
+            </VBox>
+
+            <!-- Détail article + commentaires (droite, scrollable) -->
+            <VBox styleClass="form-panel" HBox.hgrow="ALWAYS">
+                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" hbarPolicy="NEVER"
+                            style="-fx-background-color: transparent; -fx-background: transparent;">
+                    <VBox spacing="14">
+                        <padding><Insets bottom="25" left="25" right="25" top="25"/></padding>
+
+                        <Label fx:id="placeholderLabel" text="Sélectionnez un article pour voir son contenu"
+                               styleClass="form-title" alignment="CENTER" maxWidth="Infinity"/>
+
+                        <VBox fx:id="detailContent" spacing="14" visible="false" managed="false">
+
+                            <!-- En-tête titre + badge -->
+                            <HBox spacing="12" alignment="CENTER_LEFT">
+                                <Label fx:id="articleTitreLabel" text="" styleClass="form-title"
+                                       wrapText="true" HBox.hgrow="ALWAYS"/>
+                                <Label fx:id="statutBadge" text="" styleClass="stat-badge-info"/>
+                            </HBox>
+
+                            <!-- Métadonnées ligne 1 -->
+                            <HBox spacing="20" alignment="CENTER_LEFT">
+                                <Label fx:id="dateLabel"   text="" styleClass="stat-label"/>
+                                <Label fx:id="organeLabel" text="" styleClass="stat-label"/>
+                                <Label fx:id="viewsLabel"  text="" styleClass="stat-label"/>
+                            </HBox>
+
+                            <!-- Tags -->
+                            <HBox spacing="12" alignment="CENTER_LEFT">
+                                <Label fx:id="tagsLabel" text="" styleClass="stat-label"
+                                       visible="false" managed="false"/>
+                            </HBox>
+
+                            <Separator/>
+
+                            <!-- Contenu article rendu en Markdown -->
+                            <VBox fx:id="contenuContainer" spacing="5" minHeight="80"
+                                  style="-fx-background-color: #F8F4FF; -fx-background-radius: 8; -fx-border-color: #D6CBFF; -fx-border-radius: 8; -fx-border-width: 1; -fx-padding: 12;"/>
+
+                            <Separator/>
+
+                            <!-- Like -->
+                            <HBox spacing="12" alignment="CENTER_LEFT">
+                                <Button text="❤  J'aime" onAction="#handleLike"
+                                        styleClass="btn-outline" prefWidth="120" prefHeight="38"/>
+                                <Label fx:id="likesLabel" text="0 likes" styleClass="stat-label"/>
+                            </HBox>
+
+                            <!-- Actions médecin -->
+                            <HBox fx:id="medecinActions" spacing="10" alignment="CENTER_LEFT"
+                                  visible="false" managed="false">
+                                <Button text="Modifier"   onAction="#handleEdit"
+                                        styleClass="btn-outline" prefWidth="110" prefHeight="36"/>
+                                <Button fx:id="publishBtn" text="Publier"  onAction="#handlePublish"
+                                        styleClass="btn-primary" prefWidth="100" prefHeight="36"/>
+                                <Button fx:id="archiveBtn" text="Archiver" onAction="#handleArchive"
+                                        styleClass="btn-warning" prefWidth="110" prefHeight="36"/>
+                                <Button text="Supprimer"  onAction="#handleDelete"
+                                        styleClass="btn-danger"  prefWidth="110" prefHeight="36"/>
+                            </HBox>
+
+                            <Separator/>
+
+                            <!-- Commentaires -->
+                            <Label text="Commentaires" styleClass="section-title"/>
+                            <VBox fx:id="commentsContainer" spacing="10" minHeight="120"/>
+
+                            <!-- Ajouter commentaire -->
+                            <HBox spacing="12" alignment="CENTER">
+                                <TextArea fx:id="commentField" promptText="Votre commentaire..."
+                                          styleClass="field-input" HBox.hgrow="ALWAYS"
+                                          prefHeight="70" wrapText="true"/>
+                                <Button text="Commenter" onAction="#handleAddComment"
+                                        styleClass="btn-primary" prefWidth="120" prefHeight="70"/>
+                            </HBox>
+
+                        </VBox>
+                    </VBox>
+                </ScrollPane>
+            </VBox>
+
+        </HBox>
+    </center>
+</BorderPane>
