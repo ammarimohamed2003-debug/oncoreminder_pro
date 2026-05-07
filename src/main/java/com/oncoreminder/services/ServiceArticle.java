@@ -79,8 +79,12 @@ public class ServiceArticle {
         try {
             String like = "%" + keyword + "%";
             PreparedStatement pst = cnx.prepareStatement(
-                "SELECT * FROM article WHERE (titre LIKE ? OR contenu LIKE ? OR organe LIKE ? OR tags LIKE ?) " +
-                "AND statut != 'ARCHIVE' ORDER BY id DESC");
+                "SELECT * FROM article WHERE statut != 'ARCHIVE' AND (" +
+                "  titre   LIKE ? OR " +
+                "  contenu LIKE ? OR " +
+                "  organe  LIKE ? OR " +
+                "  tags    LIKE ?" +
+                ") ORDER BY id DESC");
             for (int i = 1; i <= 4; i++) pst.setString(i, like);
             ResultSet rs = pst.executeQuery();
             while (rs.next()) list.add(mapRow(rs));
