@@ -54,12 +54,20 @@ public class ServiceCommentaire {
                     rs.getString("auteur"),
                     rs.getTimestamp("date_commentaire").toLocalDateTime()
                 );
+                try { c.setLikes(rs.getInt("likes")); } catch (SQLException ignored) {}
                 list.add(c);
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
         return list;
+    }
+
+    public void addLike(int id) {
+        if (!updateConnection()) return;
+        try {
+            cnx.prepareStatement("UPDATE commentaire SET likes=likes+1 WHERE id=" + id).executeUpdate();
+        } catch (SQLException e) { System.out.println(e.getMessage()); }
     }
 
     public void delete(int id) {

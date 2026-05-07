@@ -19,22 +19,26 @@ import java.util.List;
 
 public class PatientArticleListController {
 
-    @FXML private Label patientNameLabel;
-    @FXML private VBox articleListContainer;
-    @FXML private Label placeholderLabel;
-    @FXML private VBox detailContent;
-    @FXML private Label articleTitreLabel;
-    @FXML private Label statutBadge;
-    @FXML private Label dateLabel;
-    @FXML private Label organeLabel;
-    @FXML private VBox contenuContainer;
-    @FXML private Label likesLabel;
-    @FXML private VBox commentsContainer;
-    @FXML private TextArea commentField;
-
-    private final ServiceArticle serviceArticle = new ServiceArticle();
+    @FXML private Label     patientNameLabel;
+    @FXML private TextField searchField;
+    @FXML private VBox      articleListContainer;
+    @FXML private Label     placeholderLabel;
+    @FXML private VBox      detailContent;
+    @FXML private Label     articleTitreLabel;
+    @FXML private Label     statutBadge;
+    @FXML private Label     dateLabel;
+    @FXML private Label     organeLabel;
+    @FXML private Label     tagsLabel;
+    @FXML private Label     viewsLabel;
+    @FXML private VBox      contenuContainer;
+    @FXML private Label     likesLabel;
+    @FXML private VBox      commentsContainer;
+    @FXML private TextArea  commentField;
+    private final ServiceArticle     serviceArticle     = new ServiceArticle();
     private final ServiceCommentaire serviceCommentaire = new ServiceCommentaire();
-    private Article selectedArticle;
+
+    private Article       selectedArticle;
+    private List<Article> currentArticles;
 
     @FXML
     public void initialize() {
@@ -42,11 +46,26 @@ public class PatientArticleListController {
         if (user != null) {
             patientNameLabel.setText(user.getPrenom() + " " + user.getNom());
         }
+        searchField.textProperty().addListener((obs, o, n) -> filterBySearch(n));
         loadArticles();
     }
 
     private void loadArticles() {
-        List<Article> articles = serviceArticle.getPublished();
+        currentArticles = serviceArticle.getPublished();
+        renderArticleList(currentArticles);
+    }
+
+    private void filterBySearch(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            renderArticleList(currentArticles);
+            return;
+        }
+        List<Article> filtered = serviceArticle.search(keyword.trim());
+        filtered.removeIf(a -> !"PUBLIE".equals(a.getStatut()));
+        renderArticleList(filtered);
+    }
+
+    private void renderArticleList(List<Article> articles) {
         articleListContainer.getChildren().clear();
         if (articles.isEmpty()) {
             Label empty = new Label("Aucun article disponible.");
@@ -60,9 +79,9 @@ public class PatientArticleListController {
     }
 
     private VBox createArticleCard(Article article) {
-        VBox card = new VBox(8);
+        VBox card = new VBox(6);
         card.getStyleClass().add("stat-card");
-        card.setPadding(new Insets(15));
+        card.setPadding(new Insets(14));
         card.setCursor(javafx.scene.Cursor.HAND);
 
         HBox header = new HBox(10);
@@ -70,12 +89,12 @@ public class PatientArticleListController {
         Label titre = new Label(article.getTitre());
         titre.setStyle("-fx-font-weight: bold; -fx-text-fill: #4A2D8F;");
         titre.setWrapText(true);
-        titre.setMaxWidth(200);
+        titre.setMaxWidth(190);
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         header.getChildren().addAll(titre, spacer);
 
-        HBox footer = new HBox(12);
+        HBox footer = new HBox(10);
         footer.setAlignment(Pos.CENTER_LEFT);
         if (article.getDatePublication() != null) {
             Label date = new Label("📅 " + article.getDatePublication());
@@ -90,8 +109,25 @@ public class PatientArticleListController {
         Label likes = new Label("❤ " + article.getLikes());
         likes.setStyle("-fx-text-fill: #FC8181; -fx-font-size: 11px;");
         footer.getChildren().add(likes);
+        if (article.getViews() > 0) {
+            Label views = new Label("👁 " + article.getViews());
+            views.setStyle("-fx-text-fill: #888; -fx-font-size: 11px;");
+            footer.getChildren().add(views);
+        }
 
         card.getChildren().addAll(header, footer);
+
+        if (article.getTags() != null && !article.getTags().isEmpty()) {
+            HBox tagsRow = new HBox(5);
+            tagsRow.setAlignment(Pos.CENTER_LEFT);
+            for (String tag : article.getTags().split(",")) {
+                Label tagLabel = new Label(tag.trim());
+                tagLabel.setStyle("-fx-background-color: #EEF2FF; -fx-text-fill: #5B35A5; -fx-padding: 2 6; -fx-background-radius: 8; -fx-font-size: 10px;");
+                tagsRow.getChildren().add(tagLabel);
+            }
+            card.getChildren().add(tagsRow);
+        }
+
         card.setOnMouseClicked(e -> selectArticle(article));
 
         if (selectedArticle != null && selectedArticle.getId() == article.getId()) {
@@ -103,20 +139,30 @@ public class PatientArticleListController {
 
     private void selectArticle(Article article) {
         this.selectedArticle = article;
+        serviceArticle.incrementViews(article.getId());
+        article.setViews(article.getViews() + 1);
+
         placeholderLabel.setVisible(false);
         placeholderLabel.setManaged(false);
         detailContent.setVisible(true);
         detailContent.setManaged(true);
 
         articleTitreLabel.setText(article.getTitre());
-        statutBadge.setText(article.getStatut());
+        statutBadge.setText("Publié");
         dateLabel.setText(article.getDatePublication() != null ? "📅 " + article.getDatePublication() : "");
         organeLabel.setText(article.getOrgane() != null ? "🏥 " + article.getOrgane() : "");
+        viewsLabel.setText("👁 " + article.getViews() + " vues");
+
+        String tags = article.getTags();
+        tagsLabel.setText(tags != null && !tags.isEmpty() ? "🏷 " + tags : "");
+        tagsLabel.setVisible(tags != null && !tags.isEmpty());
+        tagsLabel.setManaged(tags != null && !tags.isEmpty());
+
         MarkdownRenderer.render(article.getContenu(), contenuContainer);
         likesLabel.setText(article.getLikes() + " likes");
 
         loadComments();
-        loadArticles();
+        renderArticleList(currentArticles);
     }
 
     private void loadComments() {
@@ -153,20 +199,33 @@ public class PatientArticleListController {
         contenu.setWrapText(true);
         contenu.setStyle("-fx-text-fill: #2D3748; -fx-font-size: 13px;");
 
-        card.getChildren().addAll(header, contenu);
+        HBox likeRow = new HBox(6);
+        likeRow.setAlignment(Pos.CENTER_LEFT);
+        Label likeCount = new Label("👍 " + c.getLikes());
+        likeCount.setStyle("-fx-text-fill: #5B35A5; -fx-font-size: 11px;");
+        Button likeBtn = new Button("👍");
+        likeBtn.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 13px; -fx-padding: 0 4;");
+        likeBtn.setOnAction(e -> {
+            serviceCommentaire.addLike(c.getId());
+            c.setLikes(c.getLikes() + 1);
+            likeCount.setText("👍 " + c.getLikes());
+        });
+        likeRow.getChildren().addAll(likeBtn, likeCount);
+
+        card.getChildren().addAll(header, contenu, likeRow);
         return card;
     }
 
-    @FXML
-    void handleLike(ActionEvent event) {
+    // ─── Navigation ──────────────────────────────────────────
+
+    @FXML void handleLike(ActionEvent event) {
         if (selectedArticle == null) return;
         serviceArticle.addLike(selectedArticle.getId());
         selectedArticle.setLikes(selectedArticle.getLikes() + 1);
         likesLabel.setText(selectedArticle.getLikes() + " likes");
     }
 
-    @FXML
-    void handleAddComment(ActionEvent event) {
+    @FXML void handleAddComment(ActionEvent event) {
         String text = commentField.getText().trim();
         if (text.isEmpty() || selectedArticle == null) return;
         Utilisateur user = UserSession.getInstance().getCurrentUser();
@@ -176,13 +235,9 @@ public class PatientArticleListController {
         loadComments();
     }
 
-    @FXML
-    void handleDashboard(ActionEvent event) {
-        App.navigate("PatientDashboard");
-    }
+    @FXML void handleDashboard(ActionEvent event) { App.navigate("PatientDashboard"); }
 
-    @FXML
-    void handleLogout(ActionEvent event) {
+    @FXML void handleLogout(ActionEvent event) {
         UserSession.getInstance().logout();
         App.navigate("Login");
     }

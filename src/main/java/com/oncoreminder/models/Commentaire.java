@@ -9,6 +9,7 @@ public class Commentaire {
     private String contenu;
     private String auteur;
     private LocalDateTime dateCommentaire;
+    private int likes;
 
     public Commentaire() {}
 
@@ -36,6 +37,9 @@ public class Commentaire {
     public void setAuteur(String auteur) { this.auteur = auteur; }
     public LocalDateTime getDateCommentaire() { return dateCommentaire; }
     public void setDateCommentaire(LocalDateTime dateCommentaire) { this.dateCommentaire = dateCommentaire; }
+
+    public int getLikes() { return likes; }
+    public void setLikes(int likes) { this.likes = likes; }
 
     public String getFormattedDate() {
         if (dateCommentaire == null) return "";

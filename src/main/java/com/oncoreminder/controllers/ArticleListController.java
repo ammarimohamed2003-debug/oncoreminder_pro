@@ -8,6 +8,7 @@ import com.oncoreminder.services.ServiceArticle;
 import com.oncoreminder.services.ServiceCommentaire;
 import com.oncoreminder.utils.MarkdownRenderer;
 import com.oncoreminder.utils.UserSession;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -19,28 +20,32 @@ import java.util.List;
 
 public class ArticleListController {
 
-    @FXML private Label userNameLabel;
-    @FXML private Button newArticleBtn;
-    @FXML private HBox filterBar;
-    @FXML private VBox articleListContainer;
-    @FXML private Label placeholderLabel;
-    @FXML private VBox detailContent;
-    @FXML private Label articleTitreLabel;
-    @FXML private Label statutBadge;
-    @FXML private Label dateLabel;
-    @FXML private Label organeLabel;
-    @FXML private VBox contenuContainer;
-    @FXML private Label likesLabel;
-    @FXML private HBox medecinActions;
-    @FXML private Button publishBtn;
-    @FXML private Button archiveBtn;
-    @FXML private VBox commentsContainer;
-    @FXML private TextArea commentField;
-
-    private final ServiceArticle serviceArticle = new ServiceArticle();
+    @FXML private Label     userNameLabel;
+    @FXML private Button    newArticleBtn;
+    @FXML private HBox      filterBar;
+    @FXML private TextField searchField;
+    @FXML private VBox      articleListContainer;
+    @FXML private Label     placeholderLabel;
+    @FXML private VBox      detailContent;
+    @FXML private Label     articleTitreLabel;
+    @FXML private Label     statutBadge;
+    @FXML private Label     dateLabel;
+    @FXML private Label     organeLabel;
+    @FXML private Label     tagsLabel;
+    @FXML private Label     viewsLabel;
+    @FXML private VBox      contenuContainer;
+    @FXML private Label     likesLabel;
+    @FXML private HBox      medecinActions;
+    @FXML private Button    publishBtn;
+    @FXML private Button    archiveBtn;
+    @FXML private VBox      commentsContainer;
+    @FXML private TextArea  commentField;
+    private final ServiceArticle     serviceArticle     = new ServiceArticle();
     private final ServiceCommentaire serviceCommentaire = new ServiceCommentaire();
-    private Article selectedArticle;
-    private boolean showingAll = true;
+
+    private Article       selectedArticle;
+    private boolean       showingAll = true;
+    private List<Article> currentArticles;
 
     @FXML
     public void initialize() {
@@ -54,18 +59,32 @@ public class ArticleListController {
         filterBar.setVisible(isMedecin);
         filterBar.setManaged(isMedecin);
 
+        searchField.textProperty().addListener((obs, o, n) -> filterBySearch(n));
+
         loadArticles();
     }
 
     private void loadArticles() {
         Utilisateur user = UserSession.getInstance().getCurrentUser();
-        List<Article> articles;
         if ("MEDECIN".equals(user.getRole())) {
-            articles = showingAll ? serviceArticle.getAll() : serviceArticle.getByMedecin(user.getId());
+            currentArticles = showingAll ? serviceArticle.getAll() : serviceArticle.getByMedecin(user.getId());
         } else {
-            articles = serviceArticle.getPublished();
+            currentArticles = serviceArticle.getPublished();
         }
-        renderArticleList(articles);
+        renderArticleList(currentArticles);
+    }
+
+    private void filterBySearch(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            renderArticleList(currentArticles);
+            return;
+        }
+        List<Article> filtered = serviceArticle.search(keyword.trim());
+        Utilisateur user = UserSession.getInstance().getCurrentUser();
+        if (!"MEDECIN".equals(user.getRole())) {
+            filtered.removeIf(a -> !"PUBLIE".equals(a.getStatut()));
+        }
+        renderArticleList(filtered);
     }
 
     private void renderArticleList(List<Article> articles) {
@@ -82,9 +101,9 @@ public class ArticleListController {
     }
 
     private VBox createArticleCard(Article article) {
-        VBox card = new VBox(8);
+        VBox card = new VBox(6);
         card.getStyleClass().add("stat-card");
-        card.setPadding(new Insets(15));
+        card.setPadding(new Insets(14));
         card.setCursor(javafx.scene.Cursor.HAND);
 
         HBox header = new HBox(10);
@@ -92,14 +111,14 @@ public class ArticleListController {
         Label titre = new Label(article.getTitre());
         titre.setStyle("-fx-font-weight: bold; -fx-text-fill: #4A2D8F;");
         titre.setWrapText(true);
-        titre.setMaxWidth(200);
+        titre.setMaxWidth(190);
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         Label badge = new Label(article.getStatut());
         badge.getStyleClass().add(getBadgeStyle(article.getStatut()));
         header.getChildren().addAll(titre, spacer, badge);
 
-        HBox footer = new HBox(12);
+        HBox footer = new HBox(10);
         footer.setAlignment(Pos.CENTER_LEFT);
         if (article.getDatePublication() != null) {
             Label date = new Label("📅 " + article.getDatePublication());
@@ -114,8 +133,25 @@ public class ArticleListController {
         Label likes = new Label("❤ " + article.getLikes());
         likes.setStyle("-fx-text-fill: #FC8181; -fx-font-size: 11px;");
         footer.getChildren().add(likes);
+        if (article.getViews() > 0) {
+            Label views = new Label("👁 " + article.getViews());
+            views.setStyle("-fx-text-fill: #888; -fx-font-size: 11px;");
+            footer.getChildren().add(views);
+        }
 
         card.getChildren().addAll(header, footer);
+
+        if (article.getTags() != null && !article.getTags().isEmpty()) {
+            HBox tagsRow = new HBox(5);
+            tagsRow.setAlignment(Pos.CENTER_LEFT);
+            for (String tag : article.getTags().split(",")) {
+                Label tagLabel = new Label(tag.trim());
+                tagLabel.setStyle("-fx-background-color: #EEF2FF; -fx-text-fill: #5B35A5; -fx-padding: 2 6; -fx-background-radius: 8; -fx-font-size: 10px;");
+                tagsRow.getChildren().add(tagLabel);
+            }
+            card.getChildren().add(tagsRow);
+        }
+
         card.setOnMouseClicked(e -> selectArticle(article));
 
         if (selectedArticle != null && selectedArticle.getId() == article.getId()) {
@@ -127,15 +163,18 @@ public class ArticleListController {
 
     private String getBadgeStyle(String statut) {
         if (statut == null) return "stat-badge-info";
-        switch (statut) {
-            case "PUBLIE":   return "stat-badge-success";
-            case "BROUILLON": return "stat-badge-warning";
-            default:          return "stat-badge-info";
-        }
+        return switch (statut) {
+            case "PUBLIE"    -> "stat-badge-success";
+            case "BROUILLON" -> "stat-badge-warning";
+            default          -> "stat-badge-info";
+        };
     }
 
     private void selectArticle(Article article) {
         this.selectedArticle = article;
+        serviceArticle.incrementViews(article.getId());
+        article.setViews(article.getViews() + 1);
+
         placeholderLabel.setVisible(false);
         placeholderLabel.setManaged(false);
         detailContent.setVisible(true);
@@ -146,6 +185,13 @@ public class ArticleListController {
         statutBadge.getStyleClass().setAll(getBadgeStyle(article.getStatut()));
         dateLabel.setText(article.getDatePublication() != null ? "📅 " + article.getDatePublication() : "");
         organeLabel.setText(article.getOrgane() != null ? "🏥 " + article.getOrgane() : "");
+        viewsLabel.setText("👁 " + article.getViews() + " vues");
+
+        String tags = article.getTags();
+        tagsLabel.setText(tags != null && !tags.isEmpty() ? "🏷 " + tags : "");
+        tagsLabel.setVisible(tags != null && !tags.isEmpty());
+        tagsLabel.setManaged(tags != null && !tags.isEmpty());
+
         MarkdownRenderer.render(article.getContenu(), contenuContainer);
         likesLabel.setText(article.getLikes() + " likes");
 
@@ -153,7 +199,6 @@ public class ArticleListController {
         boolean isMedecin = "MEDECIN".equals(user.getRole());
         medecinActions.setVisible(isMedecin);
         medecinActions.setManaged(isMedecin);
-
         if (isMedecin) {
             publishBtn.setVisible(!"PUBLIE".equals(article.getStatut()));
             publishBtn.setManaged(!"PUBLIE".equals(article.getStatut()));
@@ -162,7 +207,7 @@ public class ArticleListController {
         }
 
         loadComments();
-        renderArticleList(showingAll ? serviceArticle.getAll() : serviceArticle.getByMedecin(user.getId()));
+        renderArticleList(currentArticles);
     }
 
     private void loadComments() {
@@ -199,64 +244,64 @@ public class ArticleListController {
         contenu.setWrapText(true);
         contenu.setStyle("-fx-text-fill: #2D3748; -fx-font-size: 13px;");
 
-        card.getChildren().addAll(header, contenu);
+        HBox likeRow = new HBox(6);
+        likeRow.setAlignment(Pos.CENTER_LEFT);
+        Label likeCount = new Label("👍 " + c.getLikes());
+        likeCount.setStyle("-fx-text-fill: #5B35A5; -fx-font-size: 11px;");
+        Button likeBtn = new Button("👍");
+        likeBtn.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 13px; -fx-padding: 0 4;");
+        likeBtn.setOnAction(e -> {
+            serviceCommentaire.addLike(c.getId());
+            c.setLikes(c.getLikes() + 1);
+            likeCount.setText("👍 " + c.getLikes());
+        });
+        likeRow.getChildren().addAll(likeBtn, likeCount);
+
+        card.getChildren().addAll(header, contenu, likeRow);
         return card;
     }
 
-    @FXML
-    void filterAll(ActionEvent event) {
-        showingAll = true;
-        loadArticles();
-    }
+    // ─── Filtres ─────────────────────────────────────────────
 
-    @FXML
-    void filterMine(ActionEvent event) {
-        showingAll = false;
-        loadArticles();
-    }
+    @FXML void filterAll(ActionEvent event)  { showingAll = true;  loadArticles(); }
+    @FXML void filterMine(ActionEvent event) { showingAll = false; loadArticles(); }
 
-    @FXML
-    void handleNewArticle(ActionEvent event) {
+    @FXML void handleNewArticle(ActionEvent event) {
         ArticleFormController.setArticleToEdit(null);
         App.navigate("ArticleForm");
     }
 
-    @FXML
-    void handleEdit(ActionEvent event) {
+    @FXML void handleEdit(ActionEvent event) {
         if (selectedArticle == null) return;
         ArticleFormController.setArticleToEdit(selectedArticle);
         App.navigate("ArticleForm");
     }
 
-    @FXML
-    void handleLike(ActionEvent event) {
+    @FXML void handleLike(ActionEvent event) {
         if (selectedArticle == null) return;
         serviceArticle.addLike(selectedArticle.getId());
         selectedArticle.setLikes(selectedArticle.getLikes() + 1);
         likesLabel.setText(selectedArticle.getLikes() + " likes");
     }
 
-    @FXML
-    void handlePublish(ActionEvent event) {
+    @FXML void handlePublish(ActionEvent event) {
         if (selectedArticle == null) return;
         serviceArticle.updateStatut(selectedArticle.getId(), "PUBLIE");
         selectedArticle.setStatut("PUBLIE");
         selectArticle(selectedArticle);
     }
 
-    @FXML
-    void handleArchive(ActionEvent event) {
+    @FXML void handleArchive(ActionEvent event) {
         if (selectedArticle == null) return;
         serviceArticle.updateStatut(selectedArticle.getId(), "ARCHIVE");
         selectedArticle.setStatut("ARCHIVE");
         selectArticle(selectedArticle);
     }
 
-    @FXML
-    void handleDelete(ActionEvent event) {
+    @FXML void handleDelete(ActionEvent event) {
         if (selectedArticle == null) return;
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-            "Supprimer l'article \"" + selectedArticle.getTitre() + "\" ?",
+            "Supprimer \"" + selectedArticle.getTitre() + "\" ?",
             ButtonType.YES, ButtonType.NO);
         confirm.setTitle("Confirmation");
         confirm.setHeaderText(null);
@@ -273,8 +318,7 @@ public class ArticleListController {
         });
     }
 
-    @FXML
-    void handleAddComment(ActionEvent event) {
+    @FXML void handleAddComment(ActionEvent event) {
         String text = commentField.getText().trim();
         if (text.isEmpty() || selectedArticle == null) return;
         Utilisateur user = UserSession.getInstance().getCurrentUser();
@@ -286,14 +330,12 @@ public class ArticleListController {
         loadComments();
     }
 
-    @FXML
-    void handleBack(ActionEvent event) {
+    @FXML void handleBack(ActionEvent event) {
         Utilisateur user = UserSession.getInstance().getCurrentUser();
         App.navigate("MEDECIN".equals(user.getRole()) ? "DoctorDashboard" : "PatientDashboard");
     }
 
-    @FXML
-    void handleLogout(ActionEvent event) {
+    @FXML void handleLogout(ActionEvent event) {
         UserSession.getInstance().logout();
         App.navigate("Login");
     }

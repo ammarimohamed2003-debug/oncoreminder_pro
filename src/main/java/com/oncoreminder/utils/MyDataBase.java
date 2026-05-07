@@ -81,6 +81,16 @@ public class MyDataBase {
                 "ALTER TABLE `utilisateur` ADD COLUMN `taille` double DEFAULT NULL"
             };
 
+            String[] articleAlters = {
+                "ALTER TABLE `article` ADD COLUMN `tags` VARCHAR(500) DEFAULT NULL",
+                "ALTER TABLE `article` ADD COLUMN `views` INT DEFAULT 0",
+                "ALTER TABLE `article` ADD COLUMN `icd_code` VARCHAR(20) DEFAULT NULL",
+                "ALTER TABLE `commentaire` ADD COLUMN `likes` INT DEFAULT 0"
+            };
+            for (String alter : articleAlters) {
+                try { stmt.execute(alter); } catch (SQLException ignored) {}
+            }
+
             for (String alter : alterQueries) {
                 try {
                     // Note: IF NOT EXISTS for columns requires MySQL 8.0.19+ or MariaDB 10.2.2+
