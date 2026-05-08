@@ -100,18 +100,21 @@
                                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                                     </columnConstraints>
                                     <children>
-                                        <VBox spacing="10.0" GridPane.columnIndex="0">
+                                        <VBox spacing="5.0" GridPane.columnIndex="0">
                                             <Label text="Groupe Sanguin" styleClass="field-label" />
                                             <TextField fx:id="groupeSanguinField" styleClass="field-input" promptText="ex: O+" />
+                                            <Label fx:id="errorGroupeSanguin" text="" styleClass="field-error" visible="false" managed="false"/>
                                         </VBox>
                                         <HBox spacing="15.0" GridPane.columnIndex="1">
-                                            <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+                                            <VBox spacing="5.0" HBox.hgrow="ALWAYS">
                                                 <Label text="Poids (kg)" styleClass="field-label" />
                                                 <TextField fx:id="poidsField" styleClass="field-input" promptText="0.0" />
+                                                <Label fx:id="errorPoids" text="" styleClass="field-error" visible="false" managed="false"/>
                                             </VBox>
-                                            <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+                                            <VBox spacing="5.0" HBox.hgrow="ALWAYS">
                                                 <Label text="Taille (cm)" styleClass="field-label" />
                                                 <TextField fx:id="tailleField" styleClass="field-input" promptText="0" />
+                                                <Label fx:id="errorTaille" text="" styleClass="field-error" visible="false" managed="false"/>
                                             </VBox>
                                         </HBox>
                                         <VBox spacing="10.0" GridPane.columnIndex="0" GridPane.rowIndex="1">

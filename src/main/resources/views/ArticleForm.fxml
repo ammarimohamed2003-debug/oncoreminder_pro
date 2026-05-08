@@ -36,13 +36,21 @@
 
                 <!-- ── Titre + Organe + Statut ── -->
                 <HBox spacing="12">
-                    <VBox spacing="5" HBox.hgrow="ALWAYS">
+                    <VBox spacing="3" HBox.hgrow="ALWAYS">
                         <Label text="Titre *" styleClass="field-label"/>
                         <TextField fx:id="titreField" styleClass="field-input" promptText="Titre de l'article" prefHeight="36"/>
+                        <Label fx:id="errorTitre" text="" styleClass="field-error" visible="false" managed="false"/>
                     </VBox>
-                    <VBox spacing="5" prefWidth="170">
+                    <VBox spacing="5" prefWidth="190">
                         <Label text="Organe / Spécialité" styleClass="field-label"/>
-                        <TextField fx:id="organeField" styleClass="field-input" promptText="ex: Sein, Poumon…" prefHeight="36"/>
+                        <HBox spacing="6">
+                            <TextField fx:id="organeField" styleClass="field-input"
+                                       promptText="ex: Sein, Poumon…" prefHeight="36" HBox.hgrow="ALWAYS"/>
+                            <Button text="🫁" onAction="#handleSelectOrgane"
+                                    style="-fx-background-color:#2BBCB0; -fx-text-fill:white; -fx-font-size:16;
+                                           -fx-background-radius:6; -fx-cursor:hand; -fx-padding:0 10;"
+                                    prefHeight="36"/>
+                        </HBox>
                     </VBox>
                     <VBox spacing="5" prefWidth="140">
                         <Label text="Statut" styleClass="field-label"/>
@@ -56,6 +64,30 @@
                     <TextField fx:id="tagsField" styleClass="field-input"
                                promptText="ex: chimiothérapie, immunothérapie, sein" prefHeight="34"/>
                 </VBox>
+
+                <!-- ── Bandeau IA ── -->
+                <HBox spacing="12" alignment="CENTER_LEFT"
+                      style="-fx-background-color: linear-gradient(to right, #F3F0FF, #E8F8F7);
+                             -fx-background-radius: 8; -fx-border-color: #C0AFF0;
+                             -fx-border-radius: 8; -fx-border-width: 1; -fx-padding: 10 16;">
+                    <Label text="✨" style="-fx-font-size: 20px;"/>
+                    <VBox spacing="2" HBox.hgrow="ALWAYS">
+                        <Label text="Assistant IA — Wikipedia Médical"
+                               style="-fx-font-weight: bold; -fx-text-fill: #5B35A5; -fx-font-size: 13px;"/>
+                        <Label text="Sélectionnez un organe (🫁) puis cliquez pour générer un brouillon — aucune clé requise."
+                               style="-fx-text-fill: #8B7EC0; -fx-font-size: 11px;"/>
+                    </VBox>
+                    <ProgressIndicator fx:id="generateSpinner" prefWidth="26" prefHeight="26"
+                                       visible="false" managed="false"/>
+                    <Label fx:id="generateStatusLabel" text=""
+                           style="-fx-font-size: 11px;" visible="false" managed="false"/>
+                    <Button fx:id="generateBtn" text="✨  Générer un brouillon" onAction="#handleGenerate"
+                            prefHeight="38" minWidth="195" disable="true"
+                            style="-fx-background-color: #6B46C1; -fx-text-fill: white;
+                                   -fx-font-weight: bold; -fx-font-size: 13px;
+                                   -fx-background-radius: 7; -fx-cursor: hand; -fx-padding: 0 18;
+                                   -fx-effect: dropshadow(gaussian, rgba(107,70,193,0.35), 8, 0, 0, 3);"/>
+                </HBox>
 
                 <!-- ── Zone éditeur ── -->
                 <VBox spacing="0" VBox.vgrow="ALWAYS">
@@ -104,28 +136,29 @@
                         </HBox>
                     </VBox>
 
-                    <!-- Split éditeur | aperçu -->
-                    <HBox spacing="0" VBox.vgrow="ALWAYS">
-                        <VBox HBox.hgrow="ALWAYS" spacing="0">
-                            <Label text="✏  Éditeur" style="-fx-font-size:11; -fx-text-fill:#5B35A5; -fx-background-color:#EDE8F8; -fx-padding:3 10; -fx-border-color:#D6CBFF; -fx-border-width:0 1 1 1;"/>
-                            <TextArea fx:id="contenuArea" VBox.vgrow="ALWAYS" prefHeight="260" wrapText="true"
+                    <!-- Split éditeur | aperçu — SplitPane garantit 50/50 exact -->
+                    <SplitPane dividerPositions="0.5" VBox.vgrow="ALWAYS"
+                               style="-fx-background-color: transparent; -fx-padding: 0; -fx-box-border: transparent;">
+                        <VBox spacing="0" minWidth="0">
+                            <Label text="✏  Éditeur"
+                                   style="-fx-font-size:11; -fx-text-fill:#5B35A5; -fx-background-color:#EDE8F8; -fx-padding:3 10; -fx-border-color:#D6CBFF; -fx-border-width:0 1 1 1;"/>
+                            <TextArea fx:id="contenuArea" VBox.vgrow="ALWAYS" wrapText="true"
                                       promptText="Rédigez ici... (**gras**, *italic*, [red]couleur[/red])"
                                       style="-fx-font-family:monospace; -fx-font-size:12; -fx-border-color:#D6CBFF; -fx-border-width:0 1 1 1; -fx-border-radius:0 0 0 8;"/>
                         </VBox>
-                        <VBox HBox.hgrow="ALWAYS" spacing="0">
-                            <Label text="👁  Aperçu en direct" style="-fx-font-size:11; -fx-text-fill:#2BBCB0; -fx-background-color:#E8F8F7; -fx-padding:3 10; -fx-border-color:#D6CBFF; -fx-border-width:0 1 1 0;"/>
-                            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" hbarPolicy="NEVER" prefHeight="260"
+                        <VBox spacing="0" minWidth="0">
+                            <Label text="👁  Aperçu en direct"
+                                   style="-fx-font-size:11; -fx-text-fill:#2BBCB0; -fx-background-color:#E8F8F7; -fx-padding:3 10; -fx-border-color:#D6CBFF; -fx-border-width:0 1 1 0;"/>
+                            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" hbarPolicy="NEVER"
                                         style="-fx-background-color:white; -fx-background:white; -fx-border-color:#D6CBFF; -fx-border-width:0 1 1 0; -fx-border-radius:0 0 8 0;">
                                 <VBox fx:id="previewContainer" spacing="6">
                                     <padding><Insets bottom="12" left="12" right="12" top="12"/></padding>
                                 </VBox>
                             </ScrollPane>
                         </VBox>
-                    </HBox>
+                    </SplitPane>
+                    <Label fx:id="errorContenu" text="" styleClass="field-error" visible="false" managed="false"/>
                 </VBox>
-
-                <Label fx:id="errorLabel" text="" style="-fx-text-fill:#E53E3E; -fx-font-size:12;"
-                       visible="false" managed="false" wrapText="true"/>
 
                 <HBox spacing="15" alignment="CENTER_RIGHT">
                     <Button text="Annuler"     onAction="#handleCancel" styleClass="btn-outline" prefWidth="130" prefHeight="38"/>

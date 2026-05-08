@@ -4,12 +4,20 @@ import com.oncoreminder.app.App;
 import com.oncoreminder.models.Article;
 import com.oncoreminder.models.Utilisateur;
 import com.oncoreminder.services.ServiceArticle;
+import com.oncoreminder.utils.ArticleGeneratorService;
 import com.oncoreminder.utils.MarkdownRenderer;
 import com.oncoreminder.utils.UserSession;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 public class ArticleFormController {
 
@@ -20,10 +28,19 @@ public class ArticleFormController {
     @FXML private TextField        tagsField;
     @FXML private TextArea         contenuArea;
     @FXML private VBox             previewContainer;
-    @FXML private Label            errorLabel;
+    @FXML private Label            errorTitre;
+    @FXML private Label            errorContenu;
+    @FXML private Button           generateBtn;
+    @FXML private ProgressIndicator generateSpinner;
+    @FXML private Label            generateStatusLabel;
 
     private final ServiceArticle serviceArticle = new ServiceArticle();
     private static Article articleToEdit;
+    private String lastSelectedCancerType = null;
+
+    public static void setLastCancerType(String type) {
+        // Called optionally from BodySelectorController if a cancer type was chosen
+    }
 
     public static void setArticleToEdit(Article article) { articleToEdit = article; }
 
@@ -32,8 +49,13 @@ public class ArticleFormController {
         statutCombo.getItems().addAll("BROUILLON", "PUBLIE");
         statutCombo.setValue("BROUILLON");
 
-        contenuArea.textProperty().addListener((obs, o, n) ->
-                MarkdownRenderer.render(n, previewContainer));
+        contenuArea.textProperty().addListener((obs, o, n) -> {
+            MarkdownRenderer.render(n, previewContainer);
+            clearErr(contenuArea, errorContenu);
+        });
+        titreField.textProperty().addListener((obs, o, n) -> clearErr(titreField, errorTitre));
+        organeField.textProperty().addListener((obs, o, n) ->
+            generateBtn.setDisable(n == null || n.trim().isEmpty()));
 
         if (articleToEdit != null) {
             formTitleLabel.setText("Modifier l'Article");
@@ -42,6 +64,7 @@ public class ArticleFormController {
             statutCombo.setValue(articleToEdit.getStatut());
             tagsField.setText(nvl(articleToEdit.getTags()));
             contenuArea.setText(nvl(articleToEdit.getContenu()));
+            generateBtn.setDisable(articleToEdit.getOrgane() == null || articleToEdit.getOrgane().isEmpty());
         } else {
             formTitleLabel.setText("Nouvel Article");
         }
@@ -134,6 +157,57 @@ public class ArticleFormController {
     }
 
     // ════════════════════════════════════════════
+    // Génération automatique (Wikipedia — sans clé)
+    // ════════════════════════════════════════════
+
+    @FXML void handleGenerate(ActionEvent event) {
+        String organe = organeField.getText().trim();
+        if (organe.isEmpty()) return;
+
+        setGenerating(true, "Recherche sur Wikipedia…", "#8B7EC0");
+
+        Task<ArticleGeneratorService.GeneratedArticle> task = new Task<>() {
+            @Override
+            protected ArticleGeneratorService.GeneratedArticle call() throws Exception {
+                return new ArticleGeneratorService().generate(organe, lastSelectedCancerType);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            var art = task.getValue();
+            titreField.setText(art.titre());
+            tagsField.setText(art.tags());
+            contenuArea.setText(art.contenu());
+            contenuArea.setEditable(true);
+            contenuArea.requestFocus();
+            contenuArea.positionCaret(0);
+            setGenerating(false, "✓ Brouillon généré — modifiez librement !", "#38A169");
+        });
+
+        task.setOnFailed(e -> {
+            String msg = task.getException() != null
+                ? task.getException().getMessage() : "Erreur inconnue";
+            setGenerating(false, "✗ " + msg, "#E53E3E");
+        });
+
+        Thread t = new Thread(task);
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private void setGenerating(boolean loading, String statusMsg, String color) {
+        Platform.runLater(() -> {
+            generateBtn.setDisable(loading);
+            generateSpinner.setVisible(loading);
+            generateSpinner.setManaged(loading);
+            generateStatusLabel.setText(statusMsg);
+            generateStatusLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: " + color + ";");
+            generateStatusLabel.setVisible(true);
+            generateStatusLabel.setManaged(true);
+        });
+    }
+
+    // ════════════════════════════════════════════
     // Sauvegarde
     // ════════════════════════════════════════════
 
@@ -144,10 +218,10 @@ public class ArticleFormController {
         String statut  = statutCombo.getValue();
         String tags    = tagsField.getText().trim();
 
-        if (titre.isEmpty() || contenu.isEmpty()) {
-            showError("Le titre et le contenu sont obligatoires.");
-            return;
-        }
+        boolean ok = true;
+        if (titre.isEmpty())   { fieldErr(titreField,   errorTitre,   "Le titre est obligatoire.");   ok = false; }
+        if (contenu.isEmpty()) { fieldErr(contenuArea,  errorContenu, "Le contenu est obligatoire."); ok = false; }
+        if (!ok) return;
         Utilisateur user = UserSession.getInstance().getCurrentUser();
 
         if (articleToEdit != null) {
@@ -166,13 +240,44 @@ public class ArticleFormController {
         App.navigate("ArticleList");
     }
 
+    @FXML void handleSelectOrgane(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(App.class.getResource("/views/BodySelector.fxml"));
+            Parent root = loader.load();
+            BodySelectorController ctrl = loader.getController();
+            ctrl.setOrganeMode(
+                organe -> organeField.setText(organe),
+                tags   -> { if (tags != null && !tags.isEmpty()) tagsField.setText(tags); }
+            );
+            Stage stage = new Stage();
+            stage.setTitle("Sélectionner un organe");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            Scene scene = new Scene(root, 820, 640);
+            scene.getStylesheets().add(App.class.getResource("/css/style.css").toExternalForm());
+            stage.setScene(scene);
+            stage.show();
+        } catch (Exception ex) {
+            showError("Impossible d'ouvrir le sélecteur d'organe : " + ex.getMessage());
+        }
+    }
+
     @FXML void handleCancel(ActionEvent event) {
         articleToEdit = null;
         App.navigate("ArticleList");
     }
 
+    private void fieldErr(javafx.scene.control.Control field, Label lbl, String msg) {
+        lbl.setText(msg); lbl.setVisible(true); lbl.setManaged(true);
+        field.getStyleClass().add("field-input-error");
+    }
+
+    private void clearErr(javafx.scene.control.Control field, Label lbl) {
+        lbl.setVisible(false); lbl.setManaged(false);
+        field.getStyleClass().remove("field-input-error");
+    }
+
     private void showError(String msg) {
-        errorLabel.setText(msg); errorLabel.setVisible(true); errorLabel.setManaged(true);
+        errorTitre.setText(msg); errorTitre.setVisible(true); errorTitre.setManaged(true);
     }
 
     private String nvl(String s) { return s != null ? s : ""; }
