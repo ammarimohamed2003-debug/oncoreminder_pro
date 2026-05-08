@@ -8,7 +8,6 @@ import com.oncoreminder.services.ServiceArticle;
 import com.oncoreminder.services.ServiceCommentaire;
 import com.oncoreminder.utils.MarkdownRenderer;
 import com.oncoreminder.utils.UserSession;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -20,26 +19,31 @@ import java.util.List;
 
 public class ArticleListController {
 
-    @FXML private Label     userNameLabel;
-    @FXML private Button    newArticleBtn;
+    // ── Grid view ─────────────────────────────────────────────
+    @FXML private VBox      gridView;
+    @FXML private FlowPane  articleFlowPane;
     @FXML private HBox      filterBar;
     @FXML private TextField searchField;
-    @FXML private VBox      articleListContainer;
-    @FXML private Label     placeholderLabel;
-    @FXML private VBox      detailContent;
-    @FXML private Label     articleTitreLabel;
-    @FXML private Label     statutBadge;
-    @FXML private Label     dateLabel;
-    @FXML private Label     organeLabel;
-    @FXML private Label     tagsLabel;
-    @FXML private Label     viewsLabel;
-    @FXML private VBox      contenuContainer;
-    @FXML private Label     likesLabel;
-    @FXML private HBox      medecinActions;
-    @FXML private Button    publishBtn;
-    @FXML private Button    archiveBtn;
-    @FXML private VBox      commentsContainer;
-    @FXML private TextArea  commentField;
+    @FXML private Button    newArticleBtn;
+    @FXML private Label     userNameLabel;
+
+    // ── Detail view ───────────────────────────────────────────
+    @FXML private VBox   detailView;
+    @FXML private Label  articleTitreLabel;
+    @FXML private Label  statutBadge;
+    @FXML private Label  dateLabel;
+    @FXML private Label  organeLabel;
+    @FXML private Label  tagsLabel;
+    @FXML private Label  viewsLabel;
+    @FXML private VBox   contenuContainer;
+    @FXML private Button likeBtn;
+    @FXML private Label  likesLabel;
+    @FXML private HBox   medecinActions;
+    @FXML private Button publishBtn;
+    @FXML private Button archiveBtn;
+    @FXML private VBox   commentsContainer;
+    @FXML private TextArea commentField;
+
     private final ServiceArticle     serviceArticle     = new ServiceArticle();
     private final ServiceCommentaire serviceCommentaire = new ServiceCommentaire();
 
@@ -71,12 +75,12 @@ public class ArticleListController {
         } else {
             currentArticles = serviceArticle.getPublished();
         }
-        renderArticleList(currentArticles);
+        renderGrid(currentArticles);
     }
 
     private void filterBySearch(String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) {
-            renderArticleList(currentArticles);
+            renderGrid(currentArticles);
             return;
         }
         List<Article> filtered = serviceArticle.search(keyword.trim());
@@ -84,79 +88,118 @@ public class ArticleListController {
         if (!"MEDECIN".equals(user.getRole())) {
             filtered.removeIf(a -> !"PUBLIE".equals(a.getStatut()));
         }
-        renderArticleList(filtered);
+        renderGrid(filtered);
     }
 
-    private void renderArticleList(List<Article> articles) {
-        articleListContainer.getChildren().clear();
+    private void renderGrid(List<Article> articles) {
+        articleFlowPane.getChildren().clear();
         if (articles.isEmpty()) {
             Label empty = new Label("Aucun article disponible.");
-            empty.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 13px;");
-            articleListContainer.getChildren().add(empty);
+            empty.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 13px; -fx-padding: 20;");
+            articleFlowPane.getChildren().add(empty);
             return;
         }
         for (Article article : articles) {
-            articleListContainer.getChildren().add(createArticleCard(article));
+            articleFlowPane.getChildren().add(buildCard(article));
         }
     }
 
-    private VBox createArticleCard(Article article) {
-        VBox card = new VBox(6);
-        card.getStyleClass().add("stat-card");
-        card.setPadding(new Insets(14));
+    private VBox buildCard(Article article) {
+        VBox card = new VBox(8);
+        card.setPrefWidth(268);
+        card.setMaxWidth(268);
+        card.setStyle(
+            "-fx-background-color: white; -fx-background-radius: 12;" +
+            "-fx-border-color: #E9E4F7; -fx-border-radius: 12; -fx-border-width: 1;" +
+            "-fx-effect: dropshadow(gaussian, rgba(90,53,165,0.08), 8, 0, 0, 2);"
+        );
+        card.setPadding(new Insets(16));
         card.setCursor(javafx.scene.Cursor.HAND);
 
-        HBox header = new HBox(10);
-        header.setAlignment(Pos.CENTER_LEFT);
+        // Organe badge
+        if (article.getOrgane() != null && !article.getOrgane().isEmpty()) {
+            Label organeBadge = new Label("🏥 " + article.getOrgane());
+            organeBadge.setStyle(
+                "-fx-background-color: #EEF2FF; -fx-text-fill: #5B35A5;" +
+                "-fx-padding: 3 8; -fx-background-radius: 10; -fx-font-size: 10px;"
+            );
+            card.getChildren().add(organeBadge);
+        }
+
+        // Title + status badge
+        HBox titleRow = new HBox(8);
+        titleRow.setAlignment(Pos.TOP_LEFT);
         Label titre = new Label(article.getTitre());
-        titre.setStyle("-fx-font-weight: bold; -fx-text-fill: #4A2D8F;");
         titre.setWrapText(true);
-        titre.setMaxWidth(190);
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+        titre.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #2D1B69;");
+        HBox.setHgrow(titre, Priority.ALWAYS);
         Label badge = new Label(article.getStatut());
         badge.getStyleClass().add(getBadgeStyle(article.getStatut()));
-        header.getChildren().addAll(titre, spacer, badge);
+        titleRow.getChildren().addAll(titre, badge);
+        card.getChildren().add(titleRow);
 
+        // Excerpt
+        String contenu = article.getContenu() != null ? article.getContenu() : "";
+        String plain = contenu.replaceAll("\\[/?[a-z]+]", "").replaceAll("[#*`~>_]", "").trim();
+        if (plain.length() > 130) plain = plain.substring(0, 130) + "…";
+        if (!plain.isEmpty()) {
+            Label excerpt = new Label(plain);
+            excerpt.setWrapText(true);
+            excerpt.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px;");
+            card.getChildren().add(excerpt);
+        }
+
+        // Tags pills
+        if (article.getTags() != null && !article.getTags().isEmpty()) {
+            HBox tagsRow = new HBox(5);
+            tagsRow.setAlignment(Pos.CENTER_LEFT);
+            tagsRow.setStyle("-fx-padding: 2 0 0 0;");
+            for (String tag : article.getTags().split(",")) {
+                Label pill = new Label(tag.trim());
+                pill.setStyle(
+                    "-fx-background-color: #F3F0FF; -fx-text-fill: #5B35A5;" +
+                    "-fx-padding: 2 7; -fx-background-radius: 8; -fx-font-size: 10px;"
+                );
+                tagsRow.getChildren().add(pill);
+            }
+            card.getChildren().add(tagsRow);
+        }
+
+        // Separator
+        Separator sep = new Separator();
+        sep.setStyle("-fx-background-color: #F0EBF8;");
+        card.getChildren().add(sep);
+
+        // Footer: date, likes, views
         HBox footer = new HBox(10);
         footer.setAlignment(Pos.CENTER_LEFT);
         if (article.getDatePublication() != null) {
             Label date = new Label("📅 " + article.getDatePublication());
-            date.setStyle("-fx-text-fill: #888; -fx-font-size: 11px;");
+            date.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 11px;");
             footer.getChildren().add(date);
-        }
-        if (article.getOrgane() != null) {
-            Label organe = new Label("🏥 " + article.getOrgane());
-            organe.setStyle("-fx-text-fill: #888; -fx-font-size: 11px;");
-            footer.getChildren().add(organe);
         }
         Label likes = new Label("❤ " + article.getLikes());
         likes.setStyle("-fx-text-fill: #FC8181; -fx-font-size: 11px;");
         footer.getChildren().add(likes);
         if (article.getViews() > 0) {
             Label views = new Label("👁 " + article.getViews());
-            views.setStyle("-fx-text-fill: #888; -fx-font-size: 11px;");
+            views.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 11px;");
             footer.getChildren().add(views);
         }
+        card.getChildren().add(footer);
 
-        card.getChildren().addAll(header, footer);
-
-        if (article.getTags() != null && !article.getTags().isEmpty()) {
-            HBox tagsRow = new HBox(5);
-            tagsRow.setAlignment(Pos.CENTER_LEFT);
-            for (String tag : article.getTags().split(",")) {
-                Label tagLabel = new Label(tag.trim());
-                tagLabel.setStyle("-fx-background-color: #EEF2FF; -fx-text-fill: #5B35A5; -fx-padding: 2 6; -fx-background-radius: 8; -fx-font-size: 10px;");
-                tagsRow.getChildren().add(tagLabel);
-            }
-            card.getChildren().add(tagsRow);
-        }
-
+        // Hover effect
+        card.setOnMouseEntered(e -> card.setStyle(
+            "-fx-background-color: white; -fx-background-radius: 12;" +
+            "-fx-border-color: #5B35A5; -fx-border-radius: 12; -fx-border-width: 2;" +
+            "-fx-effect: dropshadow(gaussian, rgba(90,53,165,0.18), 12, 0, 0, 4);"
+        ));
+        card.setOnMouseExited(e -> card.setStyle(
+            "-fx-background-color: white; -fx-background-radius: 12;" +
+            "-fx-border-color: #E9E4F7; -fx-border-radius: 12; -fx-border-width: 1;" +
+            "-fx-effect: dropshadow(gaussian, rgba(90,53,165,0.08), 8, 0, 0, 2);"
+        ));
         card.setOnMouseClicked(e -> selectArticle(article));
-
-        if (selectedArticle != null && selectedArticle.getId() == article.getId()) {
-            card.setStyle("-fx-border-color: #2BBCB0; -fx-border-width: 2px;");
-        }
 
         return card;
     }
@@ -172,13 +215,11 @@ public class ArticleListController {
 
     private void selectArticle(Article article) {
         this.selectedArticle = article;
-        serviceArticle.incrementViews(article.getId());
-        article.setViews(article.getViews() + 1);
+        Utilisateur user = UserSession.getInstance().getCurrentUser();
+        int userId = user.getId();
 
-        placeholderLabel.setVisible(false);
-        placeholderLabel.setManaged(false);
-        detailContent.setVisible(true);
-        detailContent.setManaged(true);
+        if (serviceArticle.incrementViewIfNew(article.getId(), userId))
+            article.setViews(article.getViews() + 1);
 
         articleTitreLabel.setText(article.getTitre());
         statutBadge.setText(article.getStatut());
@@ -195,7 +236,8 @@ public class ArticleListController {
         MarkdownRenderer.render(article.getContenu(), contenuContainer);
         likesLabel.setText(article.getLikes() + " likes");
 
-        Utilisateur user = UserSession.getInstance().getCurrentUser();
+        applyLikeBtnState(serviceArticle.hasLiked(article.getId(), userId));
+
         boolean isMedecin = "MEDECIN".equals(user.getRole());
         medecinActions.setVisible(isMedecin);
         medecinActions.setManaged(isMedecin);
@@ -207,7 +249,26 @@ public class ArticleListController {
         }
 
         loadComments();
-        renderArticleList(currentArticles);
+        showDetail(true);
+    }
+
+    private void applyLikeBtnState(boolean liked) {
+        if (liked) {
+            likeBtn.setText("❤  Aimé ✓");
+            likeBtn.getStyleClass().setAll("btn-primary");
+            likeBtn.setStyle("-fx-background-color: #FC8181; -fx-padding: 0 20; -fx-font-size: 13px;");
+        } else {
+            likeBtn.setText("❤  J'aime");
+            likeBtn.getStyleClass().setAll("btn-outline");
+            likeBtn.setStyle("-fx-padding: 0 20; -fx-font-size: 13px;");
+        }
+    }
+
+    private void showDetail(boolean show) {
+        gridView.setVisible(!show);
+        gridView.setManaged(!show);
+        detailView.setVisible(show);
+        detailView.setManaged(show);
     }
 
     private void loadComments() {
@@ -244,24 +305,31 @@ public class ArticleListController {
         contenu.setWrapText(true);
         contenu.setStyle("-fx-text-fill: #2D3748; -fx-font-size: 13px;");
 
+        int userId = UserSession.getInstance().getCurrentUser().getId();
+        boolean alreadyLiked = serviceCommentaire.hasLiked(c.getId(), userId);
+
         HBox likeRow = new HBox(6);
         likeRow.setAlignment(Pos.CENTER_LEFT);
         Label likeCount = new Label("👍 " + c.getLikes());
         likeCount.setStyle("-fx-text-fill: #5B35A5; -fx-font-size: 11px;");
-        Button likeBtn = new Button("👍");
-        likeBtn.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 13px; -fx-padding: 0 4;");
-        likeBtn.setOnAction(e -> {
-            serviceCommentaire.addLike(c.getId());
-            c.setLikes(c.getLikes() + 1);
+        Button cLikeBtn = new Button(alreadyLiked ? "👍 Aimé" : "👍");
+        cLikeBtn.setStyle("-fx-background-color: " + (alreadyLiked ? "#EEF2FF" : "transparent") +
+            "; -fx-cursor: hand; -fx-font-size: 13px; -fx-padding: 0 6; -fx-border-radius: 5;");
+        cLikeBtn.setOnAction(e -> {
+            boolean nowLiked = serviceCommentaire.toggleLike(c.getId(), userId);
+            c.setLikes(nowLiked ? c.getLikes() + 1 : c.getLikes() - 1);
             likeCount.setText("👍 " + c.getLikes());
+            cLikeBtn.setText(nowLiked ? "👍 Aimé" : "👍");
+            cLikeBtn.setStyle("-fx-background-color: " + (nowLiked ? "#EEF2FF" : "transparent") +
+                "; -fx-cursor: hand; -fx-font-size: 13px; -fx-padding: 0 6; -fx-border-radius: 5;");
         });
-        likeRow.getChildren().addAll(likeBtn, likeCount);
+        likeRow.getChildren().addAll(cLikeBtn, likeCount);
 
         card.getChildren().addAll(header, contenu, likeRow);
         return card;
     }
 
-    // ─── Filtres ─────────────────────────────────────────────
+    // ─── Actions ──────────────────────────────────────────────
 
     @FXML void filterAll(ActionEvent event)  { showingAll = true;  loadArticles(); }
     @FXML void filterMine(ActionEvent event) { showingAll = false; loadArticles(); }
@@ -279,9 +347,11 @@ public class ArticleListController {
 
     @FXML void handleLike(ActionEvent event) {
         if (selectedArticle == null) return;
-        serviceArticle.addLike(selectedArticle.getId());
-        selectedArticle.setLikes(selectedArticle.getLikes() + 1);
+        int userId = UserSession.getInstance().getCurrentUser().getId();
+        boolean nowLiked = serviceArticle.toggleLike(selectedArticle.getId(), userId);
+        selectedArticle.setLikes(nowLiked ? selectedArticle.getLikes() + 1 : selectedArticle.getLikes() - 1);
         likesLabel.setText(selectedArticle.getLikes() + " likes");
+        applyLikeBtnState(nowLiked);
     }
 
     @FXML void handlePublish(ActionEvent event) {
@@ -309,11 +379,8 @@ public class ArticleListController {
             if (btn == ButtonType.YES) {
                 serviceArticle.delete(selectedArticle.getId());
                 selectedArticle = null;
-                detailContent.setVisible(false);
-                detailContent.setManaged(false);
-                placeholderLabel.setVisible(true);
-                placeholderLabel.setManaged(true);
                 loadArticles();
+                showDetail(false);
             }
         });
     }
@@ -328,6 +395,11 @@ public class ArticleListController {
         serviceCommentaire.add(new Commentaire(selectedArticle.getId(), text, auteur));
         commentField.clear();
         loadComments();
+    }
+
+    @FXML void handleBackToGrid(ActionEvent event) {
+        showDetail(false);
+        renderGrid(currentArticles);
     }
 
     @FXML void handleBack(ActionEvent event) {

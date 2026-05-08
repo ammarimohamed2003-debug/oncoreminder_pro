@@ -23,13 +23,19 @@ public class ServiceArticle {
     }
 
     private void ensureColumns() {
-        String[] alters = {
+        String[] stmts = {
             "ALTER TABLE article ADD COLUMN medecin_id INT DEFAULT NULL",
             "ALTER TABLE article ADD COLUMN tags VARCHAR(500) DEFAULT NULL",
             "ALTER TABLE article ADD COLUMN views INT DEFAULT 0",
-            "ALTER TABLE article ADD COLUMN icd_code VARCHAR(20) DEFAULT NULL"
+            "ALTER TABLE article ADD COLUMN icd_code VARCHAR(20) DEFAULT NULL",
+            "CREATE TABLE IF NOT EXISTS article_likes (" +
+                "user_id INT NOT NULL, article_id INT NOT NULL, " +
+                "PRIMARY KEY (user_id, article_id))",
+            "CREATE TABLE IF NOT EXISTS article_views (" +
+                "user_id INT NOT NULL, article_id INT NOT NULL, " +
+                "PRIMARY KEY (user_id, article_id))"
         };
-        for (String sql : alters) {
+        for (String sql : stmts) {
             try { cnx.createStatement().execute(sql); } catch (SQLException ignored) {}
         }
     }
@@ -125,18 +131,70 @@ public class ServiceArticle {
         } catch (SQLException e) { System.out.println(e.getMessage()); }
     }
 
-    public void addLike(int id) {
-        if (!updateConnection()) return;
+    /** Toggle like — retourne true si l'article est maintenant aimé, false si le like est retiré. */
+    public boolean toggleLike(int articleId, int userId) {
+        if (!updateConnection()) return false;
         try {
-            cnx.prepareStatement("UPDATE article SET likes=likes+1 WHERE id=" + id).executeUpdate();
-        } catch (SQLException e) { System.out.println(e.getMessage()); }
+            if (hasLiked(articleId, userId)) {
+                cnx.prepareStatement(
+                    "DELETE FROM article_likes WHERE user_id=" + userId + " AND article_id=" + articleId
+                ).executeUpdate();
+                cnx.prepareStatement(
+                    "UPDATE article SET likes=GREATEST(likes-1,0) WHERE id=" + articleId
+                ).executeUpdate();
+                return false;
+            } else {
+                cnx.prepareStatement(
+                    "INSERT INTO article_likes(user_id,article_id) VALUES(" + userId + "," + articleId + ")"
+                ).executeUpdate();
+                cnx.prepareStatement(
+                    "UPDATE article SET likes=likes+1 WHERE id=" + articleId
+                ).executeUpdate();
+                return true;
+            }
+        } catch (SQLException e) { System.out.println(e.getMessage()); return false; }
     }
 
+    public boolean hasLiked(int articleId, int userId) {
+        if (!updateConnection()) return false;
+        try {
+            PreparedStatement pst = cnx.prepareStatement(
+                "SELECT 1 FROM article_likes WHERE user_id=? AND article_id=?");
+            pst.setInt(1, userId); pst.setInt(2, articleId);
+            return pst.executeQuery().next();
+        } catch (SQLException e) { return false; }
+    }
+
+    /** Incrémente les vues seulement si l'utilisateur n'a jamais vu cet article. */
+    public boolean incrementViewIfNew(int articleId, int userId) {
+        if (!updateConnection()) return false;
+        try {
+            PreparedStatement pst = cnx.prepareStatement(
+                "SELECT 1 FROM article_views WHERE user_id=? AND article_id=?");
+            pst.setInt(1, userId); pst.setInt(2, articleId);
+            if (pst.executeQuery().next()) return false;
+            cnx.prepareStatement(
+                "INSERT INTO article_views(user_id,article_id) VALUES(" + userId + "," + articleId + ")"
+            ).executeUpdate();
+            cnx.prepareStatement(
+                "UPDATE article SET views=views+1 WHERE id=" + articleId
+            ).executeUpdate();
+            return true;
+        } catch (SQLException e) { System.out.println(e.getMessage()); return false; }
+    }
+
+    /** @deprecated Utiliser toggleLike(articleId, userId) */
+    public void addLike(int id) {
+        if (!updateConnection()) return;
+        try { cnx.prepareStatement("UPDATE article SET likes=likes+1 WHERE id=" + id).executeUpdate(); }
+        catch (SQLException e) { System.out.println(e.getMessage()); }
+    }
+
+    /** @deprecated Utiliser incrementViewIfNew(articleId, userId) */
     public void incrementViews(int id) {
         if (!updateConnection()) return;
-        try {
-            cnx.prepareStatement("UPDATE article SET views=views+1 WHERE id=" + id).executeUpdate();
-        } catch (SQLException e) { System.out.println(e.getMessage()); }
+        try { cnx.prepareStatement("UPDATE article SET views=views+1 WHERE id=" + id).executeUpdate(); }
+        catch (SQLException e) { System.out.println(e.getMessage()); }
     }
 
     public void delete(int id) {

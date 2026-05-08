@@ -10,9 +10,9 @@
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.oncoreminder.controllers.PatientArticleListController">
 
-    <!-- Sidebar patient -->
+    <!-- ── Sidebar patient ── -->
     <left>
-        <VBox spacing="15.0" styleClass="form-panel" prefWidth="280.0">
+        <VBox spacing="15.0" styleClass="form-panel" prefWidth="260.0">
             <padding><Insets bottom="20.0" left="20.0" right="20.0" top="30.0"/></padding>
             <VBox alignment="CENTER" spacing="12.0">
                 <StackPane>
@@ -24,99 +24,111 @@
             </VBox>
             <Separator><VBox.margin><Insets top="10.0" bottom="10.0"/></VBox.margin></Separator>
             <VBox spacing="8.0">
-                <Button text="🏠 Ma Santé"      onAction="#handleDashboard" styleClass="btn-secondary" maxWidth="Infinity" alignment="BASELINE_LEFT"/>
-                <Button text="📰 Articles"       styleClass="btn-primary"   maxWidth="Infinity" alignment="BASELINE_LEFT"/>
-                <Button text="📅 Rendez-vous"   styleClass="btn-secondary" maxWidth="Infinity" alignment="BASELINE_LEFT"/>
-                <Button text="💊 Traitements"   styleClass="btn-secondary" maxWidth="Infinity" alignment="BASELINE_LEFT"/>
-                <Button text="⚙️ Paramètres"    styleClass="btn-secondary" maxWidth="Infinity" alignment="BASELINE_LEFT"/>
+                <Button text="🏠 Ma Santé"    onAction="#handleDashboard" styleClass="btn-secondary" maxWidth="Infinity" alignment="BASELINE_LEFT"/>
+                <Button text="📰 Articles"    styleClass="btn-primary"   maxWidth="Infinity" alignment="BASELINE_LEFT"/>
+                <Button text="📅 Rendez-vous" styleClass="btn-secondary" maxWidth="Infinity" alignment="BASELINE_LEFT"/>
+                <Button text="💊 Traitements" styleClass="btn-secondary" maxWidth="Infinity" alignment="BASELINE_LEFT"/>
+                <Button text="⚙️ Paramètres"  styleClass="btn-secondary" maxWidth="Infinity" alignment="BASELINE_LEFT"/>
             </VBox>
             <Region VBox.vgrow="ALWAYS"/>
             <Button text="Déconnexion" onAction="#handleLogout" styleClass="btn-outline" maxWidth="Infinity"/>
         </VBox>
     </left>
 
-    <!-- Contenu : liste + détail -->
+    <!-- ── Centre : grille OU détail ── -->
     <center>
-        <HBox spacing="15">
-            <padding><Insets bottom="15" left="15" right="15" top="15"/></padding>
+        <StackPane>
 
-            <!-- Liste des articles -->
-            <VBox spacing="8" prefWidth="320" minWidth="280">
-                <Label text="Articles Médicaux" styleClass="section-title"/>
-                <TextField fx:id="searchField" promptText="🔍 Rechercher..." styleClass="field-input"/>
-                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" hbarPolicy="NEVER">
-                    <VBox fx:id="articleListContainer" spacing="8">
-                        <padding><Insets bottom="8" left="4" right="4" top="4"/></padding>
-                    </VBox>
+            <!-- ══ VUE GRILLE ══ -->
+            <VBox fx:id="gridView" spacing="0">
+
+                <!-- Barre du haut -->
+                <HBox spacing="16" styleClass="topbar" alignment="CENTER_LEFT">
+                    <padding><Insets bottom="12" left="20" right="20" top="12"/></padding>
+                    <Label text="📰 Articles Médicaux" styleClass="brand-title"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <TextField fx:id="searchField" promptText="🔍 Rechercher un article..."
+                               styleClass="field-input" prefWidth="270"/>
+                </HBox>
+
+                <!-- Grille scrollable -->
+                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" hbarPolicy="NEVER"
+                            style="-fx-background-color: transparent; -fx-background: transparent;">
+                    <FlowPane fx:id="articleFlowPane" hgap="16" vgap="16"
+                              style="-fx-background-color: transparent;">
+                        <padding><Insets bottom="24" left="20" right="20" top="20"/></padding>
+                    </FlowPane>
                 </ScrollPane>
             </VBox>
 
-            <!-- Détail article + commentaires -->
-            <VBox styleClass="form-panel" HBox.hgrow="ALWAYS">
+            <!-- ══ VUE DÉTAIL ══ -->
+            <VBox fx:id="detailView" spacing="0" visible="false" managed="false">
+
+                <!-- Barre du haut avec retour -->
+                <HBox spacing="14" styleClass="topbar" alignment="CENTER_LEFT">
+                    <padding><Insets bottom="12" left="20" right="20" top="12"/></padding>
+                    <Button text="← Retour" onAction="#handleBack"
+                            styleClass="btn-outline" prefWidth="95" prefHeight="34"/>
+                    <Label fx:id="articleTitreLabel" text="" styleClass="brand-title"
+                           wrapText="true" HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="statutBadge" text="Publié" styleClass="stat-badge-success"/>
+                </HBox>
+
+                <!-- Contenu scrollable -->
                 <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" hbarPolicy="NEVER"
                             style="-fx-background-color: transparent; -fx-background: transparent;">
                     <VBox spacing="14">
-                        <padding><Insets bottom="25" left="25" right="25" top="25"/></padding>
+                        <padding><Insets bottom="30" left="30" right="30" top="20"/></padding>
 
-                        <Label fx:id="placeholderLabel" text="Sélectionnez un article pour voir son contenu"
-                               styleClass="form-title" alignment="CENTER" maxWidth="Infinity"/>
+                        <!-- Métadonnées -->
+                        <HBox spacing="20" alignment="CENTER_LEFT">
+                            <Label fx:id="dateLabel"   text="" styleClass="stat-label"/>
+                            <Label fx:id="organeLabel" text="" styleClass="stat-label"/>
+                            <Label fx:id="viewsLabel"  text="" styleClass="stat-label"/>
+                        </HBox>
 
-                        <VBox fx:id="detailContent" spacing="14" visible="false" managed="false">
+                        <!-- Tags -->
+                        <HBox spacing="12" alignment="CENTER_LEFT">
+                            <Label fx:id="tagsLabel" text="" styleClass="stat-label"
+                                   visible="false" managed="false"/>
+                        </HBox>
 
-                            <!-- En-tête -->
-                            <HBox spacing="12" alignment="CENTER_LEFT">
-                                <Label fx:id="articleTitreLabel" text="" styleClass="form-title"
-                                       wrapText="true" HBox.hgrow="ALWAYS"/>
-                                <Label fx:id="statutBadge" text="" styleClass="stat-badge-success"/>
-                            </HBox>
+                        <Separator/>
 
-                            <!-- Métadonnées ligne 1 -->
-                            <HBox spacing="20" alignment="CENTER_LEFT">
-                                <Label fx:id="dateLabel"   text="" styleClass="stat-label"/>
-                                <Label fx:id="organeLabel" text="" styleClass="stat-label"/>
-                                <Label fx:id="viewsLabel"  text="" styleClass="stat-label"/>
-                            </HBox>
+                        <!-- Contenu article (rendu Markdown) -->
+                        <VBox fx:id="contenuContainer" spacing="5" minHeight="80"
+                              style="-fx-background-color: #F8F4FF; -fx-background-radius: 8;
+                                     -fx-border-color: #D6CBFF; -fx-border-radius: 8;
+                                     -fx-border-width: 1; -fx-padding: 14;"/>
 
-                            <!-- Tags -->
-                            <HBox spacing="12" alignment="CENTER_LEFT">
-                                <Label fx:id="tagsLabel" text="" styleClass="stat-label"
-                                       visible="false" managed="false"/>
-                            </HBox>
+                        <Separator/>
 
-                            <Separator/>
+                        <!-- Like -->
+                        <HBox spacing="12" alignment="CENTER_LEFT">
+                            <Button fx:id="likeBtn" text="❤  J'aime" onAction="#handleLike"
+                                    styleClass="btn-outline" prefHeight="40" minWidth="130"
+                                    style="-fx-padding: 0 20;"/>
+                            <Label fx:id="likesLabel" text="0 likes" styleClass="stat-label"/>
+                        </HBox>
 
-                            <!-- Contenu article rendu -->
-                            <VBox fx:id="contenuContainer" spacing="5" minHeight="80"
-                                  style="-fx-background-color: #F8F4FF; -fx-background-radius: 8; -fx-border-color: #D6CBFF; -fx-border-radius: 8; -fx-border-width: 1; -fx-padding: 12;"/>
+                        <Separator/>
 
-                            <Separator/>
+                        <!-- Commentaires -->
+                        <Label text="Commentaires" styleClass="section-title"/>
+                        <VBox fx:id="commentsContainer" spacing="10" minHeight="80"/>
 
-                            <!-- Like -->
-                            <HBox spacing="12" alignment="CENTER_LEFT">
-                                <Button text="❤  J'aime" onAction="#handleLike"
-                                        styleClass="btn-outline" prefWidth="120" prefHeight="38"/>
-                                <Label fx:id="likesLabel" text="0 likes" styleClass="stat-label"/>
-                            </HBox>
+                        <HBox spacing="12" alignment="CENTER">
+                            <TextArea fx:id="commentField" promptText="Votre commentaire..."
+                                      styleClass="field-input" HBox.hgrow="ALWAYS"
+                                      prefHeight="70" wrapText="true"/>
+                            <Button text="Commenter" onAction="#handleAddComment"
+                                    styleClass="btn-primary" prefWidth="120" prefHeight="70"/>
+                        </HBox>
 
-                            <Separator/>
-
-                            <!-- Commentaires -->
-                            <Label text="Commentaires" styleClass="section-title"/>
-                            <VBox fx:id="commentsContainer" spacing="10" minHeight="100"/>
-
-                            <HBox spacing="12" alignment="CENTER">
-                                <TextArea fx:id="commentField" promptText="Votre commentaire..."
-                                          styleClass="field-input" HBox.hgrow="ALWAYS"
-                                          prefHeight="70" wrapText="true"/>
-                                <Button text="Commenter" onAction="#handleAddComment"
-                                        styleClass="btn-primary" prefWidth="120" prefHeight="70"/>
-                            </HBox>
-
-                        </VBox>
                     </VBox>
                 </ScrollPane>
             </VBox>
 
-        </HBox>
+        </StackPane>
     </center>
 </BorderPane>

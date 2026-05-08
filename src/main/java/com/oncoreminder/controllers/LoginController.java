@@ -10,49 +10,78 @@ import javafx.scene.control.*;
 
 public class LoginController {
 
-    @FXML private TextField emailField;
+    @FXML private TextField     emailField;
     @FXML private PasswordField passwordField;
-    @FXML private Label errorLabel;
-    @FXML private Button loginButton;
+    @FXML private Label         errorEmail;
+    @FXML private Label         errorPassword;
+    @FXML private Label         errorLabel;
 
     private final ServiceUtilisateur serviceUtilisateur = new ServiceUtilisateur();
 
     @FXML
     public void initialize() {
         errorLabel.setVisible(false);
+        emailField.textProperty().addListener((obs, o, n) -> clearErr(emailField, errorEmail));
+        passwordField.textProperty().addListener((obs, o, n) -> clearErr(passwordField, errorPassword));
     }
 
     @FXML
     void handleLogin(ActionEvent event) {
-        String email = emailField.getText().trim();
+        clearAll();
+        String email    = emailField.getText().trim();
         String password = passwordField.getText();
+        boolean ok = true;
 
-        if (email.isEmpty() || password.isEmpty()) {
-            showError("Veuillez remplir tous les champs.");
-            return;
+        if (email.isEmpty()) {
+            fieldErr(emailField, errorEmail, "L'email est obligatoire.");
+            ok = false;
         }
+        if (password.isEmpty()) {
+            fieldErr(passwordField, errorPassword, "Le mot de passe est obligatoire.");
+            ok = false;
+        }
+        if (!ok) return;
 
         Utilisateur user = serviceUtilisateur.login(email, password);
-
         if (user != null) {
             UserSession.getInstance().login(user);
             switch (user.getRole()) {
-                case "ADMIN":   App.navigate("AdminDashboard"); break;
-                case "MEDECIN": App.navigate("DoctorDashboard"); break;
+                case "ADMIN":   App.navigate("AdminDashboard");   break;
+                case "MEDECIN": App.navigate("DoctorDashboard");  break;
                 case "PATIENT": App.navigate("PatientDashboard"); break;
-                default: showError("Rôle inconnu.");
+                default: showGlobalError("Rôle inconnu.");
             }
         } else {
-            showError("Email ou mot de passe incorrect.");
+            showGlobalError("Email ou mot de passe incorrect.");
         }
     }
 
     @FXML
-    void goToSignUp(ActionEvent event) {
-        App.navigate("SignUp");
+    void goToSignUp(ActionEvent event) { App.navigate("SignUp"); }
+
+    // ── Helpers ──────────────────────────────────────────────────────
+
+    private void fieldErr(Control field, Label lbl, String msg) {
+        lbl.setText(msg);
+        lbl.setVisible(true);
+        lbl.setManaged(true);
+        field.getStyleClass().add("field-input-error");
     }
 
-    private void showError(String message) {
+    private void clearErr(Control field, Label lbl) {
+        lbl.setVisible(false);
+        lbl.setManaged(false);
+        field.getStyleClass().remove("field-input-error");
+        errorLabel.setVisible(false);
+        errorLabel.setManaged(false);
+    }
+
+    private void clearAll() {
+        clearErr(emailField,    errorEmail);
+        clearErr(passwordField, errorPassword);
+    }
+
+    private void showGlobalError(String message) {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
         errorLabel.setManaged(true);

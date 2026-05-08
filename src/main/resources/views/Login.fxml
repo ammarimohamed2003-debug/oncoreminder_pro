@@ -89,15 +89,17 @@
         <Label text="Connectez-vous à votre espace santé" styleClass="auth-right-sub"/>
 
         <VBox spacing="14" maxWidth="380" fillWidth="true">
-            <VBox spacing="6">
+            <VBox spacing="3">
                 <Label text="Email" styleClass="field-label"/>
                 <TextField fx:id="emailField" promptText="exemple@domain.com"
                            styleClass="field-input" prefHeight="42"/>
+                <Label fx:id="errorEmail" text="" styleClass="field-error" visible="false" managed="false"/>
             </VBox>
-            <VBox spacing="6">
+            <VBox spacing="3">
                 <Label text="Mot de passe" styleClass="field-label"/>
                 <PasswordField fx:id="passwordField" promptText="••••••••"
                                styleClass="field-input" prefHeight="42"/>
+                <Label fx:id="errorPassword" text="" styleClass="field-error" visible="false" managed="false"/>
             </VBox>
 
             <Label fx:id="errorLabel" textFill="#e53e3e" wrapText="true" managed="false" visible="false"/>

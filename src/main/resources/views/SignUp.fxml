@@ -82,26 +82,30 @@
         <Label text="Créer un compte" styleClass="auth-right-title"/>
         <Label text="Rejoignez OncoReminder Pro gratuitement" styleClass="auth-right-sub"/>
 
-        <VBox spacing="12" maxWidth="400" fillWidth="true">
+        <VBox spacing="10" maxWidth="400" fillWidth="true">
             <HBox spacing="12">
-                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                <VBox spacing="3" HBox.hgrow="ALWAYS">
                     <Label text="Nom" styleClass="field-label"/>
                     <TextField fx:id="nomField" styleClass="field-input" prefHeight="40"/>
+                    <Label fx:id="errorNom" text="" styleClass="field-error" visible="false" managed="false"/>
                 </VBox>
-                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                <VBox spacing="3" HBox.hgrow="ALWAYS">
                     <Label text="Prénom" styleClass="field-label"/>
                     <TextField fx:id="prenomField" styleClass="field-input" prefHeight="40"/>
+                    <Label fx:id="errorPrenom" text="" styleClass="field-error" visible="false" managed="false"/>
                 </VBox>
             </HBox>
 
-            <VBox spacing="6">
+            <VBox spacing="3">
                 <Label text="Email" styleClass="field-label"/>
                 <TextField fx:id="emailField" styleClass="field-input" prefHeight="40"/>
+                <Label fx:id="errorEmail" text="" styleClass="field-error" visible="false" managed="false"/>
             </VBox>
 
-            <VBox spacing="6">
+            <VBox spacing="3">
                 <Label text="Mot de passe" styleClass="field-label"/>
                 <PasswordField fx:id="passwordField" styleClass="field-input" prefHeight="40"/>
+                <Label fx:id="errorPassword" text="" styleClass="field-error" visible="false" managed="false"/>
             </VBox>
 
             <VBox spacing="6">
@@ -109,8 +113,6 @@
                 <ComboBox fx:id="roleCombo" styleClass="field-combo"
                           maxWidth="Infinity" prefHeight="40"/>
             </VBox>
-
-            <Label fx:id="errorLabel" textFill="#e53e3e" wrapText="true"/>
 
             <Button fx:id="signUpButton" text="Créer mon compte" onAction="#handleSignUp"
                     styleClass="btn-primary" maxWidth="Infinity" prefHeight="44"/>

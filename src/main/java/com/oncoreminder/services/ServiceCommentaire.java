@@ -13,6 +13,16 @@ public class ServiceCommentaire {
 
     public ServiceCommentaire() {
         updateConnection();
+        ensureTable();
+    }
+
+    private void ensureTable() {
+        try {
+            cnx.createStatement().execute(
+                "CREATE TABLE IF NOT EXISTS commentaire_likes (" +
+                "user_id INT NOT NULL, commentaire_id INT NOT NULL, " +
+                "PRIMARY KEY (user_id, commentaire_id))");
+        } catch (SQLException ignored) {}
     }
 
     private boolean updateConnection() {
@@ -63,11 +73,45 @@ public class ServiceCommentaire {
         return list;
     }
 
+    /** Toggle like commentaire — retourne true si maintenant aimé. */
+    public boolean toggleLike(int commentaireId, int userId) {
+        if (!updateConnection()) return false;
+        try {
+            if (hasLiked(commentaireId, userId)) {
+                cnx.prepareStatement(
+                    "DELETE FROM commentaire_likes WHERE user_id=" + userId + " AND commentaire_id=" + commentaireId
+                ).executeUpdate();
+                cnx.prepareStatement(
+                    "UPDATE commentaire SET likes=GREATEST(likes-1,0) WHERE id=" + commentaireId
+                ).executeUpdate();
+                return false;
+            } else {
+                cnx.prepareStatement(
+                    "INSERT INTO commentaire_likes(user_id,commentaire_id) VALUES(" + userId + "," + commentaireId + ")"
+                ).executeUpdate();
+                cnx.prepareStatement(
+                    "UPDATE commentaire SET likes=likes+1 WHERE id=" + commentaireId
+                ).executeUpdate();
+                return true;
+            }
+        } catch (SQLException e) { System.out.println(e.getMessage()); return false; }
+    }
+
+    public boolean hasLiked(int commentaireId, int userId) {
+        if (!updateConnection()) return false;
+        try {
+            PreparedStatement pst = cnx.prepareStatement(
+                "SELECT 1 FROM commentaire_likes WHERE user_id=? AND commentaire_id=?");
+            pst.setInt(1, userId); pst.setInt(2, commentaireId);
+            return pst.executeQuery().next();
+        } catch (SQLException e) { return false; }
+    }
+
+    /** @deprecated Utiliser toggleLike(commentaireId, userId) */
     public void addLike(int id) {
         if (!updateConnection()) return;
-        try {
-            cnx.prepareStatement("UPDATE commentaire SET likes=likes+1 WHERE id=" + id).executeUpdate();
-        } catch (SQLException e) { System.out.println(e.getMessage()); }
+        try { cnx.prepareStatement("UPDATE commentaire SET likes=likes+1 WHERE id=" + id).executeUpdate(); }
+        catch (SQLException e) { System.out.println(e.getMessage()); }
     }
 
     public void delete(int id) {
