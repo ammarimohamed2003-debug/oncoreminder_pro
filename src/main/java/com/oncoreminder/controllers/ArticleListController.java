@@ -6,6 +6,7 @@ import com.oncoreminder.models.Commentaire;
 import com.oncoreminder.models.Utilisateur;
 import com.oncoreminder.services.ServiceArticle;
 import com.oncoreminder.services.ServiceCommentaire;
+import com.oncoreminder.utils.ImageLoader;
 import com.oncoreminder.utils.MarkdownRenderer;
 import com.oncoreminder.utils.UserSession;
 import javafx.event.ActionEvent;
@@ -13,8 +14,12 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.shape.Rectangle;
 
+import java.io.File;
 import java.util.List;
 
 public class ArticleListController {
@@ -23,20 +28,23 @@ public class ArticleListController {
     @FXML private VBox      gridView;
     @FXML private FlowPane  articleFlowPane;
     @FXML private HBox      filterBar;
+    @FXML private HBox      paginationBar;
     @FXML private TextField searchField;
     @FXML private Button    newArticleBtn;
     @FXML private Label     userNameLabel;
 
     // ── Detail view ───────────────────────────────────────────
-    @FXML private VBox   detailView;
-    @FXML private Label  articleTitreLabel;
-    @FXML private Label  statutBadge;
-    @FXML private Label  dateLabel;
-    @FXML private Label  organeLabel;
-    @FXML private Label  tagsLabel;
-    @FXML private Label  viewsLabel;
-    @FXML private VBox   contenuContainer;
-    @FXML private Button likeBtn;
+    @FXML private VBox      detailView;
+    @FXML private Label     articleTitreLabel;
+    @FXML private Label     statutBadge;
+    @FXML private Label     dateLabel;
+    @FXML private Label     organeLabel;
+    @FXML private Label     tagsLabel;
+    @FXML private Label     viewsLabel;
+    @FXML private VBox      contenuContainer;
+    @FXML private StackPane imageContainer;
+    @FXML private ImageView detailImageView;
+    @FXML private Button    likeBtn;
     @FXML private Label  likesLabel;
     @FXML private HBox   medecinActions;
     @FXML private Button publishBtn;
@@ -47,9 +55,13 @@ public class ArticleListController {
     private final ServiceArticle     serviceArticle     = new ServiceArticle();
     private final ServiceCommentaire serviceCommentaire = new ServiceCommentaire();
 
+    private static final int PAGE_SIZE = 5;
+
     private Article       selectedArticle;
     private boolean       showingAll = true;
     private List<Article> currentArticles;
+    private List<Article> displayedArticles;
+    private int           currentPage = 0;
 
     @FXML
     public void initialize() {
@@ -79,6 +91,7 @@ public class ArticleListController {
     }
 
     private void filterBySearch(String keyword) {
+        currentPage = 0;
         if (keyword == null || keyword.trim().isEmpty()) {
             renderGrid(currentArticles);
             return;
@@ -92,16 +105,91 @@ public class ArticleListController {
     }
 
     private void renderGrid(List<Article> articles) {
+        this.displayedArticles = articles;
         articleFlowPane.getChildren().clear();
-        if (articles.isEmpty()) {
+
+        int total = articles.size();
+        int totalPages = Math.max(1, (int) Math.ceil((double) total / PAGE_SIZE));
+        if (currentPage >= totalPages) currentPage = totalPages - 1;
+        if (currentPage < 0)           currentPage = 0;
+
+        int from = currentPage * PAGE_SIZE;
+        int to   = Math.min(from + PAGE_SIZE, total);
+
+        if (total == 0) {
             Label empty = new Label("Aucun article disponible.");
             empty.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 13px; -fx-padding: 20;");
             articleFlowPane.getChildren().add(empty);
-            return;
+        } else {
+            for (Article article : articles.subList(from, to)) {
+                articleFlowPane.getChildren().add(buildCard(article));
+            }
         }
-        for (Article article : articles) {
-            articleFlowPane.getChildren().add(buildCard(article));
+        updatePaginationBar(total);
+    }
+
+    private void updatePaginationBar(int total) {
+        paginationBar.getChildren().clear();
+        int totalPages = Math.max(1, (int) Math.ceil((double) total / PAGE_SIZE));
+
+        // Prev
+        Button prev = new Button("←");
+        prev.setDisable(currentPage == 0);
+        prev.setStyle(pageStyle(false));
+        prev.setOnAction(e -> { currentPage--; renderGrid(displayedArticles); });
+        paginationBar.getChildren().add(prev);
+
+        // Page numbers (max 7 visible)
+        int start = Math.max(0, currentPage - 3);
+        int end   = Math.min(totalPages - 1, start + 6);
+        start = Math.max(0, end - 6);
+
+        if (start > 0) {
+            paginationBar.getChildren().add(pageBtn(0));
+            if (start > 1) paginationBar.getChildren().add(ellipsisLabel());
         }
+        for (int i = start; i <= end; i++) paginationBar.getChildren().add(pageBtn(i));
+        if (end < totalPages - 1) {
+            if (end < totalPages - 2) paginationBar.getChildren().add(ellipsisLabel());
+            paginationBar.getChildren().add(pageBtn(totalPages - 1));
+        }
+
+        // Next
+        Button next = new Button("→");
+        next.setDisable(currentPage >= totalPages - 1);
+        next.setStyle(pageStyle(false));
+        next.setOnAction(e -> { currentPage++; renderGrid(displayedArticles); });
+        paginationBar.getChildren().add(next);
+
+        // Count label (centré, après les boutons)
+        int from = currentPage * PAGE_SIZE + 1;
+        int to   = Math.min((currentPage + 1) * PAGE_SIZE, total);
+        String range = total == 0 ? "0" : from + "–" + to;
+        Label count = new Label("  " + range + " sur " + total + " article" + (total > 1 ? "s" : ""));
+        count.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 12px;");
+        paginationBar.getChildren().add(count);
+    }
+
+    private Button pageBtn(int index) {
+        Button btn = new Button(String.valueOf(index + 1));
+        btn.setStyle(pageStyle(index == currentPage));
+        btn.setOnAction(e -> { currentPage = index; renderGrid(displayedArticles); });
+        return btn;
+    }
+
+    private Label ellipsisLabel() {
+        Label l = new Label("…");
+        l.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 13px; -fx-padding: 0 4;");
+        return l;
+    }
+
+    private String pageStyle(boolean active) {
+        return active
+            ? "-fx-background-color: #5B35A5; -fx-text-fill: white; -fx-background-radius: 8;" +
+              "-fx-border-width: 0; -fx-font-size: 13px; -fx-min-width: 34; -fx-pref-height: 34; -fx-cursor: hand;"
+            : "-fx-background-color: white; -fx-text-fill: #374151; -fx-background-radius: 8;" +
+              "-fx-border-color: #E5E7EB; -fx-border-radius: 8; -fx-border-width: 1;" +
+              "-fx-font-size: 13px; -fx-min-width: 34; -fx-pref-height: 34; -fx-cursor: hand;";
     }
 
     private VBox buildCard(Article article) {
@@ -113,8 +201,29 @@ public class ArticleListController {
             "-fx-border-color: #E9E4F7; -fx-border-radius: 12; -fx-border-width: 1;" +
             "-fx-effect: dropshadow(gaussian, rgba(90,53,165,0.08), 8, 0, 0, 2);"
         );
-        card.setPadding(new Insets(16));
+        card.setPadding(new Insets(0));
         card.setCursor(javafx.scene.Cursor.HAND);
+
+        // Cover image with rounded-top clip
+        if (article.getImagePath() != null && !article.getImagePath().isEmpty()) {
+            Image img = ImageLoader.load(new File(article.getImagePath()));
+            if (img != null && !img.isError()) {
+                ImageView imgView = new ImageView(img);
+                imgView.setFitWidth(268);
+                imgView.setFitHeight(158);
+                imgView.setPreserveRatio(false);
+                imgView.setSmooth(true);
+                Rectangle clip = new Rectangle(268, 158);
+                clip.setArcWidth(24);
+                clip.setArcHeight(24);
+                imgView.setClip(clip);
+                card.getChildren().add(imgView);
+            }
+        }
+
+        VBox inner = new VBox(8);
+        inner.setPadding(new Insets(12, 16, 14, 16));
+        card.getChildren().add(inner);
 
         // Organe badge
         if (article.getOrgane() != null && !article.getOrgane().isEmpty()) {
@@ -123,7 +232,7 @@ public class ArticleListController {
                 "-fx-background-color: #EEF2FF; -fx-text-fill: #5B35A5;" +
                 "-fx-padding: 3 8; -fx-background-radius: 10; -fx-font-size: 10px;"
             );
-            card.getChildren().add(organeBadge);
+            inner.getChildren().add(organeBadge);
         }
 
         // Title + status badge
@@ -136,7 +245,7 @@ public class ArticleListController {
         Label badge = new Label(article.getStatut());
         badge.getStyleClass().add(getBadgeStyle(article.getStatut()));
         titleRow.getChildren().addAll(titre, badge);
-        card.getChildren().add(titleRow);
+        inner.getChildren().add(titleRow);
 
         // Excerpt
         String contenu = article.getContenu() != null ? article.getContenu() : "";
@@ -146,7 +255,7 @@ public class ArticleListController {
             Label excerpt = new Label(plain);
             excerpt.setWrapText(true);
             excerpt.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px;");
-            card.getChildren().add(excerpt);
+            inner.getChildren().add(excerpt);
         }
 
         // Tags pills
@@ -162,13 +271,13 @@ public class ArticleListController {
                 );
                 tagsRow.getChildren().add(pill);
             }
-            card.getChildren().add(tagsRow);
+            inner.getChildren().add(tagsRow);
         }
 
         // Separator
         Separator sep = new Separator();
         sep.setStyle("-fx-background-color: #F0EBF8;");
-        card.getChildren().add(sep);
+        inner.getChildren().add(sep);
 
         // Footer: date, likes, views
         HBox footer = new HBox(10);
@@ -186,7 +295,7 @@ public class ArticleListController {
             views.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 11px;");
             footer.getChildren().add(views);
         }
-        card.getChildren().add(footer);
+        inner.getChildren().add(footer);
 
         // Hover effect
         card.setOnMouseEntered(e -> card.setStyle(
@@ -232,6 +341,19 @@ public class ArticleListController {
         tagsLabel.setText(tags != null && !tags.isEmpty() ? "🏷 " + tags : "");
         tagsLabel.setVisible(tags != null && !tags.isEmpty());
         tagsLabel.setManaged(tags != null && !tags.isEmpty());
+
+        // Image hero
+        String imgPath = article.getImagePath();
+        Image detailImg = (imgPath != null && !imgPath.isEmpty())
+            ? ImageLoader.load(new File(imgPath)) : null;
+        if (detailImg != null && !detailImg.isError()) {
+            detailImageView.setImage(detailImg);
+            imageContainer.setVisible(true);
+            imageContainer.setManaged(true);
+        } else {
+            imageContainer.setVisible(false);
+            imageContainer.setManaged(false);
+        }
 
         MarkdownRenderer.render(article.getContenu(), contenuContainer);
         likesLabel.setText(article.getLikes() + " likes");
@@ -331,8 +453,8 @@ public class ArticleListController {
 
     // ─── Actions ──────────────────────────────────────────────
 
-    @FXML void filterAll(ActionEvent event)  { showingAll = true;  loadArticles(); }
-    @FXML void filterMine(ActionEvent event) { showingAll = false; loadArticles(); }
+    @FXML void filterAll(ActionEvent event)  { currentPage = 0; showingAll = true;  loadArticles(); }
+    @FXML void filterMine(ActionEvent event) { currentPage = 0; showingAll = false; loadArticles(); }
 
     @FXML void handleNewArticle(ActionEvent event) {
         ArticleFormController.setArticleToEdit(null);

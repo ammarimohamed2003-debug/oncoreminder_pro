@@ -33,7 +33,8 @@ public class ServiceArticle {
                 "PRIMARY KEY (user_id, article_id))",
             "CREATE TABLE IF NOT EXISTS article_views (" +
                 "user_id INT NOT NULL, article_id INT NOT NULL, " +
-                "PRIMARY KEY (user_id, article_id))"
+                "PRIMARY KEY (user_id, article_id))",
+            "ALTER TABLE article ADD COLUMN image_path VARCHAR(500) DEFAULT NULL"
         };
         for (String sql : stmts) {
             try { cnx.createStatement().execute(sql); } catch (SQLException ignored) {}
@@ -42,7 +43,7 @@ public class ServiceArticle {
 
     public void add(Article article) {
         if (!updateConnection()) return;
-        String req = "INSERT INTO article (titre, contenu, statut, date_publication, organe, likes, medecin_id, tags, icd_code) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?)";
+        String req = "INSERT INTO article (titre, contenu, statut, date_publication, organe, likes, medecin_id, tags, icd_code, image_path) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)";
         try {
             PreparedStatement pst = cnx.prepareStatement(req);
             pst.setString(1, article.getTitre());
@@ -53,6 +54,7 @@ public class ServiceArticle {
             pst.setInt(6, article.getMedecinId());
             pst.setString(7, article.getTags());
             pst.setString(8, article.getIcdCode());
+            pst.setString(9, article.getImagePath());
             pst.executeUpdate();
         } catch (SQLException e) {
             System.out.println("Erreur ajout article: " + e.getMessage());
@@ -100,7 +102,7 @@ public class ServiceArticle {
 
     public void update(Article article) {
         if (!updateConnection()) return;
-        String req = "UPDATE article SET titre=?, contenu=?, statut=?, organe=?, date_publication=?, tags=?, icd_code=? WHERE id=?";
+        String req = "UPDATE article SET titre=?, contenu=?, statut=?, organe=?, date_publication=?, tags=?, icd_code=?, image_path=? WHERE id=?";
         try {
             PreparedStatement pst = cnx.prepareStatement(req);
             pst.setString(1, article.getTitre());
@@ -114,7 +116,8 @@ public class ServiceArticle {
             else pst.setNull(5, Types.DATE);
             pst.setString(6, article.getTags());
             pst.setString(7, article.getIcdCode());
-            pst.setInt(8, article.getId());
+            pst.setString(8, article.getImagePath());
+            pst.setInt(9, article.getId());
             pst.executeUpdate();
         } catch (SQLException e) { System.out.println("Erreur update: " + e.getMessage()); }
     }
@@ -228,7 +231,8 @@ public class ServiceArticle {
         try { a.setMedecinId(rs.getInt("medecin_id")); } catch (SQLException ignored) {}
         try { a.setTags(rs.getString("tags")); }     catch (SQLException ignored) {}
         try { a.setViews(rs.getInt("views")); }      catch (SQLException ignored) {}
-        try { a.setIcdCode(rs.getString("icd_code")); } catch (SQLException ignored) {}
+        try { a.setIcdCode(rs.getString("icd_code")); }   catch (SQLException ignored) {}
+        try { a.setImagePath(rs.getString("image_path")); } catch (SQLException ignored) {}
         return a;
     }
 }

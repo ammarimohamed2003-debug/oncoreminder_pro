@@ -662,3 +662,79 @@
 .bs-btn-cancel:hover {
     -fx-background-color: #EDE8F8;
 }
+
+/* ══════════════ PATIENT SIDEBAR ══════════════ */
+.patient-sidebar {
+    -fx-background-color: linear-gradient(to bottom, #16043A 0%, #2D1B69 60%, #0D4A46 100%);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.28), 18, 0, 0, 4);
+}
+
+.sidebar-nav-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: rgba(255,255,255,0.62);
+    -fx-background-radius: 10;
+    -fx-border-width: 0;
+    -fx-padding: 10 14;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+    -fx-alignment: BASELINE_LEFT;
+}
+.sidebar-nav-btn:hover {
+    -fx-background-color: rgba(255,255,255,0.09);
+    -fx-text-fill: white;
+}
+
+.sidebar-nav-btn-active {
+    -fx-background-color: rgba(43,188,176,0.18);
+    -fx-text-fill: white;
+    -fx-background-radius: 10;
+    -fx-border-color: transparent transparent transparent #2BBCB0;
+    -fx-border-width: 0 0 0 3;
+    -fx-border-radius: 0;
+    -fx-padding: 10 14 10 11;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-alignment: BASELINE_LEFT;
+}
+.sidebar-nav-btn-active:hover {
+    -fx-background-color: rgba(43,188,176,0.26);
+}
+
+.sidebar-logout-btn {
+    -fx-background-color: rgba(252,129,129,0.12);
+    -fx-text-fill: #FC8181;
+    -fx-background-radius: 10;
+    -fx-border-width: 0;
+    -fx-padding: 10 14;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+    -fx-alignment: BASELINE_LEFT;
+}
+.sidebar-logout-btn:hover {
+    -fx-background-color: rgba(252,129,129,0.22);
+    -fx-text-fill: #FEB2B2;
+}
+
+/* ══════════════ DOCTOR SIDEBAR ══════════════ */
+.doctor-sidebar {
+    -fx-background-color: linear-gradient(to bottom, #0A1628 0%, #1A3452 55%, #0D4A46 100%);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.30), 18, 0, 0, 4);
+}
+
+.sidebar-nav-btn-doctor-active {
+    -fx-background-color: rgba(43,188,176,0.18);
+    -fx-text-fill: white;
+    -fx-background-radius: 10;
+    -fx-border-color: transparent transparent transparent #2BBCB0;
+    -fx-border-width: 0 0 0 3;
+    -fx-border-radius: 0;
+    -fx-padding: 10 14 10 11;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-alignment: BASELINE_LEFT;
+}
+.sidebar-nav-btn-doctor-active:hover {
+    -fx-background-color: rgba(43,188,176,0.26);
+}

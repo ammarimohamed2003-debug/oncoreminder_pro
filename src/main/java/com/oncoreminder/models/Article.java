@@ -15,6 +15,7 @@ public class Article {
     private String tags;
     private int views;
     private String icdCode;
+    private String imagePath;
 
     public Article() {}
 
@@ -54,6 +55,8 @@ public class Article {
     public void setViews(int views) { this.views = views; }
     public String getIcdCode() { return icdCode; }
     public void setIcdCode(String icdCode) { this.icdCode = icdCode; }
+    public String getImagePath() { return imagePath; }
+    public void setImagePath(String imagePath) { this.imagePath = imagePath; }
 
     @Override
     public String toString() { return titre + " [" + statut + "]"; }
