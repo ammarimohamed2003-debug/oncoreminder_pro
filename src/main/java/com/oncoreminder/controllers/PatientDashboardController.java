@@ -11,6 +11,7 @@ import javafx.scene.control.*;
 public class PatientDashboardController {
 
     @FXML private Label     patientNameLabel;
+    @FXML private Label     medecinSidebarLabel;
     @FXML private TextArea  antecedentsArea;
     @FXML private TextArea  allergiesArea;
     @FXML private TextField groupeSanguinField;
@@ -33,6 +34,14 @@ public class PatientDashboardController {
         if (currentUser != null) {
             patientNameLabel.setText(currentUser.getPrenom() + " " + currentUser.getNom());
             loadMedicalData();
+            if (currentUser.getMedecinId() != null) {
+                Utilisateur dr = serviceUtilisateur.getById(currentUser.getMedecinId());
+                if (dr != null && medecinSidebarLabel != null) {
+                    medecinSidebarLabel.setText("🩺 Dr. " + dr.getPrenom() + " " + dr.getNom());
+                    medecinSidebarLabel.setVisible(true);
+                    medecinSidebarLabel.setManaged(true);
+                }
+            }
         }
         successLabel.setVisible(false);
         groupeSanguinField.textProperty().addListener((obs, o, n) -> clearErr(groupeSanguinField, errorGroupeSanguin));

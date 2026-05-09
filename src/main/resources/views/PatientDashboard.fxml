@@ -3,8 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.shape.Circle?>
-<?import javafx.scene.text.Text?>
+<?import javafx.scene.shape.*?>
 
 <BorderPane styleClass="root-pane bg-dashboard" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.oncoreminder.controllers.PatientDashboardController">
     <left>
@@ -16,12 +15,19 @@
                          -fx-border-color: transparent transparent rgba(255,255,255,0.10) transparent;
                          -fx-border-width: 0 0 1 0;">
                 <StackPane>
-                    <Circle radius="17" fill="#2BBCB0" opacity="0.22"/>
-                    <Label text="⚕" style="-fx-font-size: 14px; -fx-text-fill: #2BBCB0;"/>
+                    <Circle radius="17" fill="rgba(43,188,176,0.15)"/>
+                    <Circle radius="17" fill="transparent" stroke="#2BBCB0" strokeWidth="1.5"/>
+                    <Rectangle width="5" height="16" fill="white" arcWidth="4" arcHeight="4"/>
+                    <Rectangle width="16" height="5" fill="white" arcWidth="4" arcHeight="4"/>
+                    <Circle radius="2.5" fill="#2BBCB0"/>
                 </StackPane>
-                <VBox spacing="1">
-                    <Label text="OncoReminder" style="-fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold;"/>
-                    <Label text="Pro" style="-fx-text-fill: #2BBCB0; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                <VBox spacing="2">
+                    <HBox spacing="0">
+                        <Label text="Onco" style="-fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                        <Label text="Reminder" style="-fx-text-fill: #2BBCB0; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                    </HBox>
+                    <Label text="PRO" style="-fx-background-color: rgba(43,188,176,0.25); -fx-text-fill: #2BBCB0;
+                                   -fx-background-radius: 4; -fx-padding: 1 6; -fx-font-size: 9px; -fx-font-weight: bold;"/>
                 </VBox>
             </HBox>
 
@@ -39,6 +45,9 @@
                 <Label text="Patient"
                        style="-fx-background-color: rgba(43,188,176,0.20); -fx-text-fill: #2BBCB0;
                               -fx-background-radius: 20; -fx-padding: 3 14; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                <Label fx:id="medecinSidebarLabel" text=""
+                       style="-fx-text-fill: rgba(255,255,255,0.70); -fx-font-size: 10px; -fx-padding: 2 0 0 0;"
+                       visible="false" managed="false" wrapText="true" maxWidth="200" textAlignment="CENTER"/>
             </VBox>
 
             <!-- Divider -->

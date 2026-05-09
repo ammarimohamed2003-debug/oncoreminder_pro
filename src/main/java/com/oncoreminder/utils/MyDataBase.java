@@ -50,6 +50,7 @@ public class MyDataBase {
             "  `groupe_sanguin` varchar(10) DEFAULT NULL," +
             "  `poids` double DEFAULT NULL," +
             "  `taille` double DEFAULT NULL," +
+            "  `medecin_id` int(11) DEFAULT NULL," +
             "  PRIMARY KEY (`id`)," +
             "  UNIQUE KEY `UNIQ_EMAIL` (`email`)" +
             ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
@@ -78,7 +79,8 @@ public class MyDataBase {
                 "ALTER TABLE `utilisateur` ADD COLUMN `allergies` text DEFAULT NULL",
                 "ALTER TABLE `utilisateur` ADD COLUMN `groupe_sanguin` varchar(10) DEFAULT NULL",
                 "ALTER TABLE `utilisateur` ADD COLUMN `poids` double DEFAULT NULL",
-                "ALTER TABLE `utilisateur` ADD COLUMN `taille` double DEFAULT NULL"
+                "ALTER TABLE `utilisateur` ADD COLUMN `taille` double DEFAULT NULL",
+                "ALTER TABLE `utilisateur` ADD COLUMN `medecin_id` int(11) DEFAULT NULL"
             };
 
             String[] articleAlters = {

@@ -21,12 +21,19 @@
                          -fx-border-color: transparent transparent rgba(255,255,255,0.10) transparent;
                          -fx-border-width: 0 0 1 0;">
                 <StackPane>
-                    <Circle radius="17" fill="#2BBCB0" opacity="0.22"/>
-                    <Label text="⚕" style="-fx-font-size: 14px; -fx-text-fill: #2BBCB0;"/>
+                    <Circle radius="17" fill="rgba(43,188,176,0.15)"/>
+                    <Circle radius="17" fill="transparent" stroke="#2BBCB0" strokeWidth="1.5"/>
+                    <Rectangle width="5" height="16" fill="white" arcWidth="4" arcHeight="4"/>
+                    <Rectangle width="16" height="5" fill="white" arcWidth="4" arcHeight="4"/>
+                    <Circle radius="2.5" fill="#2BBCB0"/>
                 </StackPane>
-                <VBox spacing="1">
-                    <Label text="OncoReminder" style="-fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold;"/>
-                    <Label text="Pro" style="-fx-text-fill: #2BBCB0; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                <VBox spacing="2">
+                    <HBox spacing="0">
+                        <Label text="Onco" style="-fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                        <Label text="Reminder" style="-fx-text-fill: #2BBCB0; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                    </HBox>
+                    <Label text="PRO" style="-fx-background-color: rgba(43,188,176,0.25); -fx-text-fill: #2BBCB0;
+                                   -fx-background-radius: 4; -fx-padding: 1 6; -fx-font-size: 9px; -fx-font-weight: bold;"/>
                 </VBox>
             </HBox>
 
@@ -170,6 +177,11 @@
                                        style="-fx-background-color: #EEF2FF; -fx-text-fill: #5B35A5;
                                               -fx-background-radius: 20; -fx-font-size: 12px;
                                               -fx-font-weight: bold; -fx-padding: 4 12;"/>
+                                <Label fx:id="medecinLabel" text=""
+                                       style="-fx-background-color: rgba(43,188,176,0.12); -fx-text-fill: #2BBCB0;
+                                              -fx-background-radius: 20; -fx-font-size: 12px;
+                                              -fx-font-weight: bold; -fx-padding: 4 12;"
+                                       visible="false" managed="false"/>
                                 <Region HBox.hgrow="ALWAYS"/>
                                 <Label fx:id="dateLabel"  text="" styleClass="stat-label"/>
                                 <Label text="|" style="-fx-text-fill: #D1C4E9;"/>
@@ -212,6 +224,31 @@
                                 </HBox>
                             </HBox>
 
+                            <!-- Messagerie patients -->
+                            <VBox fx:id="msgPatientsSection" spacing="14" visible="false" managed="false"
+                                  style="-fx-background-color: white;
+                                         -fx-background-radius: 14;
+                                         -fx-border-color: #EDE9F8;
+                                         -fx-border-radius: 14;
+                                         -fx-border-width: 1;
+                                         -fx-padding: 22;">
+                                <Label text="📨 Messages des Patients"
+                                       style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #3A1D7A;"/>
+                                <Separator style="-fx-background-color: #EDE9F8;"/>
+                                <HBox fx:id="patientChipsBar" spacing="8" alignment="CENTER_LEFT" minHeight="32"/>
+                                <VBox fx:id="convContainer" spacing="10" minHeight="40"
+                                      visible="false" managed="false"/>
+                                <HBox fx:id="replyBar" spacing="12" alignment="CENTER"
+                                      visible="false" managed="false">
+                                    <TextArea fx:id="msgReplyField" promptText="Répondre au patient..."
+                                              styleClass="field-input" HBox.hgrow="ALWAYS"
+                                              prefHeight="64" wrapText="true"/>
+                                    <Button text="Répondre →" onAction="#handleSendReply"
+                                            styleClass="btn-primary" minWidth="110" prefHeight="64"
+                                            style="-fx-padding: 0 14; -fx-font-size: 13px;"/>
+                                </HBox>
+                            </VBox>
+
                             <!-- Commentaires -->
                             <VBox spacing="14"
                                   style="-fx-background-color: white; -fx-background-radius: 14;
@@ -221,14 +258,23 @@
                                        style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #3A1D7A;"/>
                                 <Separator style="-fx-background-color: #EDE9F8;"/>
                                 <VBox fx:id="commentsContainer" spacing="10" minHeight="40"/>
-                                <HBox spacing="12" alignment="CENTER">
-                                    <TextArea fx:id="commentField" promptText="Votre commentaire..."
-                                              styleClass="field-input" HBox.hgrow="ALWAYS"
-                                              prefHeight="72" wrapText="true"/>
-                                    <Button text="Envoyer →" onAction="#handleAddComment"
-                                            styleClass="btn-primary" minWidth="120" prefHeight="72"
-                                            style="-fx-padding: 0 18; -fx-font-size: 13px;"/>
-                                </HBox>
+                                <VBox spacing="6">
+                                    <HBox alignment="CENTER_RIGHT">
+                                        <Button fx:id="emojiBtn" text="😊  Émojis" onAction="#handleEmojiPicker"
+                                                style="-fx-background-color: #F3F0FF; -fx-text-fill: #5B35A5;
+                                                       -fx-background-radius: 8; -fx-border-width: 0;
+                                                       -fx-font-family: 'Segoe UI Emoji';
+                                                       -fx-padding: 5 12; -fx-font-size: 12px; -fx-cursor: hand;"/>
+                                    </HBox>
+                                    <HBox spacing="12" alignment="CENTER">
+                                        <TextArea fx:id="commentField" promptText="Votre commentaire..."
+                                                  styleClass="field-input" HBox.hgrow="ALWAYS"
+                                                  prefHeight="72" wrapText="true"/>
+                                        <Button text="Envoyer →" onAction="#handleAddComment"
+                                                styleClass="btn-primary" minWidth="120" prefHeight="72"
+                                                style="-fx-padding: 0 18; -fx-font-size: 13px;"/>
+                                    </HBox>
+                                </VBox>
                             </VBox>
 
                         </VBox>

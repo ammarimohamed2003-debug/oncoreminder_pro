@@ -15,6 +15,9 @@ public class Utilisateur {
     private Double poids;
     private Double taille;
 
+    // Patient ↔ Doctor relationship
+    private Integer medecinId;
+
     public Utilisateur() {}
 
     public Utilisateur(int id, String nom, String prenom, String email, String password, String role) {
@@ -67,6 +70,9 @@ public class Utilisateur {
 
     public Double getTaille() { return taille; }
     public void setTaille(Double taille) { this.taille = taille; }
+
+    public Integer getMedecinId() { return medecinId; }
+    public void setMedecinId(Integer medecinId) { this.medecinId = medecinId; }
 
     @Override
     public String toString() {

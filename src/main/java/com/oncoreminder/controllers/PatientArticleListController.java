@@ -3,16 +3,25 @@ package com.oncoreminder.controllers;
 import com.oncoreminder.app.App;
 import com.oncoreminder.models.Article;
 import com.oncoreminder.models.Commentaire;
+import com.oncoreminder.models.Message;
 import com.oncoreminder.models.Utilisateur;
 import com.oncoreminder.services.ServiceArticle;
 import com.oncoreminder.services.ServiceCommentaire;
+import com.oncoreminder.services.ServiceMessage;
+import com.oncoreminder.services.ServiceUtilisateur;
 import com.oncoreminder.utils.ImageLoader;
 import com.oncoreminder.utils.MarkdownRenderer;
+import com.oncoreminder.utils.PdfExporter;
 import com.oncoreminder.utils.UserSession;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
+import javafx.stage.FileChooser;
+import javafx.stage.Window;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.stage.Popup;
 import javafx.scene.Cursor;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -42,6 +51,8 @@ public class PatientArticleListController {
     @FXML private Label     organeLabel;
     @FXML private Label     tagsLabel;
     @FXML private Label     viewsLabel;
+    @FXML private Label     medecinLabel;
+    @FXML private Label     medecinSidebarLabel;
     @FXML private VBox      contenuContainer;
     @FXML private StackPane imageContainer;
     @FXML private ImageView detailImageView;
@@ -49,21 +60,41 @@ public class PatientArticleListController {
     @FXML private Label  likesLabel;
     @FXML private VBox   commentsContainer;
     @FXML private TextArea commentField;
+    @FXML private Button   emojiBtn;
+
+    // Messagerie
+    @FXML private VBox     msgSection;
+    @FXML private VBox     msgContainer;
+    @FXML private TextArea msgField;
 
     private final ServiceArticle     serviceArticle     = new ServiceArticle();
     private final ServiceCommentaire serviceCommentaire = new ServiceCommentaire();
+    private final ServiceMessage     serviceMessage     = new ServiceMessage();
 
     private static final int PAGE_SIZE = 5;
 
     private Article       selectedArticle;
     private List<Article> currentArticles;
     private List<Article> displayedArticles;
-    private int           currentPage = 0;
+    private int           currentPage    = 0;
+    private Integer       currentMedecinId;
+
+    private final ServiceUtilisateur serviceUtilisateur = new ServiceUtilisateur();
 
     @FXML
     public void initialize() {
         Utilisateur user = UserSession.getInstance().getCurrentUser();
-        if (user != null) patientNameLabel.setText(user.getPrenom() + " " + user.getNom());
+        if (user != null) {
+            patientNameLabel.setText(user.getPrenom() + " " + user.getNom());
+            if (user.getMedecinId() != null) {
+                Utilisateur dr = serviceUtilisateur.getById(user.getMedecinId());
+                if (dr != null) {
+                    medecinSidebarLabel.setText("🩺 Dr. " + dr.getPrenom() + " " + dr.getNom());
+                    medecinSidebarLabel.setVisible(true);
+                    medecinSidebarLabel.setManaged(true);
+                }
+            }
+        }
         searchField.textProperty().addListener((obs, o, n) -> filterBySearch(n));
         loadArticles();
     }
@@ -206,15 +237,26 @@ public class PatientArticleListController {
         inner.setPadding(new Insets(12, 16, 14, 16));
         card.getChildren().add(inner);
 
-        // Organe badge en haut
+        // Organe + médecin badges
+        HBox badgeRow = new HBox(6);
+        badgeRow.setAlignment(Pos.CENTER_LEFT);
         if (article.getOrgane() != null && !article.getOrgane().isEmpty()) {
-            Label badge = new Label("🏥 " + article.getOrgane());
-            badge.setStyle(
+            Label organeBadge = new Label("🏥 " + article.getOrgane());
+            organeBadge.setStyle(
                 "-fx-background-color: #EEF2FF; -fx-text-fill: #5B35A5;" +
                 "-fx-padding: 2 8; -fx-background-radius: 20; -fx-font-size: 10px; -fx-font-weight: bold;"
             );
-            inner.getChildren().add(badge);
+            badgeRow.getChildren().add(organeBadge);
         }
+        if (article.getMedecinNom() != null && !article.getMedecinNom().isBlank()) {
+            Label drBadge = new Label("🩺 Dr. " + article.getMedecinNom());
+            drBadge.setStyle(
+                "-fx-background-color: rgba(43,188,176,0.12); -fx-text-fill: #2BBCB0;" +
+                "-fx-padding: 2 8; -fx-background-radius: 20; -fx-font-size: 10px; -fx-font-weight: bold;"
+            );
+            badgeRow.getChildren().add(drBadge);
+        }
+        if (!badgeRow.getChildren().isEmpty()) inner.getChildren().add(badgeRow);
 
         // Titre
         Label titre = new Label(article.getTitre());
@@ -302,7 +344,8 @@ public class PatientArticleListController {
 
     private void selectArticle(Article article) {
         this.selectedArticle = article;
-        int userId = UserSession.getInstance().getCurrentUser().getId();
+        Utilisateur u = UserSession.getInstance().getCurrentUser();
+        int userId = u.getId();
 
         if (serviceArticle.incrementViewIfNew(article.getId(), userId))
             article.setViews(article.getViews() + 1);
@@ -317,6 +360,12 @@ public class PatientArticleListController {
         tagsLabel.setText(tags != null && !tags.isEmpty() ? "🏷 " + tags : "");
         tagsLabel.setVisible(tags != null && !tags.isEmpty());
         tagsLabel.setManaged(tags != null && !tags.isEmpty());
+
+        String nom = article.getMedecinNom();
+        boolean hasNom = nom != null && !nom.isBlank();
+        medecinLabel.setText(hasNom ? "🩺 Dr. " + nom : "");
+        medecinLabel.setVisible(hasNom);
+        medecinLabel.setManaged(hasNom);
 
         // Image hero
         String imgPath = article.getImagePath();
@@ -335,6 +384,14 @@ public class PatientArticleListController {
         likesLabel.setText(article.getLikes() + " likes");
 
         applyLikeBtnState(serviceArticle.hasLiked(article.getId(), userId));
+
+        // Messagerie avec le médecin
+        currentMedecinId = u.getMedecinId();
+        boolean hasMedecin = currentMedecinId != null;
+        msgSection.setVisible(hasMedecin);
+        msgSection.setManaged(hasMedecin);
+        if (hasMedecin) loadMessages(article.getId(), userId, currentMedecinId);
+
         loadComments();
         showDetail(true);
     }
@@ -422,6 +479,134 @@ public class PatientArticleListController {
 
     // ─── Actions ─────────────────────────────────────────────────────
 
+    @FXML void handleEmojiPicker(ActionEvent event) {
+        showEmojiPopup(commentField, emojiBtn);
+    }
+
+    private void showEmojiPopup(TextArea target, Node anchor) {
+        Popup popup = new Popup();
+        popup.setAutoHide(true);
+
+        String[][] groups = {
+            {"😀","😊","😂","🥰","😍","😢","😮","😡","🤔","😎","🙂","😉","😋","🤗","😴","🤩","😏","🥲","😬","🤭","🤫","🫠"},
+            {"💊","🏥","🩺","🩻","💉","🧬","🫀","🫁","🧪","🩹","💪","🧠","🦷","👁","🫂","🩸","🌡","🔬","🦠","💆","🛌","🏃"},
+            {"❤️","💙","💚","💛","🔥","⭐","✅","❌","⚠️","👍","👎","🙏","💯","🎉","✨","🌟","💥","🌈","🏅","🥇","🌺","🍀"},
+            {"📝","🔍","💬","📌","💡","📊","🏆","📅","📋","🔐","🌐","💼","📱","💻","📤","📥","✉️","📞","📖","⏰","🗓","🔑"}
+        };
+        String[] tabLabels = {"😊 Humeur", "🩺 Médical", "❤️ Général", "📝 Pro"};
+
+        // Grilles
+        FlowPane[] grids = new FlowPane[groups.length];
+        for (int g = 0; g < groups.length; g++) {
+            FlowPane grid = new FlowPane(4, 4);
+            grid.setPadding(new Insets(12));
+            grid.setPrefWidth(350);
+            for (String emoji : groups[g]) {
+                Button btn = new Button(emoji);
+                btn.setStyle("-fx-font-size: 20px; -fx-min-width: 40; -fx-pref-height: 40;"
+                    + "-fx-border-width: 0; -fx-cursor: hand; -fx-background-radius: 8;"
+                    + "-fx-background-color: transparent;");
+                btn.setOnMouseEntered(e -> btn.setStyle("-fx-font-size: 20px; -fx-min-width: 40;"
+                    + "-fx-pref-height: 40; -fx-border-width: 0; -fx-cursor: hand;"
+                    + "-fx-background-radius: 8; -fx-background-color: #EDE9F8;"));
+                btn.setOnMouseExited(e -> btn.setStyle("-fx-font-size: 20px; -fx-min-width: 40;"
+                    + "-fx-pref-height: 40; -fx-border-width: 0; -fx-cursor: hand;"
+                    + "-fx-background-radius: 8; -fx-background-color: transparent;"));
+                final String em = emoji;
+                btn.setOnAction(e -> {
+                    int pos = target.getCaretPosition();
+                    target.insertText(pos, em);
+                    target.requestFocus();
+                    target.positionCaret(pos + em.length());
+                    popup.hide();
+                });
+                grid.getChildren().add(btn);
+            }
+            grids[g] = grid;
+        }
+
+        // Header
+        HBox header = new HBox();
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setPadding(new Insets(10, 14, 10, 16));
+        header.setStyle("-fx-background-color: linear-gradient(to right, #5B35A5, #2BBCB0);"
+            + "-fx-background-radius: 14 14 0 0;");
+        Label title = new Label("Choisir un émoji");
+        title.setStyle("-fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold;");
+        Region sp = new Region(); HBox.setHgrow(sp, Priority.ALWAYS);
+        Button closeBtn = new Button("✕");
+        closeBtn.setStyle("-fx-background-color: rgba(255,255,255,0.20); -fx-text-fill: white;"
+            + "-fx-background-radius: 20; -fx-border-width: 0; -fx-padding: 2 8;"
+            + "-fx-cursor: hand; -fx-font-size: 11px;");
+        closeBtn.setOnAction(e -> popup.hide());
+        header.getChildren().addAll(title, sp, closeBtn);
+
+        // Onglets
+        HBox tabBar = new HBox(0);
+        tabBar.setStyle("-fx-background-color: #F8F5FF;"
+            + "-fx-border-color: transparent transparent #EDE9F8 transparent; -fx-border-width: 1;");
+        StackPane gridContainer = new StackPane(grids[0]);
+        gridContainer.setMinHeight(160);
+
+        Button[] tabBtns = new Button[groups.length];
+        for (int g = 0; g < groups.length; g++) {
+            final int idx = g;
+            Button tab = new Button(tabLabels[g]);
+            tab.setMaxWidth(Double.MAX_VALUE);
+            HBox.setHgrow(tab, Priority.ALWAYS);
+            String activeStyle = "-fx-background-color: white; -fx-border-color: transparent transparent #5B35A5 transparent;"
+                + "-fx-border-width: 0 0 2.5 0; -fx-padding: 8 4; -fx-cursor: hand; -fx-background-radius: 0;"
+                + "-fx-text-fill: #5B35A5; -fx-font-weight: bold; -fx-font-size: 11px;";
+            String inactiveStyle = "-fx-background-color: transparent; -fx-border-width: 0;"
+                + "-fx-padding: 8 4; -fx-cursor: hand; -fx-background-radius: 0;"
+                + "-fx-text-fill: #9CA3AF; -fx-font-size: 11px;";
+            tab.setStyle(g == 0 ? activeStyle : inactiveStyle);
+            tab.setOnAction(e -> {
+                gridContainer.getChildren().setAll(grids[idx]);
+                for (int i = 0; i < tabBtns.length; i++)
+                    tabBtns[i].setStyle(i == idx ? activeStyle : inactiveStyle);
+            });
+            tabBtns[g] = tab;
+            tabBar.getChildren().add(tab);
+        }
+
+        // Assemblage
+        VBox container = new VBox(0);
+        container.setStyle("-fx-background-color: white; -fx-background-radius: 14;"
+            + "-fx-border-color: #E2D9F8; -fx-border-width: 1; -fx-border-radius: 14;"
+            + "-fx-effect: dropshadow(gaussian, rgba(90,53,165,0.25), 20, 0, 0, 6);");
+        container.getChildren().addAll(header, tabBar, gridContainer);
+        popup.getContent().add(container);
+
+        Bounds b = anchor.localToScreen(anchor.getBoundsInLocal());
+        if (b != null)
+            popup.show(anchor.getScene().getWindow(), b.getMaxX() - 350, b.getMinY() - 340);
+    }
+
+    @FXML void handleExportPdf(ActionEvent event) {
+        if (selectedArticle == null) return;
+        Window window = likeBtn.getScene().getWindow();
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Enregistrer le PDF");
+        chooser.setInitialFileName(
+            selectedArticle.getTitre().replaceAll("[^a-zA-Z0-9_\\- ]", "").trim() + ".pdf"
+        );
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF", "*.pdf"));
+        java.io.File dest = chooser.showSaveDialog(window);
+        if (dest == null) return;
+        try {
+            PdfExporter.export(selectedArticle, dest.getAbsolutePath());
+            Alert ok = new Alert(Alert.AlertType.INFORMATION, "PDF exporté avec succès !");
+            ok.setHeaderText(null);
+            ok.setTitle("Export PDF");
+            ok.showAndWait();
+        } catch (Exception ex) {
+            Alert err = new Alert(Alert.AlertType.ERROR, "Erreur lors de l'export : " + ex.getMessage());
+            err.setHeaderText(null);
+            err.showAndWait();
+        }
+    }
+
     @FXML void handleLike(ActionEvent event) {
         if (selectedArticle == null) return;
         int userId = UserSession.getInstance().getCurrentUser().getId();
@@ -438,6 +623,52 @@ public class PatientArticleListController {
         serviceCommentaire.add(new Commentaire(selectedArticle.getId(), text, user.getPrenom() + " " + user.getNom()));
         commentField.clear();
         loadComments();
+    }
+
+    // ─── Messagerie ──────────────────────────────────────────────────
+
+    private void loadMessages(int articleId, int patientId, int medecinId) {
+        msgContainer.getChildren().clear();
+        List<Message> msgs = serviceMessage.getConversation(articleId, patientId, medecinId);
+        if (msgs.isEmpty()) {
+            Label empty = new Label("Aucun échange avec votre médecin pour cet article.");
+            empty.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 12px;");
+            msgContainer.getChildren().add(empty);
+        } else {
+            for (Message m : msgs) msgContainer.getChildren().add(createMsgBubble(m, patientId));
+            serviceMessage.markRead(articleId, patientId, medecinId);
+        }
+    }
+
+    private HBox createMsgBubble(Message m, int myId) {
+        boolean isMine = m.getExpediteurId() == myId;
+        Label bubble = new Label(m.getContenu());
+        bubble.setWrapText(true);
+        bubble.setMaxWidth(340);
+        bubble.setPadding(new Insets(8, 14, 8, 14));
+        bubble.setStyle(
+            "-fx-background-radius: 14; -fx-font-size: 13px;" +
+            (isMine
+                ? "-fx-background-color: #5B35A5; -fx-text-fill: white;"
+                : "-fx-background-color: #EDE9F8; -fx-text-fill: #3A1D7A;")
+        );
+        Label timeLabel = new Label((isMine ? "Moi" : m.getExpediteurNom()) + "  " + m.getFormattedDate());
+        timeLabel.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 10px;");
+        VBox bubbleBox = new VBox(3, bubble, timeLabel);
+        bubbleBox.setAlignment(isMine ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
+        HBox row = new HBox(bubbleBox);
+        row.setAlignment(isMine ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
+        row.setPadding(new Insets(2, 0, 2, 0));
+        return row;
+    }
+
+    @FXML void handleSendMessage(ActionEvent event) {
+        String text = msgField.getText().trim();
+        if (text.isEmpty() || selectedArticle == null || currentMedecinId == null) return;
+        Utilisateur u = UserSession.getInstance().getCurrentUser();
+        serviceMessage.send(selectedArticle.getId(), u.getId(), currentMedecinId, text);
+        msgField.clear();
+        loadMessages(selectedArticle.getId(), u.getId(), currentMedecinId);
     }
 
     @FXML void handleDashboard(ActionEvent event) { App.navigate("PatientDashboard"); }

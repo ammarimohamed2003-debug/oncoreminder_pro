@@ -19,12 +19,19 @@
                          -fx-border-color: transparent transparent rgba(255,255,255,0.10) transparent;
                          -fx-border-width: 0 0 1 0;">
                 <StackPane>
-                    <Circle radius="17" fill="#2BBCB0" opacity="0.22"/>
-                    <Label text="⚕" style="-fx-font-size: 14px; -fx-text-fill: #2BBCB0;"/>
+                    <Circle radius="17" fill="rgba(43,188,176,0.15)"/>
+                    <Circle radius="17" fill="transparent" stroke="#2BBCB0" strokeWidth="1.5"/>
+                    <Rectangle width="5" height="16" fill="white" arcWidth="4" arcHeight="4"/>
+                    <Rectangle width="16" height="5" fill="white" arcWidth="4" arcHeight="4"/>
+                    <Circle radius="2.5" fill="#2BBCB0"/>
                 </StackPane>
-                <VBox spacing="1">
-                    <Label text="OncoReminder" style="-fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold;"/>
-                    <Label text="Pro" style="-fx-text-fill: #2BBCB0; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                <VBox spacing="2">
+                    <HBox spacing="0">
+                        <Label text="Onco" style="-fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                        <Label text="Reminder" style="-fx-text-fill: #2BBCB0; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                    </HBox>
+                    <Label text="PRO" style="-fx-background-color: rgba(43,188,176,0.25); -fx-text-fill: #2BBCB0;
+                                   -fx-background-radius: 4; -fx-padding: 1 6; -fx-font-size: 9px; -fx-font-weight: bold;"/>
                 </VBox>
             </HBox>
 
@@ -107,6 +114,10 @@
                 <VBox spacing="15" HBox.hgrow="ALWAYS">
                     <HBox alignment="CENTER_LEFT" spacing="10">
                         <Label text="👥 Mes Patients" styleClass="section-title"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="+ Ajouter" onAction="#handleAddPatient"
+                                styleClass="btn-primary" prefHeight="32"
+                                style="-fx-padding: 0 14; -fx-font-size: 12px;"/>
                     </HBox>
                     <ScrollPane fitToWidth="true" styleClass="stat-scroll-pane" VBox.vgrow="ALWAYS">
                         <FlowPane fx:id="patientFlowPane" hgap="15" vgap="15">

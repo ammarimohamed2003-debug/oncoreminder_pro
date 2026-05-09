@@ -61,19 +61,24 @@ public class ServiceArticle {
         }
     }
 
+    private static final String JOIN_SQL =
+        "SELECT a.*, CONCAT(u.prenom, ' ', u.nom) AS medecin_nom " +
+        "FROM article a LEFT JOIN utilisateur u ON a.medecin_id = u.id ";
+
     public List<Article> getAll() {
-        return query("SELECT * FROM article ORDER BY id DESC");
+        return queryJoin(JOIN_SQL + "ORDER BY a.id DESC");
     }
 
     public List<Article> getPublished() {
-        return query("SELECT * FROM article WHERE statut = 'PUBLIE' ORDER BY date_publication DESC");
+        return queryJoin(JOIN_SQL + "WHERE a.statut = 'PUBLIE' ORDER BY a.date_publication DESC");
     }
 
     public List<Article> getByMedecin(int medecinId) {
         List<Article> list = new ArrayList<>();
         if (!updateConnection()) return list;
         try {
-            PreparedStatement pst = cnx.prepareStatement("SELECT * FROM article WHERE medecin_id = ? ORDER BY id DESC");
+            PreparedStatement pst = cnx.prepareStatement(
+                JOIN_SQL + "WHERE a.medecin_id = ? ORDER BY a.id DESC");
             pst.setInt(1, medecinId);
             ResultSet rs = pst.executeQuery();
             while (rs.next()) list.add(mapRow(rs));
@@ -87,12 +92,12 @@ public class ServiceArticle {
         try {
             String like = "%" + keyword + "%";
             PreparedStatement pst = cnx.prepareStatement(
-                "SELECT * FROM article WHERE statut != 'ARCHIVE' AND (" +
-                "  titre   LIKE ? OR " +
-                "  contenu LIKE ? OR " +
-                "  organe  LIKE ? OR " +
-                "  tags    LIKE ?" +
-                ") ORDER BY id DESC");
+                JOIN_SQL + "WHERE a.statut != 'ARCHIVE' AND (" +
+                "  a.titre   LIKE ? OR " +
+                "  a.contenu LIKE ? OR " +
+                "  a.organe  LIKE ? OR " +
+                "  a.tags    LIKE ?" +
+                ") ORDER BY a.id DESC");
             for (int i = 1; i <= 4; i++) pst.setString(i, like);
             ResultSet rs = pst.executeQuery();
             while (rs.next()) list.add(mapRow(rs));
@@ -207,7 +212,7 @@ public class ServiceArticle {
         } catch (SQLException e) { System.out.println(e.getMessage()); }
     }
 
-    private List<Article> query(String sql) {
+    private List<Article> queryJoin(String sql) {
         List<Article> list = new ArrayList<>();
         if (!updateConnection()) return list;
         try {
@@ -233,6 +238,7 @@ public class ServiceArticle {
         try { a.setViews(rs.getInt("views")); }      catch (SQLException ignored) {}
         try { a.setIcdCode(rs.getString("icd_code")); }   catch (SQLException ignored) {}
         try { a.setImagePath(rs.getString("image_path")); } catch (SQLException ignored) {}
+        try { a.setMedecinNom(rs.getString("medecin_nom")); } catch (SQLException ignored) {}
         return a;
     }
 }
