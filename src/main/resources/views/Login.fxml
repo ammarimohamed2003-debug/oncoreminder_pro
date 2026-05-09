@@ -100,6 +100,11 @@
                 <PasswordField fx:id="passwordField" promptText="••••••••"
                                styleClass="field-input" prefHeight="42"/>
                 <Label fx:id="errorPassword" text="" styleClass="field-error" visible="false" managed="false"/>
+                <HBox alignment="CENTER_RIGHT">
+                    <Hyperlink fx:id="forgotPasswordLink" text="Mot de passe oublié ?"
+                               onAction="#goToForgotPassword"
+                               styleClass="link-forgot"/>
+                </HBox>
             </VBox>
 
             <Label fx:id="errorLabel" textFill="#e53e3e" wrapText="true" managed="false" visible="false"/>

@@ -4,95 +4,447 @@ import com.oncoreminder.app.App;
 import com.oncoreminder.models.Utilisateur;
 import com.oncoreminder.services.ServiceUtilisateur;
 import com.oncoreminder.utils.UserSession;
+import javafx.animation.FadeTransition;
+import javafx.animation.PauseTransition;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.geometry.Pos;
-import javafx.geometry.Insets;
+import javafx.scene.shape.Circle;
+import javafx.util.Duration;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class DoctorDashboardController {
 
-    @FXML private Label doctorNameLabel;
-    @FXML private FlowPane patientFlowPane;
+    // ── Top bar ──────────────────────────────────────────────────────
+    @FXML private Label     doctorNameLabel;
+    @FXML private TextField searchField;
+    @FXML private Label     patientCountLabel;
 
-    @FXML private Label selectedPatientLabel;
-    @FXML private Label bloodGroupLabel;
-    @FXML private Label weightLabel;
-    @FXML private Label heightLabel;
+    // ── Onglet 1 : Patients ──────────────────────────────────────────
+    @FXML private FlowPane patientFlowPane;
+    @FXML private VBox   detailPanel;
+    @FXML private Label  selectedPatientLabel;
+    @FXML private Label  patientEmailLabel;
+    @FXML private Label  patientIconLabel;
+    @FXML private Label  bloodGroupLabel;
+    @FXML private Label  weightLabel;
+    @FXML private Label  heightLabel;
     @FXML private TextArea antecedentsArea;
     @FXML private TextArea allergiesArea;
+    @FXML private VBox   readPanel;
+    @FXML private VBox   actionButtons;
+    @FXML private VBox   emptyPanel;
+    @FXML private VBox      editPanel;
+    @FXML private TextField editNomField;
+    @FXML private TextField editPrenomField;
+    @FXML private TextField editEmailField;
+    @FXML private ComboBox<String> editGroupeSanguinCombo;
+    @FXML private TextField editPoidsField;
+    @FXML private TextField editTailleField;
+    @FXML private TextArea  editAntecedentsArea;
+    @FXML private TextArea  editAllergiesArea;
+    @FXML private TextArea  editTraitementsArea;
+    @FXML private TextArea  editNotesArea;
+    @FXML private Label     editFeedbackLabel;
+    @FXML private Label     editErrorEmail;
+    @FXML private Label     editErrorMesures;
+    @FXML private Button    saveButton;
 
+    // ── Onglet 2 : Mon Profil ────────────────────────────────────────
+    @FXML private TextField        docNomField;
+    @FXML private TextField        docPrenomField;
+    @FXML private TextField        docEmailField;
+    @FXML private TextField        docTelField;
+    @FXML private ComboBox<String> docSexeCombo;
+    @FXML private TextField        docDateNaissField;
+    @FXML private ComboBox<String> docSpecialiteCombo;
+    @FXML private TextField        docMatriculeField;
+    @FXML private TextField        docHopitalField;
+    @FXML private TextField        docAdresseField;
+    @FXML private Label  docErrorNom;
+    @FXML private Label  docErrorPrenom;
+    @FXML private Label  docErrorEmail;
+    @FXML private Label  docProfileFeedback;
+    @FXML private Button saveDocProfileBtn;
+
+    // ── Onglet 3 : Sécurité ──────────────────────────────────────────
+    @FXML private PasswordField docOldPwdField;
+    @FXML private TextField     docOldPwdVisible;
+    @FXML private PasswordField docNewPwdField;
+    @FXML private TextField     docNewPwdVisible;
+    @FXML private PasswordField docConfirmPwdField;
+    @FXML private TextField     docConfirmPwdVisible;
+    @FXML private CheckBox      docShowPwdCheck;
+    @FXML private Label  docErrorOldPwd;
+    @FXML private Label  docErrorNewPwd;
+    @FXML private Label  docErrorConfirmPwd;
+    @FXML private Label  docPwdFeedback;
+    @FXML private Button saveDocPwdBtn;
+
+    // ── Services ─────────────────────────────────────────────────────
     private final ServiceUtilisateur serviceUtilisateur = new ServiceUtilisateur();
+    private Utilisateur selectedPatient;
+    private List<Utilisateur> allPatients;
+    private Utilisateur currentDoctor;
+
+    private static final String[] GROUPES_SANGUINS = {"A+","A-","B+","B-","AB+","AB-","O+","O-"};
+    private static final String[] SEXES = {"Masculin", "Féminin", "Autre"};
+    private static final String[] SPECIALITES = {
+        "Oncologie","Cardiologie","Dermatologie","Gynécologie","Neurologie",
+        "Pédiatrie","Psychiatrie","Radiologie","Rhumatologie","Chirurgie générale","Médecine générale"
+    };
+    private static final String EMAIL_REGEX =
+        "^[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}$";
+
+    // ── Initialisation ────────────────────────────────────────────────
 
     @FXML
     public void initialize() {
-        if (UserSession.getInstance().getCurrentUser() != null) {
-            doctorNameLabel.setText("Dr. " + UserSession.getInstance().getCurrentUser().getNom());
-        }
+        currentDoctor = UserSession.getInstance().getCurrentUser();
 
+        if (currentDoctor != null)
+            doctorNameLabel.setText("Dr. " + currentDoctor.getNom() + " " + currentDoctor.getPrenom());
+
+        // ComboBoxes
+        editGroupeSanguinCombo.setItems(FXCollections.observableArrayList(GROUPES_SANGUINS));
+        docSexeCombo.setItems(FXCollections.observableArrayList(SEXES));
+        docSpecialiteCombo.setItems(FXCollections.observableArrayList(SPECIALITES));
+
+        // Sync show/hide mots de passe
+        docOldPwdField.textProperty().bindBidirectional(docOldPwdVisible.textProperty());
+        docNewPwdField.textProperty().bindBidirectional(docNewPwdVisible.textProperty());
+        docConfirmPwdField.textProperty().bindBidirectional(docConfirmPwdVisible.textProperty());
+
+        // Live check confirmation
+        docNewPwdField.textProperty().addListener((obs, o, n) -> {
+            clearErr(docNewPwdField, docErrorNewPwd);
+            if (!docConfirmPwdField.getText().isEmpty()) liveCheckDocConfirm();
+        });
+        docConfirmPwdField.textProperty().addListener((obs, o, n) -> liveCheckDocConfirm());
+
+        // Recherche
+        searchField.textProperty().addListener((obs, o, n) -> filterPatients(n.trim()));
+
+        // Préremplir profil médecin
+        loadDocProfile();
+
+        // Charger patients
         loadPatients();
+        showEmpty();
     }
 
+    // ════════════════════════════════════════════════════════════════
+    // ONGLET 1 — PATIENTS
+    // ════════════════════════════════════════════════════════════════
+
     private void loadPatients() {
-        List<Utilisateur> patients = serviceUtilisateur.getAll().stream()
+        allPatients = serviceUtilisateur.getAll().stream()
                 .filter(u -> "PATIENT".equals(u.getRole()))
                 .collect(Collectors.toList());
-        
+        renderPatients(allPatients);
+    }
+
+    private void filterPatients(String q) {
+        if (q == null || q.isEmpty()) { renderPatients(allPatients); return; }
+        String ql = q.toLowerCase();
+        renderPatients(allPatients.stream()
+            .filter(p -> (p.getNom()+" "+p.getPrenom()+" "+p.getEmail()).toLowerCase().contains(ql))
+            .collect(Collectors.toList()));
+    }
+
+    private void renderPatients(List<Utilisateur> list) {
         patientFlowPane.getChildren().clear();
-        for (Utilisateur patient : patients) {
-            patientFlowPane.getChildren().add(createPatientCard(patient));
+        patientCountLabel.setText("(" + list.size() + ")");
+        if (list.isEmpty()) {
+            Label e = new Label("Aucun patient trouvé");
+            e.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 13px; -fx-font-style: italic;");
+            patientFlowPane.getChildren().add(e);
+            return;
         }
+        list.forEach(p -> patientFlowPane.getChildren().add(createPatientCard(p)));
     }
 
     private VBox createPatientCard(Utilisateur patient) {
-        VBox card = new VBox(10);
+        VBox card = new VBox(8);
         card.getStyleClass().add("stat-card");
-        card.setPrefWidth(180);
-        card.setPadding(new Insets(15));
+        card.setPrefWidth(165);
+        card.setPadding(new Insets(14));
         card.setAlignment(Pos.CENTER);
         card.setCursor(javafx.scene.Cursor.HAND);
 
-        Label iconLabel = new Label("👤");
-        iconLabel.setStyle("-fx-font-size: 24px;");
+        StackPane avatar = new StackPane();
+        Circle bg = new Circle(24);
+        bg.setFill(javafx.scene.paint.Color.web("rgba(43,188,176,0.18)"));
+        Label initials = new Label(
+            String.valueOf(patient.getPrenom().isEmpty() ? '?' : patient.getPrenom().charAt(0)) +
+            String.valueOf(patient.getNom().isEmpty()    ? '?' : patient.getNom().charAt(0))
+        );
+        initials.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #2BBCB0;");
+        avatar.getChildren().addAll(bg, initials);
 
-        Label nameLabel = new Label(patient.getPrenom() + " " + patient.getNom());
-        nameLabel.setStyle("-fx-font-weight: bold;");
-        
-        Label bgLabel = new Label(patient.getGroupeSanguin() != null ? patient.getGroupeSanguin() : "N/A");
-        bgLabel.getStyleClass().add("stat-badge-info");
+        Label nameL = new Label(patient.getPrenom() + " " + patient.getNom());
+        nameL.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #2D3748;");
+        nameL.setWrapText(true); nameL.setMaxWidth(150);
 
-        card.getChildren().addAll(iconLabel, nameLabel, bgLabel);
+        Label bgL = new Label(patient.getGroupeSanguin() != null ? patient.getGroupeSanguin() : "N/A");
+        bgL.getStyleClass().add("stat-badge-info");
 
+        card.getChildren().addAll(avatar, nameL, bgL);
         card.setOnMouseClicked(e -> {
-            showPatientDetails(patient);
             patientFlowPane.getChildren().forEach(n -> n.setStyle(""));
-            card.setStyle("-fx-border-color: #2BBCB0; -fx-border-width: 2px; -fx-border-radius: 12px;");
+            card.setStyle("-fx-border-color: #2BBCB0; -fx-border-width: 2; -fx-border-radius: 12;");
+            showPatientDetails(patient);
         });
-
         return card;
     }
 
     private void showPatientDetails(Utilisateur patient) {
+        this.selectedPatient = patient;
         selectedPatientLabel.setText(patient.getPrenom() + " " + patient.getNom());
-        bloodGroupLabel.setText(patient.getGroupeSanguin() != null ? patient.getGroupeSanguin() : "N/A");
-        weightLabel.setText(patient.getPoids() != null ? patient.getPoids() + " kg" : "N/A");
-        heightLabel.setText(patient.getTaille() != null ? patient.getTaille() + " cm" : "N/A");
-        antecedentsArea.setText(patient.getAntecedents() != null ? patient.getAntecedents() : "Aucun antécédent renseigné.");
-        allergiesArea.setText(patient.getAllergies() != null ? patient.getAllergies() : "Aucune allergie renseignée.");
+        patientEmailLabel.setText(patient.getEmail());
+        bloodGroupLabel.setText(val(patient.getGroupeSanguin()));
+        weightLabel.setText(patient.getPoids() != null ? patient.getPoids() + " kg" : "--");
+        heightLabel.setText(patient.getTaille() != null ? patient.getTaille() + " cm" : "--");
+        antecedentsArea.setText(nvl(patient.getAntecedents(), "Aucun antécédent."));
+        allergiesArea.setText(nvl(patient.getAllergies(), "Aucune allergie."));
+        showReadMode();
+        fade(detailPanel);
     }
 
-    @FXML
-    void handleArticles(ActionEvent event) {
-        App.navigate("ArticleList");
+    @FXML void handleEdit(ActionEvent e) {
+        if (selectedPatient == null) return;
+        editNomField.setText(orE(selectedPatient.getNom()));
+        editPrenomField.setText(orE(selectedPatient.getPrenom()));
+        editEmailField.setText(orE(selectedPatient.getEmail()));
+        editGroupeSanguinCombo.setValue(selectedPatient.getGroupeSanguin());
+        editPoidsField.setText(selectedPatient.getPoids() != null ? String.valueOf(selectedPatient.getPoids()) : "");
+        editTailleField.setText(selectedPatient.getTaille() != null ? String.valueOf(selectedPatient.getTaille()) : "");
+        editAntecedentsArea.setText(orE(selectedPatient.getAntecedents()));
+        editAllergiesArea.setText(orE(selectedPatient.getAllergies()));
+        editTraitementsArea.setText(orE(selectedPatient.getTraitements()));
+        editNotesArea.setText(orE(selectedPatient.getNotes()));
+        hideFb(editFeedbackLabel);
+        showEditMode();
+        fade(editPanel);
     }
 
-    @FXML
-    void handleLogout(ActionEvent event) {
-        UserSession.getInstance().logout();
-        App.navigate("Login");
+    @FXML void handleCancelEdit(ActionEvent e) { showReadMode(); }
+
+    @FXML void handleSave(ActionEvent e) {
+        if (selectedPatient == null) return;
+        hideFb(editFeedbackLabel);
+
+        // Validation email
+        String email = editEmailField.getText().trim().toLowerCase();
+        if (!email.matches(EMAIL_REGEX)) {
+            editErrorEmail.setText("Email invalide."); editErrorEmail.setVisible(true); editErrorEmail.setManaged(true);
+            return;
+        }
+        // Poids / Taille
+        String ps = editPoidsField.getText().trim(), ts = editTailleField.getText().trim();
+        if (!ps.isEmpty()) { try { Double.parseDouble(ps); } catch (NumberFormatException ex) {
+            editErrorMesures.setText("Poids invalide."); editErrorMesures.setVisible(true); editErrorMesures.setManaged(true); return; } }
+        if (!ts.isEmpty()) { try { Double.parseDouble(ts); } catch (NumberFormatException ex) {
+            editErrorMesures.setText("Taille invalide."); editErrorMesures.setVisible(true); editErrorMesures.setManaged(true); return; } }
+
+        selectedPatient.setNom(editNomField.getText().trim());
+        selectedPatient.setPrenom(editPrenomField.getText().trim());
+        selectedPatient.setEmail(email);
+        selectedPatient.setGroupeSanguin(editGroupeSanguinCombo.getValue());
+        selectedPatient.setPoids(ps.isEmpty() ? null : Double.parseDouble(ps));
+        selectedPatient.setTaille(ts.isEmpty() ? null : Double.parseDouble(ts));
+        selectedPatient.setAntecedents(editAntecedentsArea.getText().trim());
+        selectedPatient.setAllergies(editAllergiesArea.getText().trim());
+        selectedPatient.setTraitements(editTraitementsArea.getText().trim());
+        selectedPatient.setNotes(editNotesArea.getText().trim());
+
+        saveButton.setDisable(true); saveButton.setText("Enregistrement...");
+        Thread saveThread = new Thread(() -> {
+            boolean ok = serviceUtilisateur.updateDossierComplet(selectedPatient);
+            Platform.runLater(() -> {
+                saveButton.setDisable(false); saveButton.setText("💾  Enregistrer");
+                if (ok) { loadPatients(); showPatientDetails(selectedPatient);
+                    showFb(editFeedbackLabel, "✅ Dossier mis à jour !", true);
+                    PauseTransition pause = new PauseTransition(Duration.seconds(2));
+                    pause.setOnFinished(ev -> showReadMode());
+                    pause.play();
+                } else { showFb(editFeedbackLabel, "❌ Erreur lors de la mise à jour.", false); }
+            });
+        });
+        saveThread.setDaemon(true);
+        saveThread.start();
     }
+
+    @FXML void handleDelete(ActionEvent e) {
+        if (selectedPatient == null) return;
+        Alert a = new Alert(Alert.AlertType.CONFIRMATION);
+        a.setTitle("Supprimer le patient");
+        a.setHeaderText("Êtes-vous sûr ?");
+        a.setContentText("Patient : " + selectedPatient.getPrenom() + " " + selectedPatient.getNom() + "\n⚠️ Action irréversible.");
+        a.showAndWait().ifPresent(r -> { if (r == ButtonType.OK) {
+            serviceUtilisateur.deletePatient(selectedPatient.getId());
+            selectedPatient = null; loadPatients(); showEmpty();
+        }});
+    }
+
+    @FXML void handleRefresh(ActionEvent e) { searchField.clear(); loadPatients(); }
+
+    // ════════════════════════════════════════════════════════════════
+    // ONGLET 2 — MON PROFIL MÉDECIN
+    // ════════════════════════════════════════════════════════════════
+
+    private void loadDocProfile() {
+        if (currentDoctor == null) return;
+        docNomField.setText(orE(currentDoctor.getNom()));
+        docPrenomField.setText(orE(currentDoctor.getPrenom()));
+        docEmailField.setText(orE(currentDoctor.getEmail()));
+    }
+
+    @FXML void handleSaveDocProfile(ActionEvent e) {
+        // Validation
+        String nom = docNomField.getText().trim(), prenom = docPrenomField.getText().trim(),
+               email = docEmailField.getText().trim().toLowerCase();
+        boolean ok = true;
+        if (nom.isEmpty())    { showFe(docNomField, docErrorNom, "Obligatoire."); ok = false; }
+        if (prenom.isEmpty()) { showFe(docPrenomField, docErrorPrenom, "Obligatoire."); ok = false; }
+        if (!email.matches(EMAIL_REGEX)) { showFe(docEmailField, docErrorEmail, "Email invalide."); ok = false; }
+        else if (!email.equals(currentDoctor.getEmail()) && serviceUtilisateur.emailExists(email))
+                              { showFe(docEmailField, docErrorEmail, "Email déjà utilisé."); ok = false; }
+        if (!ok) return;
+
+        currentDoctor.setNom(nom); currentDoctor.setPrenom(prenom); currentDoctor.setEmail(email);
+        saveDocProfileBtn.setDisable(true); saveDocProfileBtn.setText("Enregistrement...");
+        Thread profileThread = new Thread(() -> {
+            serviceUtilisateur.update(currentDoctor);
+            Platform.runLater(() -> {
+                saveDocProfileBtn.setDisable(false); saveDocProfileBtn.setText("💾  Enregistrer le profil");
+                UserSession.getInstance().setCurrentUser(currentDoctor);
+                doctorNameLabel.setText("Dr. " + currentDoctor.getNom() + " " + currentDoctor.getPrenom());
+                showFb(docProfileFeedback, "✅ Profil mis à jour avec succès !", true);
+            });
+        });
+        profileThread.setDaemon(true);
+        profileThread.start();
+    }
+
+    @FXML void handleCancelDocProfile(ActionEvent e) { loadDocProfile(); hideFb(docProfileFeedback); }
+
+    // ════════════════════════════════════════════════════════════════
+    // ONGLET 3 — SÉCURITÉ
+    // ════════════════════════════════════════════════════════════════
+
+    @FXML void toggleDocShowPassword(ActionEvent e) {
+        boolean s = docShowPwdCheck.isSelected();
+        toggle(docOldPwdField, docOldPwdVisible, s);
+        toggle(docNewPwdField, docNewPwdVisible, s);
+        toggle(docConfirmPwdField, docConfirmPwdVisible, s);
+    }
+
+    @FXML void handleChangeDocPassword(ActionEvent e) {
+        String old = docOldPwdField.getText(), np = docNewPwdField.getText(), conf = docConfirmPwdField.getText();
+        boolean ok = true;
+        if (old.isEmpty())       { showFe(docOldPwdField, docErrorOldPwd, "Obligatoire."); ok = false; }
+        if (np.isEmpty())        { showFe(docNewPwdField, docErrorNewPwd, "Obligatoire."); ok = false; }
+        else if (np.length() < 8){ showFe(docNewPwdField, docErrorNewPwd, "Minimum 8 caractères."); ok = false; }
+        if (ok && !np.equals(conf)) { showFe(docConfirmPwdField, docErrorConfirmPwd, "Mots de passe différents."); ok = false; }
+        if (!ok) return;
+
+        if (!serviceUtilisateur.verifyPassword(currentDoctor.getEmail(), old)) {
+            showFe(docOldPwdField, docErrorOldPwd, "❌ Mot de passe actuel incorrect."); return;
+        }
+        saveDocPwdBtn.setDisable(true); saveDocPwdBtn.setText("Modification...");
+        final String newPwdHashed = BCrypt.hashpw(np, BCrypt.gensalt());
+        Thread pwdThread = new Thread(() -> {
+            boolean success = serviceUtilisateur.updatePassword(currentDoctor.getEmail(), newPwdHashed);
+            Platform.runLater(() -> {
+                saveDocPwdBtn.setDisable(false); saveDocPwdBtn.setText("🔐  Changer le mot de passe");
+                if (success) { docOldPwdField.clear(); docNewPwdField.clear(); docConfirmPwdField.clear();
+                    showFb(docPwdFeedback, "✅ Mot de passe modifié !", true);
+                } else { showFb(docPwdFeedback, "❌ Erreur lors du changement.", false); }
+            });
+        });
+        pwdThread.setDaemon(true);
+        pwdThread.start();
+    }
+
+    @FXML void handleCancelDocPassword(ActionEvent e) {
+        docOldPwdField.clear(); docNewPwdField.clear(); docConfirmPwdField.clear(); hideFb(docPwdFeedback);
+    }
+
+    private void liveCheckDocConfirm() {
+        String n = docNewPwdField.getText(), c = docConfirmPwdField.getText();
+        if (c.isEmpty()) { docErrorConfirmPwd.setVisible(false); docErrorConfirmPwd.setManaged(false); return; }
+        if (!n.equals(c)) showFe(docConfirmPwdField, docErrorConfirmPwd, "❌ Différents");
+        else { docErrorConfirmPwd.setText("✅ Identiques"); docErrorConfirmPwd.setStyle("-fx-text-fill:#2BBCB0;-fx-font-size:11px;");
+               docErrorConfirmPwd.setVisible(true); docErrorConfirmPwd.setManaged(true);
+               docConfirmPwdField.getStyleClass().remove("field-input-error"); }
+    }
+
+    // ── Navigation ────────────────────────────────────────────────────
+    @FXML void handleArticles(ActionEvent e) { App.navigate("ArticleList"); }
+    @FXML void handleLogout(ActionEvent e) { UserSession.getInstance().logout(); App.navigate("Login"); }
+
+    // ── Modes panneau patient ─────────────────────────────────────────
+    private void showEmpty() {
+        emptyPanel.setVisible(true);  emptyPanel.setManaged(true);
+        readPanel.setVisible(false);  readPanel.setManaged(false);
+        editPanel.setVisible(false);  editPanel.setManaged(false);
+        actionButtons.setVisible(false); actionButtons.setManaged(false);
+        selectedPatientLabel.setText("Sélectionnez un patient"); patientEmailLabel.setText("");
+        bloodGroupLabel.setText("--"); weightLabel.setText("--"); heightLabel.setText("--");
+    }
+    private void showReadMode() {
+        emptyPanel.setVisible(false); emptyPanel.setManaged(false);
+        readPanel.setVisible(true);   readPanel.setManaged(true);
+        editPanel.setVisible(false);  editPanel.setManaged(false);
+        actionButtons.setVisible(true); actionButtons.setManaged(true);
+    }
+    private void showEditMode() {
+        emptyPanel.setVisible(false); emptyPanel.setManaged(false);
+        readPanel.setVisible(false);  readPanel.setManaged(false);
+        editPanel.setVisible(true);   editPanel.setManaged(true);
+        actionButtons.setVisible(false); actionButtons.setManaged(false);
+    }
+
+    // ── Helpers génériques ────────────────────────────────────────────
+    private void showFb(Label l, String msg, boolean ok) {
+        l.setText(msg);
+        l.setStyle(ok
+            ? "-fx-text-fill:#2BBCB0;-fx-font-size:12px;-fx-font-weight:bold;-fx-padding:8 12 8 12;-fx-background-color:#f0fffe;-fx-background-radius:6;-fx-border-color:#2BBCB0;-fx-border-radius:6;-fx-border-width:1;"
+            : "-fx-text-fill:#E53E3E;-fx-font-size:12px;-fx-font-weight:bold;-fx-padding:8 12 8 12;-fx-background-color:#fff5f5;-fx-background-radius:6;-fx-border-color:#FC8181;-fx-border-radius:6;-fx-border-width:1;"
+        );
+        l.setVisible(true); l.setManaged(true);
+        fade(l);
+        if (ok) {
+            PauseTransition hidePause = new PauseTransition(Duration.seconds(4));
+            hidePause.setOnFinished(e -> hideFb(l));
+            hidePause.play();
+        }
+    }
+    private void hideFb(Label l) { l.setVisible(false); l.setManaged(false); }
+    private void showFe(javafx.scene.control.Control f, Label l, String msg) {
+        l.setText(msg); l.setStyle("-fx-text-fill:#E53E3E;-fx-font-size:11px;"); l.setVisible(true); l.setManaged(true);
+        f.getStyleClass().remove("field-input-error"); f.getStyleClass().add("field-input-error");
+    }
+    private void clearErr(javafx.scene.control.Control f, Label l) {
+        l.setVisible(false); l.setManaged(false); f.getStyleClass().remove("field-input-error");
+    }
+    private void toggle(PasswordField pf, TextField tf, boolean show) {
+        pf.setVisible(!show); pf.setManaged(!show); tf.setVisible(show); tf.setManaged(show);
+    }
+    private void fade(javafx.scene.Node n) {
+        FadeTransition ft = new FadeTransition(Duration.millis(250), n);
+        ft.setFromValue(0.5); ft.setToValue(1.0); ft.play();
+    }
+    private String val(String s) { return (s != null && !s.isEmpty()) ? s : "--"; }
+    private String orE(String s) { return s != null ? s : ""; }
+    private String nvl(String s, String def) { return (s != null && !s.isEmpty()) ? s : def; }
 }

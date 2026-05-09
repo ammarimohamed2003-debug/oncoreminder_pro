@@ -27,6 +27,11 @@ public class UserSession {
         return currentUser;
     }
 
+    /** Met à jour l'utilisateur en session (après modification du profil). */
+    public void setCurrentUser(Utilisateur user) {
+        this.currentUser = user;
+    }
+
     public boolean isLoggedIn() {
         return currentUser != null;
     }

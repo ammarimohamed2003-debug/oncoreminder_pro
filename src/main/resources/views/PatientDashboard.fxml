@@ -1,145 +1,417 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
-<?import javafx.scene.text.Text?>
+<?import javafx.geometry.Insets?>
 
-<BorderPane styleClass="root-pane bg-dashboard" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.oncoreminder.controllers.PatientDashboardController">
+<BorderPane styleClass="root-pane bg-dashboard" stylesheets="@../css/style.css"
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.oncoreminder.controllers.PatientDashboardController">
+
+    <!-- ══════════════ SIDEBAR ══════════════ -->
     <left>
-        <VBox spacing="15.0" styleClass="form-panel" prefWidth="280.0">
-            <padding>
-                <Insets bottom="20.0" left="20.0" right="20.0" top="30.0" />
-            </padding>
-            <children>
-                <VBox alignment="CENTER" spacing="12.0">
-                    <StackPane>
-                        <Circle radius="50.0" fill="#2BBCB0" opacity="0.1" />
-                        <Label text="👤" style="-fx-font-size: 40px;" />
-                    </StackPane>
-                    <Label fx:id="patientNameLabel" text="Patient Name" styleClass="brand-title" />
-                    <Label text="Patient" styleClass="stat-badge-info" />
+        <VBox spacing="14" styleClass="form-panel" prefWidth="240"
+              style="-fx-border-color: #D6CBFF; -fx-border-width: 0 2 0 0;">
+            <padding><Insets bottom="24" left="18" right="18" top="28"/></padding>
+
+            <!-- Avatar -->
+            <VBox alignment="CENTER" spacing="10">
+                <StackPane>
+                    <Circle radius="48" fill="rgba(43,188,176,0.12)"/>
+                    <Circle radius="36" fill="rgba(43,188,176,0.20)"/>
+                    <Label text="👤" style="-fx-font-size: 36px;"/>
+                </StackPane>
+                <Label fx:id="patientNameLabel" text="Patient" styleClass="brand-title"
+                       style="-fx-font-size: 15px;" wrapText="true"/>
+                <Label text="PATIENT" styleClass="stat-badge-info"/>
+            </VBox>
+
+            <Separator/>
+
+            <!-- Stats rapides -->
+            <HBox spacing="8" alignment="CENTER">
+                <VBox alignment="CENTER" spacing="2" HBox.hgrow="ALWAYS"
+                      style="-fx-background-color: rgba(43,188,176,0.08); -fx-background-radius: 8;
+                             -fx-padding: 8 4 8 4;">
+                    <Label fx:id="sideBloodLabel" text="--"
+                           style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #FC8181;"/>
+                    <Label text="Sang" style="-fx-font-size: 9px; -fx-text-fill: #888;"/>
                 </VBox>
-                
-                <Separator>
-                    <VBox.margin>
-                        <Insets top="10.0" bottom="10.0" />
-                    </VBox.margin>
-                </Separator>
-                
-                <VBox spacing="8.0">
-                    <Button text="🏠 Ma Santé" styleClass="btn-primary" maxWidth="Infinity" alignment="BASELINE_LEFT" />
-                    <Button text="📰 Articles" onAction="#handleArticles" styleClass="btn-secondary" maxWidth="Infinity" alignment="BASELINE_LEFT" />
-                    <Button text="📅 Rendez-vous" styleClass="btn-secondary" maxWidth="Infinity" alignment="BASELINE_LEFT" />
-                    <Button text="💊 Traitements" styleClass="btn-secondary" maxWidth="Infinity" alignment="BASELINE_LEFT" />
-                    <Button text="⚙️ Paramètres" styleClass="btn-secondary" maxWidth="Infinity" alignment="BASELINE_LEFT" />
+                <VBox alignment="CENTER" spacing="2" HBox.hgrow="ALWAYS"
+                      style="-fx-background-color: rgba(43,188,176,0.08); -fx-background-radius: 8;
+                             -fx-padding: 8 4 8 4;">
+                    <Label fx:id="sidePoidsLabel" text="--"
+                           style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #4A2D8F;"/>
+                    <Label text="kg" style="-fx-font-size: 9px; -fx-text-fill: #888;"/>
                 </VBox>
-                
-                <Region VBox.vgrow="ALWAYS" />
-                
-                <Button text="Déconnexion" onAction="#handleLogout" styleClass="btn-outline" maxWidth="Infinity" />
-            </children>
+                <VBox alignment="CENTER" spacing="2" HBox.hgrow="ALWAYS"
+                      style="-fx-background-color: rgba(43,188,176,0.08); -fx-background-radius: 8;
+                             -fx-padding: 8 4 8 4;">
+                    <Label fx:id="sideTailleLabel" text="--"
+                           style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2BBCB0;"/>
+                    <Label text="cm" style="-fx-font-size: 9px; -fx-text-fill: #888;"/>
+                </VBox>
+            </HBox>
+
+            <Separator/>
+
+            <VBox spacing="8">
+                <Button text="🏠  Ma Santé" styleClass="btn-primary" maxWidth="Infinity"/>
+                <Button text="📰  Articles" onAction="#handleArticles"
+                        styleClass="btn-secondary" maxWidth="Infinity"/>
+                <Button text="📅  Rendez-vous" styleClass="btn-secondary" maxWidth="Infinity"/>
+                <Button text="💊  Traitements" styleClass="btn-secondary" maxWidth="Infinity"/>
+            </VBox>
+
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <Button text="🚪  Déconnexion" onAction="#handleLogout"
+                    styleClass="btn-outline" maxWidth="Infinity"/>
         </VBox>
     </left>
+
+    <!-- ══════════════ CONTENU ══════════════ -->
     <center>
-        <ScrollPane fitToWidth="true" styleClass="stat-scroll-pane">
-            <content>
-                <VBox spacing="30.0">
-                    <padding>
-                        <Insets bottom="40.0" left="40.0" right="40.0" top="30.0" />
-                    </padding>
-                    <children>
-                        <VBox spacing="5.0">
-                            <Label text="Bienvenue dans votre espace santé" styleClass="dashboard-welcome" />
-                            <Label text="Gérez vos informations médicales en toute sécurité." styleClass="brand-subtitle" />
+        <TabPane tabClosingPolicy="UNAVAILABLE" styleClass="tab-pane">
+
+            <!-- ════ ONGLET 1 — DOSSIER MÉDICAL ════ -->
+            <tabs>
+            <Tab text="🏥  Mon Dossier Médical">
+                <ScrollPane fitToWidth="true"
+                            style="-fx-background-color: #F5F7FF; -fx-background: #F5F7FF;
+                                   -fx-border-color: transparent;">
+                    <VBox spacing="24">
+                        <padding><Insets bottom="40" left="40" right="40" top="28"/></padding>
+
+                        <!-- En-tête -->
+                        <VBox spacing="4">
+                            <Label text="Bienvenue dans votre espace santé"
+                                   styleClass="dashboard-welcome"/>
+                            <Label text="Gérez vos informations médicales en toute sécurité."
+                                   styleClass="brand-subtitle"/>
                         </VBox>
-                        
-                        <HBox spacing="25.0">
-                            <children>
-                                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER" spacing="5.0">
-                                    <padding>
-                                        <Insets bottom="20.0" left="15.0" right="15.0" top="20.0" />
-                                    </padding>
-                                    <Label text="GROUPE SANGUIN" styleClass="stat-label" />
-                                    <Label fx:id="bloodGroupLabelDisplay" text="A+" styleClass="stat-value" style="-fx-text-fill: #FC8181;" />
-                                </VBox>
-                                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER" spacing="5.0">
-                                    <padding>
-                                        <Insets bottom="20.0" left="15.0" right="15.0" top="20.0" />
-                                    </padding>
-                                    <Label text="POIDS ACTUEL" styleClass="stat-label" />
-                                    <HBox alignment="CENTER" spacing="5.0">
-                                        <Label fx:id="poidsLabelDisplay" text="75" styleClass="stat-value" />
-                                        <Label text="kg" styleClass="stat-label" />
-                                    </HBox>
-                                </VBox>
-                                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER" spacing="5.0">
-                                    <padding>
-                                        <Insets bottom="20.0" left="15.0" right="15.0" top="20.0" />
-                                    </padding>
-                                    <Label text="TAILLE" styleClass="stat-label" />
-                                    <HBox alignment="CENTER" spacing="5.0">
-                                        <Label fx:id="tailleLabelDisplay" text="180" styleClass="stat-value" />
-                                        <Label text="cm" styleClass="stat-label" />
-                                    </HBox>
-                                </VBox>
-                            </children>
-                        </HBox>
-                        
-                        <VBox spacing="20.0" styleClass="form-panel">
-                            <padding>
-                                <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
-                            </padding>
-                            <children>
-                                <Label text="Dossier Médical Personnalisé" styleClass="form-title" />
-                                
-                                <GridPane hgap="30.0" vgap="20.0">
-                                    <columnConstraints>
-                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                                    </columnConstraints>
-                                    <children>
-                                        <VBox spacing="5.0" GridPane.columnIndex="0">
-                                            <Label text="Groupe Sanguin" styleClass="field-label" />
-                                            <TextField fx:id="groupeSanguinField" styleClass="field-input" promptText="ex: O+" />
-                                            <Label fx:id="errorGroupeSanguin" text="" styleClass="field-error" visible="false" managed="false"/>
-                                        </VBox>
-                                        <HBox spacing="15.0" GridPane.columnIndex="1">
-                                            <VBox spacing="5.0" HBox.hgrow="ALWAYS">
-                                                <Label text="Poids (kg)" styleClass="field-label" />
-                                                <TextField fx:id="poidsField" styleClass="field-input" promptText="0.0" />
-                                                <Label fx:id="errorPoids" text="" styleClass="field-error" visible="false" managed="false"/>
-                                            </VBox>
-                                            <VBox spacing="5.0" HBox.hgrow="ALWAYS">
-                                                <Label text="Taille (cm)" styleClass="field-label" />
-                                                <TextField fx:id="tailleField" styleClass="field-input" promptText="0" />
-                                                <Label fx:id="errorTaille" text="" styleClass="field-error" visible="false" managed="false"/>
-                                            </VBox>
-                                        </HBox>
-                                        <VBox spacing="10.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
-                                            <Label text="Antécédents Médicaux" styleClass="field-label" />
-                                            <TextArea fx:id="antecedentsArea" styleClass="field-input" prefHeight="120.0" wrapText="true" />
-                                        </VBox>
-                                        <VBox spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                            <Label text="Allergies et Contre-indications" styleClass="field-label" />
-                                            <TextArea fx:id="allergiesArea" styleClass="field-input" prefHeight="120.0" wrapText="true" />
-                                        </VBox>
-                                    </children>
-                                </GridPane>
-                                
-                                <HBox alignment="CENTER_RIGHT" spacing="15.0">
-                                    <padding>
-                                        <Insets top="10.0" />
-                                    </padding>
-                                    <Label fx:id="successLabel" />
-                                    <Button text="Mettre à jour mon dossier" onAction="#handleSaveMedicalRecord" styleClass="btn-primary" prefWidth="250.0" />
+
+                        <!-- Stats rapides -->
+                        <HBox spacing="20">
+                            <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER" spacing="5">
+                                <padding><Insets bottom="18" left="15" right="15" top="18"/></padding>
+                                <Label text="🩸  GROUPE SANGUIN" styleClass="stat-label"/>
+                                <Label fx:id="bloodGroupLabelDisplay" text="--" styleClass="stat-value"
+                                       style="-fx-text-fill: #FC8181;"/>
+                            </VBox>
+                            <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER" spacing="5">
+                                <padding><Insets bottom="18" left="15" right="15" top="18"/></padding>
+                                <Label text="⚖️  POIDS ACTUEL" styleClass="stat-label"/>
+                                <HBox alignment="CENTER" spacing="4">
+                                    <Label fx:id="poidsLabelDisplay" text="--" styleClass="stat-value"/>
+                                    <Label text="kg" styleClass="stat-label"/>
                                 </HBox>
-                            </children>
+                            </VBox>
+                            <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER" spacing="5">
+                                <padding><Insets bottom="18" left="15" right="15" top="18"/></padding>
+                                <Label text="📏  TAILLE" styleClass="stat-label"/>
+                                <HBox alignment="CENTER" spacing="4">
+                                    <Label fx:id="tailleLabelDisplay" text="--" styleClass="stat-value"/>
+                                    <Label text="cm" styleClass="stat-label"/>
+                                </HBox>
+                            </VBox>
+                        </HBox>
+
+                        <!-- Formulaire dossier médical -->
+                        <VBox spacing="20" styleClass="form-panel">
+                            <padding><Insets bottom="28" left="28" right="28" top="24"/></padding>
+
+                            <HBox alignment="CENTER_LEFT" spacing="10">
+                                <Label text="📋" style="-fx-font-size: 20px;"/>
+                                <Label text="Dossier Médical Personnalisé" styleClass="form-title"/>
+                            </HBox>
+                            <Separator/>
+
+                            <!-- Ligne 1 : Groupe sanguin + Poids + Taille -->
+                            <HBox spacing="16">
+                                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                    <Label text="Groupe Sanguin" styleClass="field-label"/>
+                                    <ComboBox fx:id="groupeSanguinCombo" styleClass="field-combo"
+                                              maxWidth="Infinity" prefHeight="40"/>
+                                    <Label fx:id="errorGroupeSanguin" text="" styleClass="field-error"
+                                           visible="false" managed="false"/>
+                                </VBox>
+                                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                    <Label text="Poids (kg)" styleClass="field-label"/>
+                                    <TextField fx:id="poidsField" promptText="ex: 70.5"
+                                               styleClass="field-input" prefHeight="40"/>
+                                    <Label fx:id="errorPoids" text="" styleClass="field-error"
+                                           visible="false" managed="false"/>
+                                </VBox>
+                                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                    <Label text="Taille (cm)" styleClass="field-label"/>
+                                    <TextField fx:id="tailleField" promptText="ex: 175"
+                                               styleClass="field-input" prefHeight="40"/>
+                                    <Label fx:id="errorTaille" text="" styleClass="field-error"
+                                           visible="false" managed="false"/>
+                                </VBox>
+                            </HBox>
+
+                            <!-- Antécédents + Allergies -->
+                            <HBox spacing="16">
+                                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                    <Label text="🏥  Antécédents Médicaux" styleClass="field-label"/>
+                                    <TextArea fx:id="antecedentsArea" styleClass="field-input"
+                                              wrapText="true" prefHeight="110"/>
+                                </VBox>
+                                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                    <Label text="⚠️  Allergies &amp; Contre-indications" styleClass="field-label"/>
+                                    <TextArea fx:id="allergiesArea" styleClass="field-input"
+                                              wrapText="true" prefHeight="110"/>
+                                </VBox>
+                            </HBox>
+
+                            <!-- Traitements -->
+                            <VBox spacing="4">
+                                <Label text="💊  Traitements en cours" styleClass="field-label"/>
+                                <TextArea fx:id="traitementsArea" styleClass="field-input"
+                                          wrapText="true" prefHeight="80"
+                                          promptText="Listez vos traitements actuels..."/>
+                            </VBox>
+
+                            <!-- Feedback + Bouton -->
+                            <Label fx:id="medFeedbackLabel" text="" wrapText="true"
+                                   visible="false" managed="false"
+                                   style="-fx-font-size: 12px; -fx-font-weight: bold;
+                                          -fx-padding: 8 12 8 12; -fx-background-radius: 6;
+                                          -fx-border-radius: 6; -fx-border-width: 1;"/>
+
+                            <HBox alignment="CENTER_RIGHT" spacing="12">
+                                <Button fx:id="saveMedBtn" text="💾  Enregistrer le dossier"
+                                        onAction="#handleSaveMedicalRecord"
+                                        styleClass="btn-primary" prefHeight="42" prefWidth="240"/>
+                            </HBox>
                         </VBox>
-                    </children>
-                </VBox>
-            </content>
-        </ScrollPane>
+                    </VBox>
+                </ScrollPane>
+            </Tab>
+
+            <!-- ════ ONGLET 2 — MON PROFIL ════ -->
+            <Tab text="👤  Mon Profil">
+                <ScrollPane fitToWidth="true"
+                            style="-fx-background-color: #F5F7FF; -fx-background: #F5F7FF;
+                                   -fx-border-color: transparent;">
+                    <VBox spacing="24">
+                        <padding><Insets bottom="40" left="40" right="40" top="28"/></padding>
+
+                        <!-- Informations personnelles -->
+                        <VBox spacing="18" styleClass="form-panel">
+                            <padding><Insets bottom="28" left="28" right="28" top="24"/></padding>
+
+                            <HBox alignment="CENTER_LEFT" spacing="10">
+                                <Label text="👤" style="-fx-font-size: 20px;"/>
+                                <Label text="Informations Personnelles" styleClass="form-title"/>
+                            </HBox>
+                            <Separator/>
+
+                            <!-- Nom + Prénom -->
+                            <HBox spacing="16">
+                                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                    <Label text="Nom" styleClass="field-label"/>
+                                    <TextField fx:id="profileNomField" styleClass="field-input" prefHeight="40"/>
+                                    <Label fx:id="profileErrorNom" text="" styleClass="field-error"
+                                           visible="false" managed="false"/>
+                                </VBox>
+                                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                    <Label text="Prénom" styleClass="field-label"/>
+                                    <TextField fx:id="profilePrenomField" styleClass="field-input" prefHeight="40"/>
+                                    <Label fx:id="profileErrorPrenom" text="" styleClass="field-error"
+                                           visible="false" managed="false"/>
+                                </VBox>
+                            </HBox>
+
+                            <!-- Email -->
+                            <VBox spacing="4">
+                                <Label text="Email" styleClass="field-label"/>
+                                <TextField fx:id="profileEmailField" styleClass="field-input" prefHeight="40"/>
+                                <Label fx:id="profileErrorEmail" text="" styleClass="field-error"
+                                       visible="false" managed="false"/>
+                            </VBox>
+
+                            <!-- Téléphone + Sexe -->
+                            <HBox spacing="16">
+                                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                    <Label text="Téléphone" styleClass="field-label"/>
+                                    <TextField fx:id="profileTelField" promptText="+213 XX XX XX XX"
+                                               styleClass="field-input" prefHeight="40"/>
+                                </VBox>
+                                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                    <Label text="Sexe" styleClass="field-label"/>
+                                    <ComboBox fx:id="profileSexeCombo" styleClass="field-combo"
+                                              maxWidth="Infinity" prefHeight="40"/>
+                                </VBox>
+                            </HBox>
+
+                            <!-- Date naissance -->
+                            <VBox spacing="4">
+                                <Label text="Date de naissance (JJ/MM/AAAA)" styleClass="field-label"/>
+                                <TextField fx:id="profileDateNaissField" promptText="ex: 15/03/1990"
+                                           styleClass="field-input" prefHeight="40"/>
+                            </VBox>
+
+                            <!-- Adresse -->
+                            <VBox spacing="4">
+                                <Label text="Adresse" styleClass="field-label"/>
+                                <TextField fx:id="profileAdresseField"
+                                           promptText="N° Rue, Ville, Code postal"
+                                           styleClass="field-input" prefHeight="40"/>
+                            </VBox>
+
+                            <!-- Feedback profil -->
+                            <Label fx:id="profileFeedbackLabel" text="" wrapText="true"
+                                   visible="false" managed="false"
+                                   style="-fx-font-size: 12px; -fx-font-weight: bold;
+                                          -fx-padding: 8 12 8 12; -fx-background-radius: 6;
+                                          -fx-border-radius: 6; -fx-border-width: 1;"/>
+
+                            <HBox alignment="CENTER_RIGHT" spacing="12">
+                                <Button text="✕  Annuler" onAction="#handleCancelProfile"
+                                        styleClass="btn-secondary" prefHeight="40" prefWidth="120"/>
+                                <Button fx:id="saveProfileBtn" text="💾  Enregistrer le profil"
+                                        onAction="#handleSaveProfile"
+                                        styleClass="btn-primary" prefHeight="40" prefWidth="220"/>
+                            </HBox>
+                        </VBox>
+                    </VBox>
+                </ScrollPane>
+            </Tab>
+
+            <!-- ════ ONGLET 3 — SÉCURITÉ ════ -->
+            <Tab text="🔐  Sécurité">
+                <ScrollPane fitToWidth="true"
+                            style="-fx-background-color: #F5F7FF; -fx-background: #F5F7FF;
+                                   -fx-border-color: transparent;">
+                    <VBox spacing="24">
+                        <padding><Insets bottom="40" left="40" right="40" top="28"/></padding>
+
+                        <!-- Changement de mot de passe -->
+                        <VBox spacing="18" styleClass="form-panel" maxWidth="560">
+                            <padding><Insets bottom="28" left="28" right="28" top="24"/></padding>
+
+                            <HBox alignment="CENTER_LEFT" spacing="10">
+                                <Label text="🔐" style="-fx-font-size: 20px;"/>
+                                <Label text="Modifier le mot de passe" styleClass="form-title"/>
+                            </HBox>
+                            <Separator/>
+
+                            <Label text="Pour modifier votre mot de passe, entrez d'abord votre mot de passe actuel."
+                                   wrapText="true"
+                                   style="-fx-text-fill: #888; -fx-font-size: 12px;"/>
+
+                            <!-- Ancien mot de passe -->
+                            <VBox spacing="4">
+                                <Label text="Mot de passe actuel" styleClass="field-label"/>
+                                <StackPane>
+                                    <PasswordField fx:id="oldPwdField"
+                                                   promptText="Votre mot de passe actuel"
+                                                   styleClass="field-input" prefHeight="42"/>
+                                    <TextField fx:id="oldPwdVisible"
+                                               promptText="Votre mot de passe actuel"
+                                               styleClass="field-input" prefHeight="42"
+                                               visible="false" managed="false"/>
+                                </StackPane>
+                                <Label fx:id="errorOldPwd" text="" styleClass="field-error"
+                                       visible="false" managed="false"/>
+                            </VBox>
+
+                            <!-- Nouveau mot de passe -->
+                            <VBox spacing="4">
+                                <Label text="Nouveau mot de passe" styleClass="field-label"/>
+                                <StackPane>
+                                    <PasswordField fx:id="newPwdField"
+                                                   promptText="Minimum 8 caractères"
+                                                   styleClass="field-input" prefHeight="42"/>
+                                    <TextField fx:id="newPwdVisible"
+                                               promptText="Minimum 8 caractères"
+                                               styleClass="field-input" prefHeight="42"
+                                               visible="false" managed="false"/>
+                                </StackPane>
+                                <Label fx:id="errorNewPwd" text="" styleClass="field-error"
+                                       visible="false" managed="false"/>
+                            </VBox>
+
+                            <!-- Confirmation -->
+                            <VBox spacing="4">
+                                <Label text="Confirmer le nouveau mot de passe" styleClass="field-label"/>
+                                <StackPane>
+                                    <PasswordField fx:id="confirmPwdField"
+                                                   promptText="Répétez le nouveau mot de passe"
+                                                   styleClass="field-input" prefHeight="42"/>
+                                    <TextField fx:id="confirmPwdVisible"
+                                               promptText="Répétez le nouveau mot de passe"
+                                               styleClass="field-input" prefHeight="42"
+                                               visible="false" managed="false"/>
+                                </StackPane>
+                                <Label fx:id="errorConfirmPwd" text="" styleClass="field-error"
+                                       visible="false" managed="false"/>
+                            </VBox>
+
+                            <!-- Toggle show -->
+                            <HBox spacing="8" alignment="CENTER_LEFT">
+                                <CheckBox fx:id="showPwdCheck" onAction="#toggleShowPassword"/>
+                                <Label text="Afficher les mots de passe"
+                                       style="-fx-text-fill: #666; -fx-font-size: 12px;"/>
+                            </HBox>
+
+                            <!-- Feedback -->
+                            <Label fx:id="pwdFeedbackLabel" text="" wrapText="true"
+                                   visible="false" managed="false"
+                                   style="-fx-font-size: 12px; -fx-font-weight: bold;
+                                          -fx-padding: 8 12 8 12; -fx-background-radius: 6;
+                                          -fx-border-radius: 6; -fx-border-width: 1;"/>
+
+                            <HBox alignment="CENTER_RIGHT" spacing="12">
+                                <Button text="✕  Annuler" onAction="#handleCancelPassword"
+                                        styleClass="btn-secondary" prefHeight="40" prefWidth="120"/>
+                                <Button fx:id="savePwdBtn" text="🔐  Changer le mot de passe"
+                                        onAction="#handleChangePassword"
+                                        styleClass="btn-primary" prefHeight="40" prefWidth="240"/>
+                            </HBox>
+                        </VBox>
+
+                        <!-- Conseils de sécurité -->
+                        <VBox spacing="12" styleClass="form-panel"
+                              style="-fx-border-color: #2BBCB0; -fx-border-width: 2 0 0 0;">
+                            <padding><Insets bottom="20" left="24" right="24" top="20"/></padding>
+                            <Label text="💡  Conseils de sécurité" styleClass="form-title"
+                                   style="-fx-font-size: 14px;"/>
+                            <Label text="• Utilisez au moins 8 caractères avec majuscules, chiffres et symboles."
+                                   style="-fx-text-fill: #555; -fx-font-size: 12px;"/>
+                            <Label text="• Ne partagez jamais votre mot de passe avec quelqu'un."
+                                   style="-fx-text-fill: #555; -fx-font-size: 12px;"/>
+                            <Label text="• Changez votre mot de passe régulièrement (tous les 3 mois)."
+                                   style="-fx-text-fill: #555; -fx-font-size: 12px;"/>
+                            <Label text="• Évitez d'utiliser votre date de naissance ou votre nom."
+                                   style="-fx-text-fill: #555; -fx-font-size: 12px;"/>
+                        </VBox>
+                    </VBox>
+                </ScrollPane>
+            </Tab>
+            </tabs>
+        </TabPane>
     </center>
+
 </BorderPane>
