@@ -754,6 +754,8 @@ public class ArticleListController {
         App.navigate("MEDECIN".equals(user.getRole()) ? "DoctorDashboard" : "PatientDashboard");
     }
 
+    @FXML void handleRendezVous(ActionEvent event) { DoctorDashboardController.showEventsOnLoad = true; App.navigate("DoctorDashboard"); }
+
     @FXML void handleLogout(ActionEvent event) {
         UserSession.getInstance().logout();
         App.navigate("Login");

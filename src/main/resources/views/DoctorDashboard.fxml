@@ -81,13 +81,11 @@
                 <Label text="NAVIGATION"
                        style="-fx-text-fill: rgba(255,255,255,0.32); -fx-font-size: 10px;
                               -fx-font-weight: bold; -fx-padding: 0 8 5 8;"/>
-                <Button text="🏠  Mon Espace"
+                <Button fx:id="btnMonEspace" text="🏠  Mon Espace" onAction="#handleMonEspace"
                         maxWidth="Infinity" styleClass="sidebar-nav-btn-doctor-active"/>
                 <Button text="📰  Mes Articles" onAction="#handleArticles"
                         maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
-                <Button text="📅  Rendez-vous"
-                        maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
-                <Button text="⚙️  Paramètres"
+                <Button fx:id="btnEvenements" text="📅  Événements" onAction="#handleRendezVous"
                         maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
             </VBox>
 
@@ -109,7 +107,8 @@
 
     <!-- ══════════════ CONTENU ══════════════ -->
     <center>
-        <VBox spacing="0">
+        <StackPane>
+        <VBox fx:id="mainContent" spacing="0">
 
             <!-- Top bar -->
             <HBox styleClass="topbar" alignment="CENTER_LEFT">
@@ -534,6 +533,15 @@
             </tabs>
         </TabPane>
         </VBox>
+
+        <VBox fx:id="eventsPane" visible="false" managed="false">
+            <fx:include fx:id="eventTabContent" source="EventTabContent.fxml" VBox.vgrow="ALWAYS"/>
+        </VBox>
+
+        <VBox fx:id="reservationsPane" visible="false" managed="false">
+            <fx:include fx:id="reservationContent" source="ReservationContent.fxml" VBox.vgrow="ALWAYS"/>
+        </VBox>
+        </StackPane>
     </center>
 
 </BorderPane>

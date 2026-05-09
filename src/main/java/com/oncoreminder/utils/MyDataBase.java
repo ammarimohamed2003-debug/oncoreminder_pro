@@ -98,6 +98,46 @@ public class MyDataBase {
                 try { stmt.execute(alter); } catch (SQLException ignored) {}
             }
 
+            // Event & Reservation tables
+            stmt.execute(
+                "CREATE TABLE IF NOT EXISTS `event` (" +
+                "  `id` int NOT NULL AUTO_INCREMENT," +
+                "  `titre` varchar(200) NOT NULL," +
+                "  `description` text DEFAULT NULL," +
+                "  `date_event` datetime NOT NULL," +
+                "  `lieu` varchar(255) DEFAULT NULL," +
+                "  `capacite_max` int DEFAULT 100," +
+                "  `places_restantes` int DEFAULT 100," +
+                "  `createur_id` int NOT NULL," +
+                "  `image_path` varchar(500) DEFAULT NULL," +
+                "  `date_creation` datetime DEFAULT CURRENT_TIMESTAMP," +
+                "  PRIMARY KEY (`id`)" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
+            );
+
+            stmt.execute(
+                "CREATE TABLE IF NOT EXISTS `reservation` (" +
+                "  `id` int NOT NULL AUTO_INCREMENT," +
+                "  `event_id` int NOT NULL," +
+                "  `utilisateur_id` int NOT NULL," +
+                "  `date_reservation` datetime DEFAULT CURRENT_TIMESTAMP," +
+                "  `statut` enum('CONFIRMEE','ANNULEE') DEFAULT 'CONFIRMEE'," +
+                "  PRIMARY KEY (`id`)" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
+            );
+
+            // Patch: add missing columns to event table if it already existed without them
+            String[] eventAlters = {
+                "ALTER TABLE `event` ADD COLUMN `image_path` varchar(500) DEFAULT NULL",
+                "ALTER TABLE `event` ADD COLUMN `date_creation` datetime DEFAULT CURRENT_TIMESTAMP",
+                "ALTER TABLE `event` ADD COLUMN `createur_id` int NOT NULL DEFAULT 1",
+                "ALTER TABLE `event` ADD COLUMN `places_restantes` int DEFAULT 100",
+                "ALTER TABLE `event` ADD COLUMN `capacite_max` int DEFAULT 100"
+            };
+            for (String alter : eventAlters) {
+                try { stmt.execute(alter); } catch (SQLException ignored) {}
+            }
+
             for (String alter : alterQueries) {
                 try {
                     // Note: IF NOT EXISTS for columns requires MySQL 8.0.19+ or MariaDB 10.2.2+

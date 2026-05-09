@@ -4,7 +4,9 @@
       "PowerShell(Get-Command *)",
       "PowerShell($env:APPDATA)",
       "PowerShell(Get-ChildItem *)",
-      "PowerShell(Start-Process \"C:\\\\Program Files\\\\JetBrains\\\\IntelliJ IDEA 2025.3.2\\\\bin\\\\idea64.exe\")"
+      "PowerShell(Start-Process \"C:\\\\Program Files\\\\JetBrains\\\\IntelliJ IDEA 2025.3.2\\\\bin\\\\idea64.exe\")",
+      "PowerShell($mvn = \"C:\\\\Program Files\\\\JetBrains\\\\IntelliJ IDEA 2025.3.2\\\\plugins\\\\maven\\\\lib\\\\maven3\\\\bin\\\\mvn.cmd\"; Set-Location \"C:\\\\Users\\\\T E C H O U S E\\\\Desktop\\\\oncoreminder_pro\"; & $mvn compile 2>&1 | Select-Object -Last 80)",
+      "PowerShell($mvn = \"C:\\\\Program Files\\\\JetBrains\\\\IntelliJ IDEA 2025.3.2\\\\plugins\\\\maven\\\\lib\\\\maven3\\\\bin\\\\mvn.cmd\"; Set-Location \"C:\\\\Users\\\\T E C H O U S E\\\\Desktop\\\\oncoreminder_pro\"; & $mvn compile 2>&1 | Select-Object -Last 20)"
     ]
   }
 }

@@ -67,9 +67,7 @@
                         maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
                 <Button text="📰  Mes Articles"
                         maxWidth="Infinity" styleClass="sidebar-nav-btn-doctor-active"/>
-                <Button text="📅  Rendez-vous"
-                        maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
-                <Button text="⚙️  Paramètres"
+                <Button text="📅  Événements" onAction="#handleRendezVous"
                         maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
             </VBox>
 

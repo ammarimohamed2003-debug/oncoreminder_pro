@@ -371,6 +371,8 @@ public class ArticleFormController {
         App.navigate("ArticleList");
     }
 
+    @FXML void handleRendezVous(ActionEvent event) { DoctorDashboardController.showEventsOnLoad = true; App.navigate("DoctorDashboard"); }
+
     @FXML void handleLogout(ActionEvent event) {
         UserSession.getInstance().logout();
         App.navigate("Login");

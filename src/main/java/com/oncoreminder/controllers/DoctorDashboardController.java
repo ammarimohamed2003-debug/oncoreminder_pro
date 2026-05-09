@@ -26,9 +26,22 @@ import java.util.stream.Collectors;
 
 public class DoctorDashboardController {
 
+    public static int     pendingTab            = -1;
+    public static boolean showEventsOnLoad      = false;
+    public static boolean showReservationsOnLoad = false;
+
     // ── Sidebar ───────────────────────────────────────────────────────
-    @FXML private TabPane mainTabPane;
-    @FXML private Label   doctorSidebarLabel;
+    @FXML private TabPane  mainTabPane;
+    @FXML private VBox     mainContent;
+    @FXML private VBox     eventsPane;
+    @FXML private VBox     reservationsPane;
+    @FXML private Button   btnMonEspace;
+    @FXML private Button   btnEvenements;
+    @FXML private Label    doctorSidebarLabel;
+
+    // ── Sous-contrôleurs (fx:include) ─────────────────────────────────
+    @FXML private EventController       eventTabContentController;
+    @FXML private ReservationController reservationContentController;
 
     // ── Top bar ──────────────────────────────────────────────────────
     @FXML private TextField searchField;
@@ -115,6 +128,16 @@ public class DoctorDashboardController {
     @FXML
     public void initialize() {
         currentDoctor = UserSession.getInstance().getCurrentUser();
+        if (pendingTab >= 0) { int t = pendingTab; pendingTab = -1; Platform.runLater(() -> mainTabPane.getSelectionModel().select(t)); }
+        if (showEventsOnLoad)       { showEventsOnLoad       = false; Platform.runLater(() -> showPane(1)); }
+        if (showReservationsOnLoad) { showReservationsOnLoad = false; Platform.runLater(() -> showPane(2)); }
+
+        Platform.runLater(() -> {
+            if (eventTabContentController != null)
+                eventTabContentController.setOnOuvrirReservations(() -> showPane(2));
+            if (reservationContentController != null)
+                reservationContentController.setOnRetourEvents(() -> showPane(1));
+        });
 
         if (currentDoctor != null) {
             doctorSidebarLabel.setText("Dr. " + currentDoctor.getNom() + " " + currentDoctor.getPrenom());
@@ -488,8 +511,22 @@ public class DoctorDashboardController {
     }
 
     // ── Navigation ────────────────────────────────────────────────────
-    @FXML void handleArticles(ActionEvent e) { App.navigate("ArticleList"); }
-    @FXML void handleLogout(ActionEvent e) { UserSession.getInstance().logout(); App.navigate("Login"); }
+    @FXML void handleArticles(ActionEvent e)   { App.navigate("ArticleList"); }
+    @FXML void handleMonEspace(ActionEvent e)  { showPane(0); }
+    @FXML void handleRendezVous(ActionEvent e) { showPane(1); }
+    @FXML void handleLogout(ActionEvent e)     { UserSession.getInstance().logout(); App.navigate("Login"); }
+
+    private static final String BTN_ACTIVE = "sidebar-nav-btn-doctor-active";
+    private static final String BTN_NORMAL = "sidebar-nav-btn";
+
+    private void showPane(int which) {
+        mainContent.setVisible(which == 0);      mainContent.setManaged(which == 0);
+        eventsPane.setVisible(which == 1);       eventsPane.setManaged(which == 1);
+        reservationsPane.setVisible(which == 2); reservationsPane.setManaged(which == 2);
+        btnMonEspace.getStyleClass().setAll(which == 0 ? BTN_ACTIVE : BTN_NORMAL);
+        // Événements reste actif aussi quand réservations est affiché (sous-section)
+        btnEvenements.getStyleClass().setAll(which >= 1 ? BTN_ACTIVE : BTN_NORMAL);
+    }
 
     // ── Modes panneau patient ─────────────────────────────────────────
     private void showEmpty() {

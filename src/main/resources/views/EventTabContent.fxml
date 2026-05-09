@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.oncoreminder.controllers.EventController"
+      spacing="0">
+
+    <!-- ── Action bar ── -->
+    <HBox spacing="10" alignment="CENTER_LEFT"
+          style="-fx-background-color:#FFFFFF; -fx-padding:10 16 10 16;
+                 -fx-border-color:#EEF4FB; -fx-border-width:0 0 1 0;">
+
+        <Label text="📅" style="-fx-font-size:12px;"/>
+        <Label fx:id="lbTotalEvents" text="0" styleClass="stat-value" style="-fx-font-size:13px;"/>
+        <Label text="événements" styleClass="stat-label"/>
+
+        <Separator orientation="VERTICAL" style="-fx-opacity:0.3; -fx-padding:0 6 0 6;"/>
+
+        <Label text="🎟" style="-fx-font-size:12px;"/>
+        <Label fx:id="lbReservationsActives" text="0" styleClass="stat-value" style="-fx-font-size:13px;"/>
+        <Label text="réservations" styleClass="stat-label"/>
+
+        <Separator orientation="VERTICAL" style="-fx-opacity:0.3; -fx-padding:0 6 0 6;"/>
+
+        <Label text="✅" style="-fx-font-size:12px;"/>
+        <Label fx:id="lbEventsActifs" text="0" styleClass="stat-value" style="-fx-font-size:13px;"/>
+        <Label text="actifs" styleClass="stat-label"/>
+
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <Button text="＋ Ajouter"    onAction="#handleAjouterClick"          styleClass="event-btn-turquoise"
+                style="-fx-padding:7 12 7 12; -fx-background-radius:8; -fx-border-radius:8; -fx-cursor:hand; -fx-font-size:12px;"/>
+        <Button text="✎ Modifier"   onAction="#ouvrirFormulaireModification" styleClass="event-btn-amber"
+                style="-fx-padding:7 12 7 12; -fx-background-radius:8; -fx-border-radius:8; -fx-cursor:hand; -fx-font-size:12px;"/>
+        <Button text="🗑 Supprimer" onAction="#supprimerEvent"               styleClass="event-btn-red"
+                style="-fx-padding:7 12 7 12; -fx-background-radius:8; -fx-border-radius:8; -fx-cursor:hand; -fx-font-size:12px;"/>
+        <Button text="📋 Réservations" onAction="#ouvrirReservations"
+                style="-fx-padding:7 12 7 12; -fx-background-radius:8; -fx-border-radius:8; -fx-cursor:hand;
+                       -fx-font-size:12px; -fx-background-color:#5B35A5; -fx-text-fill:#FFFFFF; -fx-font-weight:bold;"/>
+    </HBox>
+
+    <!-- ── Main HBox (table + form) ── -->
+    <HBox spacing="16" VBox.vgrow="ALWAYS" style="-fx-padding:16; -fx-background-color:#EBF4FF;">
+
+        <!-- Left: Filters + Table -->
+        <VBox spacing="12" HBox.hgrow="ALWAYS">
+
+            <!-- Search + filters -->
+            <VBox styleClass="form-panel" spacing="10" style="-fx-padding:14 16 14 16;">
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <TextField fx:id="tfRecherche" styleClass="field-input"
+                               promptText="🔎  Rechercher un événement (titre, lieu…)"
+                               HBox.hgrow="ALWAYS" style="-fx-pref-height:36px;"/>
+                    <Label fx:id="lbMessage" text="0 événement(s)"
+                           style="-fx-text-fill:#5B35A5; -fx-font-size:12px; -fx-font-weight:bold;"/>
+                </HBox>
+                <HBox spacing="6" alignment="CENTER_LEFT">
+                    <Button fx:id="btnFiltreTous"       text="Tous"          onAction="#filtrerTous"
+                            styleClass="event-tab-active" style="-fx-padding:5 14 5 14; -fx-cursor:hand;"/>
+                    <Button fx:id="btnFiltreAujourdhui" text="Aujourd'hui"   onAction="#filtrerAujourdhui"
+                            styleClass="event-tab"        style="-fx-padding:5 14 5 14; -fx-cursor:hand;"/>
+                    <Button fx:id="btnFiltreSemaine"    text="Cette semaine" onAction="#filtrerSemaine"
+                            styleClass="event-tab"        style="-fx-padding:5 14 5 14; -fx-cursor:hand;"/>
+                    <Button fx:id="btnFiltreComplet"    text="Complet"       onAction="#filtrerComplet"
+                            styleClass="event-tab"        style="-fx-padding:5 14 5 14; -fx-cursor:hand;"/>
+                    <Button fx:id="btnFiltreDisponible" text="Disponible"    onAction="#filtrerDisponible"
+                            styleClass="event-tab"        style="-fx-padding:5 14 5 14; -fx-cursor:hand;"/>
+                </HBox>
+            </VBox>
+
+            <!-- Table -->
+            <VBox VBox.vgrow="ALWAYS" styleClass="form-panel" spacing="0">
+                <HBox style="-fx-background-color:linear-gradient(to right,#5B35A5,#4372C4);
+                             -fx-background-radius:12 12 0 0; -fx-padding:12 18 12 18;"
+                      alignment="CENTER_LEFT">
+                    <Label text="📋  Liste des Événements"
+                           style="-fx-text-fill:#FFFFFF; -fx-font-size:14px; -fx-font-weight:bold;"/>
+                </HBox>
+                <TableView fx:id="tableEvent" VBox.vgrow="ALWAYS" styleClass="main-table"
+                           style="-fx-background-radius:0 0 12 12;">
+                    <columns>
+                        <TableColumn fx:id="colImage"    text="Image"       prefWidth="80"/>
+                        <TableColumn fx:id="colTitre"    text="Titre"       prefWidth="170"/>
+                        <TableColumn fx:id="colLieu"     text="Lieu"        prefWidth="140"/>
+                        <TableColumn fx:id="colDate"     text="Date / Heure" prefWidth="130"/>
+                        <TableColumn fx:id="colCapacite" text="Capacité"    prefWidth="75"/>
+                        <TableColumn fx:id="colPlaces"   text="Places"      prefWidth="75"/>
+                    </columns>
+                    <placeholder>
+                        <VBox alignment="CENTER" spacing="10" style="-fx-padding:50;">
+                            <Label text="🗓" style="-fx-font-size:48px; -fx-text-fill:#C8DCF0;"/>
+                            <Label text="Aucun événement — cliquez sur ＋ Ajouter"
+                                   style="-fx-text-fill:#B0C4D8; -fx-font-size:14px; -fx-font-style:italic;"/>
+                        </VBox>
+                    </placeholder>
+                </TableView>
+            </VBox>
+        </VBox>
+
+        <!-- Right: Form (hidden by default) -->
+        <ScrollPane fx:id="formulairePane" fitToWidth="true" prefWidth="360" minWidth="330"
+                    visible="false" managed="false"
+                    style="-fx-background-color:transparent; -fx-background:transparent;
+                           -fx-border-color:transparent; -fx-padding:0;">
+            <VBox spacing="0" styleClass="form-panel">
+                <VBox style="-fx-background-color:linear-gradient(to right,#5B35A5,#4372C4);
+                             -fx-background-radius:12 12 0 0; -fx-padding:14 18 14 18;">
+                    <Label fx:id="formTitle" text="Ajouter un Événement"
+                           style="-fx-text-fill:#FFFFFF; -fx-font-size:15px; -fx-font-weight:bold;"/>
+                    <Label text="Remplissez les champs ci-dessous"
+                           style="-fx-text-fill:rgba(255,255,255,0.70); -fx-font-size:11px;"/>
+                </VBox>
+                <VBox spacing="10" style="-fx-padding:16;">
+                    <Label text="Titre *" styleClass="field-label"/>
+                    <TextField fx:id="tfTitre" styleClass="field-input" promptText="Ex : Conférence oncologie"
+                               style="-fx-pref-height:34px;"/>
+                    <HBox spacing="10">
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="Date *" styleClass="field-label"/>
+                            <DatePicker fx:id="dpDate" maxWidth="Infinity" styleClass="field-input"
+                                        style="-fx-pref-height:34px;"/>
+                        </VBox>
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="Heure *" styleClass="field-label"/>
+                            <TextField fx:id="tfHeure" styleClass="field-input" promptText="10:00"
+                                       style="-fx-pref-height:34px;"/>
+                        </VBox>
+                    </HBox>
+                    <Label text="Capacité *" styleClass="field-label"/>
+                    <TextField fx:id="tfCapacite" styleClass="field-input" promptText="Ex : 50"
+                               style="-fx-pref-height:34px;"/>
+                    <Label text="Lieu *" styleClass="field-label"/>
+                    <TextField fx:id="tfLieu" styleClass="field-input" promptText="Ex : Hôpital Tunis"
+                               style="-fx-pref-height:34px;"/>
+                    <Label text="Description" styleClass="field-label"/>
+                    <TextArea fx:id="taDescription" prefRowCount="3" wrapText="true"
+                              styleClass="field-input" promptText="Description courte de l'événement…"/>
+                    <Button text="✨  Générer avec IA" onAction="#genererDescription" maxWidth="Infinity"
+                            style="-fx-background-color:#7C3AED; -fx-text-fill:#FFFFFF; -fx-font-weight:bold;
+                                   -fx-font-size:12px; -fx-background-radius:8; -fx-border-radius:8;
+                                   -fx-padding:7 0 7 0; -fx-cursor:hand;"/>
+                    <Label text="Image" styleClass="field-label"/>
+                    <StackPane style="-fx-background-color:#FAFAFA; -fx-background-radius:10;
+                                      -fx-border-color:#E5E7EB; -fx-border-width:1.5;
+                                      -fx-border-radius:10; -fx-min-height:110px;">
+                        <ImageView fx:id="imagePreview" fitHeight="100" fitWidth="310" preserveRatio="true"/>
+                        <Label fx:id="imageHint" text="Aucune image sélectionnée"
+                               style="-fx-text-fill:#94A3B8; -fx-font-size:12px;"/>
+                    </StackPane>
+                    <HBox spacing="8">
+                        <TextField fx:id="tfImagePath" HBox.hgrow="ALWAYS" editable="false"
+                                   styleClass="field-input" promptText="Chemin de l'image…"
+                                   style="-fx-pref-height:32px;"/>
+                        <Button text="Parcourir" onAction="#choisirImage"
+                                style="-fx-background-color:#FFFFFF; -fx-text-fill:#334155; -fx-font-size:12px;
+                                       -fx-font-weight:bold; -fx-border-color:#E5E7EB; -fx-border-width:1.5;
+                                       -fx-background-radius:8; -fx-border-radius:8;
+                                       -fx-padding:6 12 6 12; -fx-cursor:hand;"/>
+                    </HBox>
+                    <Button text="Annuler" onAction="#handleAjouterClick" maxWidth="Infinity"
+                            style="-fx-background-color:#FFFFFF; -fx-text-fill:#5B35A5; -fx-font-weight:bold;
+                                   -fx-font-size:13px; -fx-background-radius:10; -fx-border-radius:10;
+                                   -fx-border-color:#C8DCF0; -fx-border-width:1.5;
+                                   -fx-padding:10 0 10 0; -fx-cursor:hand;"/>
+                    <Button text="＋  Enregistrer l'événement" onAction="#enregistrerEvent" maxWidth="Infinity"
+                            style="-fx-background-color:#0D9488; -fx-text-fill:#FFFFFF; -fx-font-weight:bold;
+                                   -fx-font-size:13px; -fx-background-radius:10; -fx-border-radius:10;
+                                   -fx-padding:12 0 12 0; -fx-cursor:hand;
+                                   -fx-effect:dropshadow(gaussian,rgba(13,148,136,0.40),10,0,0,4);"/>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+
+    </HBox>
+</VBox>

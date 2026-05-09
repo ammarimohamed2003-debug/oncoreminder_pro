@@ -11,6 +11,7 @@ import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.util.Duration;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -24,9 +25,20 @@ import org.mindrot.jbcrypt.BCrypt;
  */
 public class PatientDashboardController {
 
+    public static boolean showEventsOnLoad = false;
+
     // ── Sidebar ───────────────────────────────────────────────────────
-    @FXML private Label patientNameLabel;
-    @FXML private Label medecinSidebarLabel;
+    @FXML private TabPane patientTabPane;
+    @FXML private VBox    patientEventsPane;
+    @FXML private VBox    patientReservationsPane;
+    @FXML private Button  btnMaSante;
+    @FXML private Button  btnEvenements;
+    @FXML private Label   patientNameLabel;
+    @FXML private Label   medecinSidebarLabel;
+
+    // ── Sous-contrôleurs (fx:include) ─────────────────────────────────
+    @FXML private PatientEventController patientEventContentController;
+    @FXML private ReservationController  patientReservationContentController;
 
     // ── Onglet 1 : Dossier médical ────────────────────────────────────
     @FXML private Label bloodGroupLabelDisplay;
@@ -90,6 +102,14 @@ public class PatientDashboardController {
     @FXML
     public void initialize() {
         currentUser = UserSession.getInstance().getCurrentUser();
+        if (showEventsOnLoad) { showEventsOnLoad = false; showPane(1); }
+
+        Platform.runLater(() -> {
+            if (patientEventContentController != null)
+                patientEventContentController.setOnReserver(() -> showPane(2));
+            if (patientReservationContentController != null)
+                patientReservationContentController.setOnRetourEvents(() -> showPane(1));
+        });
 
         // ComboBoxes
         groupeSanguinCombo.setItems(FXCollections.observableArrayList(GROUPES_SANGUINS));
@@ -308,7 +328,21 @@ public class PatientDashboardController {
 
     // ── Navigation ────────────────────────────────────────────────────
 
-    @FXML void handleArticles(ActionEvent event) { App.navigate("PatientArticleList"); }
+    @FXML void handleArticles(ActionEvent event)   { App.navigate("PatientArticleList"); }
+    @FXML void handleMaSante(ActionEvent event)    { showPane(0); }
+    @FXML void handleRendezVous(ActionEvent event) { showPane(1); }
+
+    private static final String PAT_ACTIVE = "sidebar-nav-btn-active";
+    private static final String PAT_NORMAL = "sidebar-nav-btn";
+
+    private void showPane(int which) {
+        patientTabPane.setVisible(which == 0);          patientTabPane.setManaged(which == 0);
+        patientEventsPane.setVisible(which == 1);       patientEventsPane.setManaged(which == 1);
+        patientReservationsPane.setVisible(which == 2); patientReservationsPane.setManaged(which == 2);
+        btnMaSante.getStyleClass().setAll(which == 0 ? PAT_ACTIVE : PAT_NORMAL);
+        btnEvenements.getStyleClass().setAll(which >= 1 ? PAT_ACTIVE : PAT_NORMAL);
+    }
+
     @FXML void handleLogout(ActionEvent event) {
         UserSession.getInstance().logout();
         App.navigate("Login");

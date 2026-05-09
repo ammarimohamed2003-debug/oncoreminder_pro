@@ -65,15 +65,11 @@
                 <Label text="NAVIGATION"
                        style="-fx-text-fill: rgba(255,255,255,0.32); -fx-font-size: 10px;
                               -fx-font-weight: bold; -fx-padding: 0 8 5 8;"/>
-                <Button text="🏠  Ma Santé"
+                <Button fx:id="btnMaSante" text="🏠  Ma Santé" onAction="#handleMaSante"
                         maxWidth="Infinity" styleClass="sidebar-nav-btn-active"/>
                 <Button text="📰  Articles" onAction="#handleArticles"
                         maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
-                <Button text="📅  Rendez-vous"
-                        maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
-                <Button text="💊  Traitements"
-                        maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
-                <Button text="⚙️  Paramètres"
+                <Button fx:id="btnEvenements" text="📅  Événements" onAction="#handleRendezVous"
                         maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
             </VBox>
 
@@ -95,7 +91,8 @@
 
     <!-- ══════════════ CONTENU ══════════════ -->
     <center>
-        <TabPane tabClosingPolicy="UNAVAILABLE" styleClass="tab-pane">
+        <StackPane>
+        <TabPane fx:id="patientTabPane" tabClosingPolicy="UNAVAILABLE" styleClass="tab-pane">
 
             <!-- ════ ONGLET 1 — DOSSIER MÉDICAL ════ -->
             <tabs>
@@ -417,6 +414,18 @@
             </Tab>
             </tabs>
         </TabPane>
+
+        <!-- Zone événements -->
+        <VBox fx:id="patientEventsPane" visible="false" managed="false">
+            <fx:include fx:id="patientEventContent" source="PatientEventContent.fxml" VBox.vgrow="ALWAYS"/>
+        </VBox>
+
+        <!-- Zone réservations -->
+        <VBox fx:id="patientReservationsPane" visible="false" managed="false">
+            <fx:include fx:id="patientReservationContent" source="ReservationContent.fxml" VBox.vgrow="ALWAYS"/>
+        </VBox>
+
+        </StackPane>
     </center>
 
 </BorderPane>
