@@ -77,7 +77,7 @@ public class ServiceUtilisateur {
         }
     }
 
-    // U-04 CRUD Update
+    // U-04 CRUD Update (sans changement de mot de passe)
     public void update(Utilisateur user) {
         if (!updateConnection()) return;
         String req = "UPDATE utilisateur SET nom = ?, prenom = ?, email = ?, role = ? WHERE id = ?";
@@ -89,9 +89,33 @@ public class ServiceUtilisateur {
             pst.setString(4, user.getRole());
             pst.setInt(5, user.getId());
             pst.executeUpdate();
-            System.out.println("Utilisateur mis à jour !");
+            System.out.println("[ServiceUtilisateur] Utilisateur #" + user.getId() + " mis à jour.");
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            System.err.println("[ServiceUtilisateur] Erreur update : " + e.getMessage());
+        }
+    }
+
+    /**
+     * U-04b CRUD Update avec nouveau mot de passe (déjà haché BCrypt).
+     * Utilisé par l'admin quand il saisit un nouveau mot de passe.
+     *
+     * @param user Utilisateur avec le mot de passe déjà haché dans user.getPassword()
+     */
+    public void updateWithPassword(Utilisateur user) {
+        if (!updateConnection()) return;
+        String req = "UPDATE utilisateur SET nom = ?, prenom = ?, email = ?, role = ?, password = ? WHERE id = ?";
+        try {
+            PreparedStatement pst = cnx.prepareStatement(req);
+            pst.setString(1, user.getNom());
+            pst.setString(2, user.getPrenom());
+            pst.setString(3, user.getEmail());
+            pst.setString(4, user.getRole());
+            pst.setString(5, user.getPassword()); // déjà haché BCrypt
+            pst.setInt(6, user.getId());
+            pst.executeUpdate();
+            System.out.println("[ServiceUtilisateur] Utilisateur #" + user.getId() + " mis à jour avec nouveau mot de passe.");
+        } catch (SQLException e) {
+            System.err.println("[ServiceUtilisateur] Erreur updateWithPassword : " + e.getMessage());
         }
     }
 
@@ -186,6 +210,9 @@ public class ServiceUtilisateur {
         u.setGroupeSanguin(rs.getString("groupe_sanguin"));
         u.setPoids(rs.getObject("poids", Double.class));
         u.setTaille(rs.getObject("taille", Double.class));
+        // Nouveaux champs médicaux (tolerant si colonne absente)
+        try { u.setTraitements(rs.getString("traitements")); } catch (SQLException ignored) {}
+        try { u.setNotes(rs.getString("notes")); }             catch (SQLException ignored) {}
         return u;
     }
     
@@ -199,6 +226,115 @@ public class ServiceUtilisateur {
             return rs.next();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Met à jour le mot de passe d'un utilisateur identifié par son email.
+     * Le mot de passe doit déjà être haché avec BCrypt avant l'appel.
+     *
+     * @param email          Email de l'utilisateur
+     * @param hashedPassword Nouveau mot de passe déjà haché BCrypt
+     * @return true si la mise à jour a réussi
+     */
+    public boolean updatePassword(String email, String hashedPassword) {
+        if (!updateConnection()) return false;
+        String req = "UPDATE utilisateur SET password = ? WHERE email = ?";
+        try {
+            PreparedStatement pst = cnx.prepareStatement(req);
+            pst.setString(1, hashedPassword);
+            pst.setString(2, email.toLowerCase().trim());
+            int rows = pst.executeUpdate();
+            System.out.println("[ServiceUtilisateur] Mot de passe mis à jour pour : " + email);
+            return rows > 0;
+        } catch (SQLException e) {
+            System.err.println("[ServiceUtilisateur] Erreur updatePassword : " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Vérifie l'ancien mot de passe d'un utilisateur (BCrypt).
+     * Utilisé avant de permettre le changement de mot de passe depuis le profil.
+     *
+     * @param email    Email de l'utilisateur
+     * @param plainPwd Mot de passe en clair saisi par l'utilisateur
+     * @return true si le mot de passe correspond
+     */
+    public boolean verifyPassword(String email, String plainPwd) {
+        if (!updateConnection()) return false;
+        String req = "SELECT password FROM utilisateur WHERE email = ?";
+        try {
+            PreparedStatement pst = cnx.prepareStatement(req);
+            pst.setString(1, email.toLowerCase().trim());
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                String hashed = rs.getString("password");
+                return BCrypt.checkpw(plainPwd, hashed);
+            }
+        } catch (SQLException e) {
+            System.err.println("[ServiceUtilisateur] Erreur verifyPassword : " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Mise à jour complète du dossier patient par un médecin.
+     * Met à jour : nom, prenom, email, groupe_sanguin, poids, taille,
+     *              antecedents, allergies, traitements, notes.
+     *
+     * Sécurité : seul un utilisateur avec le rôle MEDECIN peut appeler cette méthode.
+     *
+     * @param patient  L'objet patient avec les nouvelles données
+     * @return true si la mise à jour a réussi
+     */
+    public boolean updateDossierComplet(Utilisateur patient) {
+        if (!updateConnection()) return false;
+        String req = "UPDATE utilisateur SET nom = ?, prenom = ?, email = ?, " +
+                     "groupe_sanguin = ?, poids = ?, taille = ?, " +
+                     "antecedents = ?, allergies = ?, traitements = ?, notes = ? " +
+                     "WHERE id = ? AND role = 'PATIENT'";
+        try {
+            PreparedStatement pst = cnx.prepareStatement(req);
+            pst.setString(1, patient.getNom());
+            pst.setString(2, patient.getPrenom());
+            pst.setString(3, patient.getEmail());
+            pst.setString(4, patient.getGroupeSanguin());
+            pst.setObject(5, patient.getPoids());
+            pst.setObject(6, patient.getTaille());
+            pst.setString(7, patient.getAntecedents());
+            pst.setString(8, patient.getAllergies());
+            pst.setString(9, patient.getTraitements());
+            pst.setString(10, patient.getNotes());
+            pst.setInt(11, patient.getId());
+            int rows = pst.executeUpdate();
+            System.out.println("[ServiceUtilisateur] Dossier patient #" + patient.getId() + " mis à jour.");
+            return rows > 0;
+        } catch (SQLException e) {
+            System.err.println("[ServiceUtilisateur] Erreur updateDossierComplet : " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Supprime un patient (seuls les PATIENT peuvent être supprimés via cette méthode).
+     * Sécurité : la clause WHERE vérifie que l'id correspond bien à un PATIENT.
+     *
+     * @param patientId ID du patient à supprimer
+     * @return true si la suppression a réussi
+     */
+    public boolean deletePatient(int patientId) {
+        if (!updateConnection()) return false;
+        String req = "DELETE FROM utilisateur WHERE id = ? AND role = 'PATIENT'";
+        try {
+            PreparedStatement pst = cnx.prepareStatement(req);
+            pst.setInt(1, patientId);
+            int rows = pst.executeUpdate();
+            System.out.println("[ServiceUtilisateur] Patient #" + patientId + " supprimé.");
+            return rows > 0;
+        } catch (SQLException e) {
+            System.err.println("[ServiceUtilisateur] Erreur deletePatient : " + e.getMessage());
         }
         return false;
     }

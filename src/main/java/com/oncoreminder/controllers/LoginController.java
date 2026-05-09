@@ -59,6 +59,10 @@ public class LoginController {
     @FXML
     void goToSignUp(ActionEvent event) { App.navigate("SignUp"); }
 
+    /** Naviguer vers la page Mot de passe oublié */
+    @FXML
+    void goToForgotPassword(ActionEvent event) { App.navigate("ForgotPassword"); }
+
     // ── Helpers ──────────────────────────────────────────────────────
 
     private void fieldErr(Control field, Label lbl, String msg) {

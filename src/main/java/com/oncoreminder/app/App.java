@@ -32,19 +32,37 @@ public class App extends Application {
         primaryStage.show();
     }
 
+    /**
+     * Navigation principale — charge un FXML depuis /views/ et l'affiche.
+     * Capture TOUTES les exceptions (IOException + RuntimeException) pour éviter les pages blanches.
+     */
     public static void navigate(String fxml) {
         try {
-            Parent root = FXMLLoader.load(App.class.getResource("/views/" + fxml + ".fxml"));
+            java.net.URL resource = App.class.getResource("/views/" + fxml + ".fxml");
+            if (resource == null) {
+                System.err.println("[App.navigate] FXML introuvable : /views/" + fxml + ".fxml");
+                return;
+            }
+            Parent root = FXMLLoader.load(resource);
             Scene scene = new Scene(root, W, H);
-            scene.getStylesheets().add(App.class.getResource("/css/style.css").toExternalForm());
+            java.net.URL css = App.class.getResource("/css/style.css");
+            if (css != null) scene.getStylesheets().add(css.toExternalForm());
             primaryStage.setScene(scene);
         } catch (IOException e) {
+            System.err.println("[App.navigate] IOException chargement " + fxml + " : " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.err.println("[App.navigate] Erreur inattendue chargement " + fxml + " : " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     public static void setRoot(String fxml) throws IOException {
         navigate(fxml);
+    }
+
+    public static Stage getPrimaryStage() {
+        return primaryStage;
     }
 
     public static void main(String[] args) {

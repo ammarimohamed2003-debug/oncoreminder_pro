@@ -662,3 +662,63 @@
 .bs-btn-cancel:hover {
     -fx-background-color: #EDE8F8;
 }
+
+/* ══════════════ FORGOT PASSWORD — Lien ══════════════ */
+.link-forgot {
+    -fx-text-fill: #2BBCB0;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-border-color: transparent;
+    -fx-padding: 2 0 2 0;
+    -fx-cursor: hand;
+    -fx-underline: false;
+}
+.link-forgot:hover {
+    -fx-text-fill: #4A2D8F;
+    -fx-underline: true;
+}
+
+/* ══════════════ OTP FIELD — Champ code 6 chiffres ══════════════ */
+.otp-field {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-alignment: center;
+    -fx-alignment: center;
+    -fx-background-color: #F4F9FF;
+    -fx-border-color: #C8DCF0;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-border-width: 2;
+    -fx-letter-spacing: 4px;
+}
+.otp-field:focused {
+    -fx-border-color: #2BBCB0;
+    -fx-background-color: #F0FFFE;
+    -fx-effect: dropshadow(gaussian, rgba(43,188,176,0.25), 10, 0, 0, 3);
+}
+
+/* ══════════════ SUCCESS LABEL ══════════════ */
+.success-label {
+    -fx-text-fill: #2BBCB0;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 8 12 8 12;
+    -fx-background-color: #F0FFFE;
+    -fx-background-radius: 6;
+    -fx-border-color: #2BBCB0;
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+}
+
+/* ══════════════ PASSWORD STRENGTH BAR ══════════════ */
+.progress-bar {
+    -fx-background-color: #EEF4FB;
+    -fx-background-radius: 3;
+}
+.progress-bar .track {
+    -fx-background-color: #EEF4FB;
+    -fx-background-radius: 3;
+}
+.progress-bar .bar {
+    -fx-background-radius: 3;
+}
