@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.geometry.Insets?>
@@ -12,26 +13,84 @@
 
     <!-- ── Sidebar patient ── -->
     <left>
-        <VBox spacing="15.0" styleClass="form-panel" prefWidth="260.0">
-            <padding><Insets bottom="20.0" left="20.0" right="20.0" top="30.0"/></padding>
-            <VBox alignment="CENTER" spacing="12.0">
+        <VBox prefWidth="255" styleClass="patient-sidebar">
+
+            <!-- Branding -->
+            <HBox spacing="10" alignment="CENTER_LEFT"
+                  style="-fx-padding: 18 18 15 18;
+                         -fx-border-color: transparent transparent rgba(255,255,255,0.10) transparent;
+                         -fx-border-width: 0 0 1 0;">
                 <StackPane>
-                    <Circle radius="50.0" fill="#2BBCB0" opacity="0.1"/>
-                    <Label text="👤" style="-fx-font-size: 40px;"/>
+                    <Circle radius="17" fill="rgba(43,188,176,0.15)"/>
+                    <Circle radius="17" fill="transparent" stroke="#2BBCB0" strokeWidth="1.5"/>
+                    <Rectangle width="5" height="16" fill="white" arcWidth="4" arcHeight="4"/>
+                    <Rectangle width="16" height="5" fill="white" arcWidth="4" arcHeight="4"/>
+                    <Circle radius="2.5" fill="#2BBCB0"/>
                 </StackPane>
-                <Label fx:id="patientNameLabel" text="Patient" styleClass="brand-title"/>
-                <Label text="Patient" styleClass="stat-badge-info"/>
+                <VBox spacing="2">
+                    <HBox spacing="0">
+                        <Label text="Onco" style="-fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                        <Label text="Reminder" style="-fx-text-fill: #2BBCB0; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                    </HBox>
+                    <Label text="PRO" style="-fx-background-color: rgba(43,188,176,0.25); -fx-text-fill: #2BBCB0;
+                                   -fx-background-radius: 4; -fx-padding: 1 6; -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                </VBox>
+            </HBox>
+
+            <!-- Avatar -->
+            <VBox alignment="CENTER" spacing="8" style="-fx-padding: 20 16 16 16;">
+                <StackPane>
+                    <Circle radius="44" fill="#2BBCB0" opacity="0.12"/>
+                    <Circle radius="38" fill="#2D1B69"/>
+                    <Circle radius="33" fill="#5B35A5"/>
+                    <Label text="👤" style="-fx-font-size: 26px;"/>
+                </StackPane>
+                <Label fx:id="patientNameLabel" text="Patient"
+                       style="-fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold; -fx-alignment: center;"
+                       wrapText="true" maxWidth="210" textAlignment="CENTER" alignment="CENTER"/>
+                <Label text="Patient"
+                       style="-fx-background-color: rgba(43,188,176,0.20); -fx-text-fill: #2BBCB0;
+                              -fx-background-radius: 20; -fx-padding: 3 14; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                <Label fx:id="medecinSidebarLabel" text=""
+                       style="-fx-text-fill: rgba(255,255,255,0.70); -fx-font-size: 10px; -fx-padding: 2 0 0 0;"
+                       visible="false" managed="false" wrapText="true" maxWidth="200" textAlignment="CENTER"/>
             </VBox>
-            <Separator><VBox.margin><Insets top="10.0" bottom="10.0"/></VBox.margin></Separator>
-            <VBox spacing="8.0">
-                <Button text="🏠 Ma Santé"    onAction="#handleDashboard" styleClass="btn-secondary" maxWidth="Infinity" alignment="BASELINE_LEFT"/>
-                <Button text="📰 Articles"    styleClass="btn-primary"   maxWidth="Infinity" alignment="BASELINE_LEFT"/>
-                <Button text="📅 Rendez-vous" styleClass="btn-secondary" maxWidth="Infinity" alignment="BASELINE_LEFT"/>
-                <Button text="💊 Traitements" styleClass="btn-secondary" maxWidth="Infinity" alignment="BASELINE_LEFT"/>
-                <Button text="⚙️ Paramètres"  styleClass="btn-secondary" maxWidth="Infinity" alignment="BASELINE_LEFT"/>
+
+            <!-- Divider -->
+            <Pane prefHeight="1" style="-fx-background-color: rgba(255,255,255,0.10);">
+                <VBox.margin><Insets left="18" right="18" bottom="6"/></VBox.margin>
+            </Pane>
+
+            <!-- Navigation -->
+            <VBox spacing="2" style="-fx-padding: 10 10 0 10;">
+                <Label text="NAVIGATION"
+                       style="-fx-text-fill: rgba(255,255,255,0.32); -fx-font-size: 10px;
+                              -fx-font-weight: bold; -fx-padding: 0 8 5 8;"/>
+                <Button text="🏠  Ma Santé" onAction="#handleDashboard"
+                        maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
+                <Button text="📰  Articles"
+                        maxWidth="Infinity" styleClass="sidebar-nav-btn-active"/>
+                <Button text="📅  Rendez-vous"
+                        maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
+                <Button text="💊  Traitements"
+                        maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
+                <Button text="⚙️  Paramètres"
+                        maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
             </VBox>
+
             <Region VBox.vgrow="ALWAYS"/>
-            <Button text="Déconnexion" onAction="#handleLogout" styleClass="btn-outline" maxWidth="Infinity"/>
+
+            <!-- Divider avant logout -->
+            <Pane prefHeight="1" style="-fx-background-color: rgba(255,255,255,0.10);">
+                <VBox.margin><Insets left="18" right="18" top="6"/></VBox.margin>
+            </Pane>
+
+            <!-- Logout -->
+            <VBox style="-fx-padding: 8 10 18 10;">
+                <Button text="🔓  Déconnexion" onAction="#handleLogout"
+                        maxWidth="Infinity" styleClass="sidebar-logout-btn"/>
+            </VBox>
+
         </VBox>
     </left>
 
@@ -48,83 +107,167 @@
                     <Label text="📰 Articles Médicaux" styleClass="brand-title"/>
                     <Region HBox.hgrow="ALWAYS"/>
                     <TextField fx:id="searchField" promptText="🔍 Rechercher un article..."
-                               styleClass="field-input" prefWidth="270"/>
+                               styleClass="field-input" prefWidth="280"/>
                 </HBox>
 
                 <!-- Grille scrollable -->
                 <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" hbarPolicy="NEVER"
-                            style="-fx-background-color: transparent; -fx-background: transparent;">
-                    <FlowPane fx:id="articleFlowPane" hgap="16" vgap="16"
+                            style="-fx-background-color: #F7F4FE; -fx-background: #F7F4FE;">
+                    <FlowPane fx:id="articleFlowPane" hgap="20" vgap="20" alignment="TOP_LEFT"
                               style="-fx-background-color: transparent;">
-                        <padding><Insets bottom="24" left="20" right="20" top="20"/></padding>
+                        <padding><Insets bottom="24" left="24" right="24" top="24"/></padding>
                     </FlowPane>
                 </ScrollPane>
+
+                <!-- Barre de pagination -->
+                <HBox fx:id="paginationBar" spacing="8" alignment="CENTER"
+                      style="-fx-background-color: white;
+                             -fx-border-color: #DDD6F8;
+                             -fx-border-width: 1 0 0 0;
+                             -fx-effect: dropshadow(gaussian, rgba(90,53,165,0.08), 6, 0, 0, -2);
+                             -fx-padding: 8 24;"/>
             </VBox>
 
             <!-- ══ VUE DÉTAIL ══ -->
             <VBox fx:id="detailView" spacing="0" visible="false" managed="false">
 
-                <!-- Barre du haut avec retour -->
+                <!-- Topbar: retour + titre + badge -->
                 <HBox spacing="14" styleClass="topbar" alignment="CENTER_LEFT">
                     <padding><Insets bottom="12" left="20" right="20" top="12"/></padding>
                     <Button text="← Retour" onAction="#handleBack"
-                            styleClass="btn-outline" prefWidth="95" prefHeight="34"/>
-                    <Label fx:id="articleTitreLabel" text="" styleClass="brand-title"
-                           wrapText="true" HBox.hgrow="ALWAYS"/>
+                            styleClass="btn-outline" prefHeight="36" minWidth="100"
+                            style="-fx-padding: 0 16;"/>
+                    <Label fx:id="articleTitreLabel" text="" styleClass="brand-subtitle"
+                           wrapText="false" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
                     <Label fx:id="statutBadge" text="Publié" styleClass="stat-badge-success"/>
                 </HBox>
 
                 <!-- Contenu scrollable -->
                 <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" hbarPolicy="NEVER"
-                            style="-fx-background-color: transparent; -fx-background: transparent;">
-                    <VBox spacing="14">
-                        <padding><Insets bottom="30" left="30" right="30" top="20"/></padding>
+                            style="-fx-background-color: #F7F4FE; -fx-background: #F7F4FE;">
+                    <VBox spacing="0" style="-fx-background-color: #F7F4FE;">
 
-                        <!-- Métadonnées -->
-                        <HBox spacing="20" alignment="CENTER_LEFT">
-                            <Label fx:id="dateLabel"   text="" styleClass="stat-label"/>
-                            <Label fx:id="organeLabel" text="" styleClass="stat-label"/>
-                            <Label fx:id="viewsLabel"  text="" styleClass="stat-label"/>
-                        </HBox>
+                        <!-- ── Image hero plein-écran ── -->
+                        <StackPane fx:id="imageContainer" prefHeight="320"
+                                   visible="false" managed="false"
+                                   style="-fx-background-color: #12002E;">
+                            <ImageView fx:id="detailImageView"
+                                       fitWidth="1600" fitHeight="320"
+                                       preserveRatio="true" smooth="true"/>
+                        </StackPane>
 
-                        <!-- Tags -->
-                        <HBox spacing="12" alignment="CENTER_LEFT">
-                            <Label fx:id="tagsLabel" text="" styleClass="stat-label"
-                                   visible="false" managed="false"/>
-                        </HBox>
+                        <!-- ── Zone principale ── -->
+                        <VBox spacing="18" style="-fx-background-color: #F7F4FE;">
+                            <padding><Insets top="22" right="28" bottom="40" left="28"/></padding>
 
-                        <Separator/>
+                            <!-- Carte métadonnées -->
+                            <HBox spacing="14" alignment="CENTER_LEFT"
+                                  style="-fx-background-color: white;
+                                         -fx-background-radius: 12;
+                                         -fx-border-color: #EDE9F8;
+                                         -fx-border-radius: 12;
+                                         -fx-border-width: 1;
+                                         -fx-padding: 14 18;">
+                                <Label fx:id="organeLabel" text=""
+                                       style="-fx-background-color: #EEF2FF; -fx-text-fill: #5B35A5;
+                                              -fx-background-radius: 20; -fx-font-size: 12px;
+                                              -fx-font-weight: bold; -fx-padding: 4 12;"/>
+                                <Label fx:id="medecinLabel" text=""
+                                       style="-fx-background-color: rgba(43,188,176,0.12); -fx-text-fill: #2BBCB0;
+                                              -fx-background-radius: 20; -fx-font-size: 12px;
+                                              -fx-font-weight: bold; -fx-padding: 4 12;"
+                                       visible="false" managed="false"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Label fx:id="dateLabel"  text="" styleClass="stat-label"/>
+                                <Label text="|" style="-fx-text-fill: #D1C4E9;"/>
+                                <Label fx:id="viewsLabel" text="" styleClass="stat-label"/>
+                                <Label fx:id="tagsLabel"  text="" styleClass="stat-label"
+                                       visible="false" managed="false"/>
+                            </HBox>
 
-                        <!-- Contenu article (rendu Markdown) -->
-                        <VBox fx:id="contenuContainer" spacing="5" minHeight="80"
-                              style="-fx-background-color: #F8F4FF; -fx-background-radius: 8;
-                                     -fx-border-color: #D6CBFF; -fx-border-radius: 8;
-                                     -fx-border-width: 1; -fx-padding: 14;"/>
+                            <!-- Carte contenu -->
+                            <VBox style="-fx-background-color: white;
+                                         -fx-background-radius: 14;
+                                         -fx-border-color: #EDE9F8;
+                                         -fx-border-radius: 14;
+                                         -fx-border-width: 1;
+                                         -fx-padding: 26;">
+                                <VBox fx:id="contenuContainer" spacing="6" minHeight="80"/>
+                            </VBox>
 
-                        <Separator/>
+                            <!-- Barre like + export -->
+                            <HBox spacing="12" alignment="CENTER_LEFT"
+                                  style="-fx-background-color: white;
+                                         -fx-background-radius: 12;
+                                         -fx-border-color: #EDE9F8;
+                                         -fx-border-radius: 12;
+                                         -fx-border-width: 1;
+                                         -fx-padding: 12 18;">
+                                <Button fx:id="likeBtn" text="❤  J'aime" onAction="#handleLike"
+                                        styleClass="btn-outline" prefHeight="38" minWidth="130"
+                                        style="-fx-padding: 0 20; -fx-font-size: 13px;"/>
+                                <Label fx:id="likesLabel" text="0 likes" styleClass="stat-label"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Button text="📄  Exporter PDF" onAction="#handleExportPdf"
+                                        styleClass="btn-outline" prefHeight="38" minWidth="150"
+                                        style="-fx-padding: 0 16; -fx-font-size: 13px;
+                                               -fx-text-fill: #5B35A5; -fx-border-color: #D1C4E9;"/>
+                            </HBox>
 
-                        <!-- Like -->
-                        <HBox spacing="12" alignment="CENTER_LEFT">
-                            <Button fx:id="likeBtn" text="❤  J'aime" onAction="#handleLike"
-                                    styleClass="btn-outline" prefHeight="40" minWidth="130"
-                                    style="-fx-padding: 0 20;"/>
-                            <Label fx:id="likesLabel" text="0 likes" styleClass="stat-label"/>
-                        </HBox>
+                            <!-- Messagerie médecin -->
+                            <VBox fx:id="msgSection" spacing="14" visible="false" managed="false"
+                                  style="-fx-background-color: white;
+                                         -fx-background-radius: 14;
+                                         -fx-border-color: #EDE9F8;
+                                         -fx-border-radius: 14;
+                                         -fx-border-width: 1;
+                                         -fx-padding: 22;">
+                                <Label text="📨 Mon Médecin"
+                                       style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #3A1D7A;"/>
+                                <Separator style="-fx-background-color: #EDE9F8;"/>
+                                <VBox fx:id="msgContainer" spacing="10" minHeight="40"/>
+                                <HBox spacing="12" alignment="CENTER">
+                                    <TextArea fx:id="msgField" promptText="Écrire à mon médecin..."
+                                              styleClass="field-input" HBox.hgrow="ALWAYS"
+                                              prefHeight="64" wrapText="true"/>
+                                    <Button text="Envoyer →" onAction="#handleSendMessage"
+                                            styleClass="btn-primary" minWidth="110" prefHeight="64"
+                                            style="-fx-padding: 0 14; -fx-font-size: 13px;"/>
+                                </HBox>
+                            </VBox>
 
-                        <Separator/>
+                            <!-- Carte commentaires -->
+                            <VBox spacing="14"
+                                  style="-fx-background-color: white;
+                                         -fx-background-radius: 14;
+                                         -fx-border-color: #EDE9F8;
+                                         -fx-border-radius: 14;
+                                         -fx-border-width: 1;
+                                         -fx-padding: 22;">
+                                <Label text="💬 Commentaires"
+                                       style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #3A1D7A;"/>
+                                <Separator style="-fx-background-color: #EDE9F8;"/>
+                                <VBox fx:id="commentsContainer" spacing="10" minHeight="40"/>
+                                <VBox spacing="6">
+                                    <HBox alignment="CENTER_RIGHT">
+                                        <Button fx:id="emojiBtn" text="😊  Émojis" onAction="#handleEmojiPicker"
+                                                style="-fx-background-color: #F3F0FF; -fx-text-fill: #5B35A5;
+                                                       -fx-background-radius: 8; -fx-border-width: 0;
+                                                       -fx-font-family: 'Segoe UI Emoji';
+                                                       -fx-padding: 5 12; -fx-font-size: 12px; -fx-cursor: hand;"/>
+                                    </HBox>
+                                    <HBox spacing="12" alignment="CENTER">
+                                        <TextArea fx:id="commentField" promptText="Votre commentaire..."
+                                                  styleClass="field-input" HBox.hgrow="ALWAYS"
+                                                  prefHeight="72" wrapText="true"/>
+                                        <Button text="Envoyer →" onAction="#handleAddComment"
+                                                styleClass="btn-primary" minWidth="120" prefHeight="72"
+                                                style="-fx-padding: 0 18; -fx-font-size: 13px;"/>
+                                    </HBox>
+                                </VBox>
+                            </VBox>
 
-                        <!-- Commentaires -->
-                        <Label text="Commentaires" styleClass="section-title"/>
-                        <VBox fx:id="commentsContainer" spacing="10" minHeight="80"/>
-
-                        <HBox spacing="12" alignment="CENTER">
-                            <TextArea fx:id="commentField" promptText="Votre commentaire..."
-                                      styleClass="field-input" HBox.hgrow="ALWAYS"
-                                      prefHeight="70" wrapText="true"/>
-                            <Button text="Commenter" onAction="#handleAddComment"
-                                    styleClass="btn-primary" prefWidth="120" prefHeight="70"/>
-                        </HBox>
-
+                        </VBox>
                     </VBox>
                 </ScrollPane>
             </VBox>

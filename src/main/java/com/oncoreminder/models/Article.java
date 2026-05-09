@@ -15,6 +15,8 @@ public class Article {
     private String tags;
     private int views;
     private String icdCode;
+    private String imagePath;
+    private String medecinNom; // transient — populated via JOIN, not stored in DB
 
     public Article() {}
 
@@ -54,6 +56,11 @@ public class Article {
     public void setViews(int views) { this.views = views; }
     public String getIcdCode() { return icdCode; }
     public void setIcdCode(String icdCode) { this.icdCode = icdCode; }
+    public String getImagePath() { return imagePath; }
+    public void setImagePath(String imagePath) { this.imagePath = imagePath; }
+
+    public String getMedecinNom() { return medecinNom; }
+    public void setMedecinNom(String medecinNom) { this.medecinNom = medecinNom; }
 
     @Override
     public String toString() { return titre + " [" + statut + "]"; }

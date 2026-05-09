@@ -5,6 +5,7 @@ import com.oncoreminder.models.Article;
 import com.oncoreminder.models.Utilisateur;
 import com.oncoreminder.services.ServiceArticle;
 import com.oncoreminder.utils.ArticleGeneratorService;
+import com.oncoreminder.utils.ImageLoader;
 import com.oncoreminder.utils.MarkdownRenderer;
 import com.oncoreminder.utils.UserSession;
 import javafx.application.Platform;
@@ -15,12 +16,21 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+
 public class ArticleFormController {
 
+    @FXML private Label            userNameLabel;
     @FXML private Label            formTitleLabel;
     @FXML private TextField        titreField;
     @FXML private TextField        organeField;
@@ -33,10 +43,16 @@ public class ArticleFormController {
     @FXML private Button           generateBtn;
     @FXML private ProgressIndicator generateSpinner;
     @FXML private Label            generateStatusLabel;
+    @FXML private ImageView        imagePreview;
+    @FXML private Label            imagePlaceholderLabel;
+    @FXML private Button           removeImageBtn;
+    @FXML private Label            imageNameLabel;
 
     private final ServiceArticle serviceArticle = new ServiceArticle();
     private static Article articleToEdit;
     private String lastSelectedCancerType = null;
+    private String pendingImageSourcePath = null;
+    private String currentImagePath = null;
 
     public static void setLastCancerType(String type) {
         // Called optionally from BodySelectorController if a cancer type was chosen
@@ -46,6 +62,10 @@ public class ArticleFormController {
 
     @FXML
     public void initialize() {
+        Utilisateur doc = UserSession.getInstance().getCurrentUser();
+        if (doc != null)
+            userNameLabel.setText("Dr. " + doc.getNom() + " " + doc.getPrenom());
+
         statutCombo.getItems().addAll("BROUILLON", "PUBLIE");
         statutCombo.setValue("BROUILLON");
 
@@ -65,6 +85,10 @@ public class ArticleFormController {
             tagsField.setText(nvl(articleToEdit.getTags()));
             contenuArea.setText(nvl(articleToEdit.getContenu()));
             generateBtn.setDisable(articleToEdit.getOrgane() == null || articleToEdit.getOrgane().isEmpty());
+            if (articleToEdit.getImagePath() != null) {
+                loadImagePreview(articleToEdit.getImagePath());
+                currentImagePath = articleToEdit.getImagePath();
+            }
         } else {
             formTitleLabel.setText("Nouvel Article");
         }
@@ -208,6 +232,81 @@ public class ArticleFormController {
     }
 
     // ════════════════════════════════════════════
+    // Image de couverture
+    // ════════════════════════════════════════════
+
+    @FXML void handleChooseImage(ActionEvent event) {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Choisir une image de couverture");
+        chooser.getExtensionFilters().add(
+            new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.bmp"));
+        File file = chooser.showOpenDialog(imagePreview.getScene().getWindow());
+        if (file == null) return;
+        pendingImageSourcePath = file.getAbsolutePath();
+        loadImagePreview(file.getAbsolutePath());
+        imageNameLabel.setText(file.getName());
+    }
+
+    @FXML void handleRemoveImage(ActionEvent event) {
+        pendingImageSourcePath = null;
+        currentImagePath = null;
+        imagePreview.setImage(null);
+        imagePreview.setVisible(false);
+        imagePreview.setManaged(false);
+        imagePlaceholderLabel.setVisible(true);
+        imagePlaceholderLabel.setManaged(true);
+        removeImageBtn.setVisible(false);
+        removeImageBtn.setManaged(false);
+        imageNameLabel.setText("");
+    }
+
+    private void loadImagePreview(String path) {
+        File f = new File(path);
+        if (!f.exists()) {
+            System.out.println("[Preview] Fichier introuvable : " + path);
+            return;
+        }
+        Image img = ImageLoader.load(f);
+        if (img == null || img.isError()) {
+            System.out.println("[Preview] Impossible de charger : " + path);
+            return;
+        }
+        imagePreview.setImage(img);
+        imagePreview.setVisible(true);
+        imagePreview.setManaged(true);
+        imagePlaceholderLabel.setVisible(false);
+        imagePlaceholderLabel.setManaged(false);
+        removeImageBtn.setVisible(true);
+        removeImageBtn.setManaged(true);
+        if (imageNameLabel.getText().isEmpty()) imageNameLabel.setText(f.getName());
+    }
+    private String saveImageToStorage(String sourcePath) {
+        File source = new File(sourcePath);
+        if (!source.exists()) {
+            System.out.println("Image source introuvable : " + sourcePath);
+            return null;
+        }
+        try {
+            File destDir = new File(System.getProperty("user.dir"),
+                    "src" + File.separator + "main" + File.separator + "resources" + File.separator + "imagesArticles");
+            if (!destDir.exists()) destDir.mkdirs();
+
+            String name = source.getName();
+            String ext  = name.contains(".") ? name.substring(name.lastIndexOf('.')) : ".png";
+            String fileName = "article_" + System.currentTimeMillis() + ext;
+            File dest = new File(destDir, fileName);
+            Files.copy(source.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+            if (dest.exists() && dest.length() > 0) {
+                return dest.getAbsolutePath();
+            }
+            return sourcePath;
+        } catch (Exception e) {
+            System.out.println("Erreur copie image : " + e.getMessage());
+            return sourcePath;
+        }
+    }
+    // ════════════════════════════════════════════
     // Sauvegarde
     // ════════════════════════════════════════════
 
@@ -224,16 +323,22 @@ public class ArticleFormController {
         if (!ok) return;
         Utilisateur user = UserSession.getInstance().getCurrentUser();
 
+        String finalImagePath = (pendingImageSourcePath != null)
+            ? saveImageToStorage(pendingImageSourcePath)
+            : currentImagePath;
+
         if (articleToEdit != null) {
             articleToEdit.setTitre(titre);
             articleToEdit.setContenu(contenu);
             articleToEdit.setOrgane(organe.isEmpty() ? null : organe);
             articleToEdit.setStatut(statut);
             articleToEdit.setTags(tags.isEmpty() ? null : tags);
+            articleToEdit.setImagePath(finalImagePath);
             serviceArticle.update(articleToEdit);
         } else {
             Article a = new Article(titre, contenu, statut, organe.isEmpty() ? null : organe, user.getId());
             a.setTags(tags.isEmpty() ? null : tags);
+            a.setImagePath(finalImagePath);
             serviceArticle.add(a);
         }
         articleToEdit = null;
@@ -264,6 +369,11 @@ public class ArticleFormController {
     @FXML void handleCancel(ActionEvent event) {
         articleToEdit = null;
         App.navigate("ArticleList");
+    }
+
+    @FXML void handleLogout(ActionEvent event) {
+        UserSession.getInstance().logout();
+        App.navigate("Login");
     }
 
     private void fieldErr(javafx.scene.control.Control field, Label lbl, String msg) {

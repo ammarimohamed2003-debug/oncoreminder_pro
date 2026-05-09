@@ -26,16 +26,27 @@
         <padding><Insets bottom="60" left="50" right="50" top="60"/></padding>
 
         <StackPane>
-            <Circle radius="75" fill="rgba(255,255,255,0.04)"/>
-            <Circle radius="58" fill="rgba(255,255,255,0.07)"/>
-            <Circle radius="42" fill="rgba(43,188,176,0.25)"/>
-            <Circle radius="28" fill="rgba(43,188,176,0.45)"/>
-            <Label text="⚕" style="-fx-font-size: 30px; -fx-text-fill: white;"/>
+            <Circle radius="76" fill="rgba(255,255,255,0.03)"/>
+            <Circle radius="60" fill="rgba(43,188,176,0.09)"/>
+            <Circle radius="48" fill="#0C2E2C"/>
+            <Circle radius="48" fill="transparent" stroke="#2BBCB0" strokeWidth="2.5"/>
+            <Circle radius="41" fill="transparent" stroke="rgba(43,188,176,0.22)" strokeWidth="1"/>
+            <Rectangle width="10" height="40" fill="white" arcWidth="8" arcHeight="8"/>
+            <Rectangle width="40" height="10" fill="white" arcWidth="8" arcHeight="8"/>
+            <Circle radius="5.5" fill="#2BBCB0"/>
         </StackPane>
 
-        <VBox alignment="CENTER" spacing="4">
-            <Label text="OncoReminder" styleClass="auth-title"/>
-            <Label text="P  R  O" styleClass="auth-subtitle"/>
+        <!-- Nom de l'application -->
+        <VBox alignment="CENTER" spacing="6">
+            <HBox alignment="CENTER" spacing="0">
+                <Label text="Onco" style="-fx-text-fill: white; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+                <Label text="Reminder" style="-fx-text-fill: #2BBCB0; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+            </HBox>
+            <HBox alignment="CENTER">
+                <Label text="PRO"
+                       style="-fx-background-color: rgba(43,188,176,0.28); -fx-text-fill: #2BBCB0;
+                              -fx-background-radius: 8; -fx-padding: 3 14; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+            </HBox>
         </VBox>
 
         <HBox alignment="CENTER" spacing="10">
@@ -97,8 +108,11 @@
         <padding><Insets bottom="30" left="80" right="80" top="30"/></padding>
 
         <StackPane>
-            <Circle radius="28" fill="rgba(43,188,176,0.15)"/>
-            <Label text="⚕" style="-fx-font-size: 22px; -fx-text-fill: #2BBCB0;"/>
+            <Circle radius="28" fill="rgba(43,188,176,0.12)"/>
+            <Circle radius="28" fill="transparent" stroke="#2BBCB0" strokeWidth="1.5"/>
+            <Rectangle width="7" height="24" fill="#2BBCB0" arcWidth="6" arcHeight="6"/>
+            <Rectangle width="24" height="7" fill="#2BBCB0" arcWidth="6" arcHeight="6"/>
+            <Circle radius="4" fill="white"/>
         </StackPane>
 
         <Label text="Créer un compte" styleClass="auth-right-title"/>

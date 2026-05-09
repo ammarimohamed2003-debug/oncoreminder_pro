@@ -26,9 +26,7 @@ public class PatientDashboardController {
 
     // ── Sidebar ───────────────────────────────────────────────────────
     @FXML private Label patientNameLabel;
-    @FXML private Label sideBloodLabel;
-    @FXML private Label sidePoidsLabel;
-    @FXML private Label sideTailleLabel;
+    @FXML private Label medecinSidebarLabel;
 
     // ── Onglet 1 : Dossier médical ────────────────────────────────────
     @FXML private Label bloodGroupLabelDisplay;
@@ -111,19 +109,21 @@ public class PatientDashboardController {
 
         if (currentUser != null) {
             loadAll();
+            if (currentUser.getMedecinId() != null) {
+                Utilisateur dr = serviceUtilisateur.getById(currentUser.getMedecinId());
+                if (dr != null && medecinSidebarLabel != null) {
+                    medecinSidebarLabel.setText("🩺 Dr. " + dr.getPrenom() + " " + dr.getNom());
+                    medecinSidebarLabel.setVisible(true);
+                    medecinSidebarLabel.setManaged(true);
+                }
+            }
         }
     }
 
     // ── Chargement données ────────────────────────────────────────────
 
     private void loadAll() {
-        // Nom sidebar
         patientNameLabel.setText(currentUser.getPrenom() + " " + currentUser.getNom());
-
-        // Stats sidebar
-        sideBloodLabel.setText(orDash(currentUser.getGroupeSanguin()));
-        sidePoidsLabel.setText(currentUser.getPoids() != null ? String.valueOf(currentUser.getPoids()) : "--");
-        sideTailleLabel.setText(currentUser.getTaille() != null ? String.valueOf(currentUser.getTaille()) : "--");
 
         // Stats principaux
         bloodGroupLabelDisplay.setText(orDash(currentUser.getGroupeSanguin()));

@@ -12,9 +12,12 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -23,8 +26,11 @@ import java.util.stream.Collectors;
 
 public class DoctorDashboardController {
 
+    // ── Sidebar ───────────────────────────────────────────────────────
+    @FXML private TabPane mainTabPane;
+    @FXML private Label   doctorSidebarLabel;
+
     // ── Top bar ──────────────────────────────────────────────────────
-    @FXML private Label     doctorNameLabel;
     @FXML private TextField searchField;
     @FXML private Label     patientCountLabel;
 
@@ -110,8 +116,9 @@ public class DoctorDashboardController {
     public void initialize() {
         currentDoctor = UserSession.getInstance().getCurrentUser();
 
-        if (currentDoctor != null)
-            doctorNameLabel.setText("Dr. " + currentDoctor.getNom() + " " + currentDoctor.getPrenom());
+        if (currentDoctor != null) {
+            doctorSidebarLabel.setText("Dr. " + currentDoctor.getNom() + " " + currentDoctor.getPrenom());
+        }
 
         // ComboBoxes
         editGroupeSanguinCombo.setItems(FXCollections.observableArrayList(GROUPES_SANGUINS));
@@ -146,9 +153,8 @@ public class DoctorDashboardController {
     // ════════════════════════════════════════════════════════════════
 
     private void loadPatients() {
-        allPatients = serviceUtilisateur.getAll().stream()
-                .filter(u -> "PATIENT".equals(u.getRole()))
-                .collect(Collectors.toList());
+        int medecinId = UserSession.getInstance().getCurrentUser().getId();
+        allPatients = serviceUtilisateur.getPatientsByMedecin(medecinId);
         renderPatients(allPatients);
     }
 
@@ -164,8 +170,9 @@ public class DoctorDashboardController {
         patientFlowPane.getChildren().clear();
         patientCountLabel.setText("(" + list.size() + ")");
         if (list.isEmpty()) {
-            Label e = new Label("Aucun patient trouvé");
+            Label e = new Label("Aucun patient assigné.\nCliquez sur « + Ajouter » pour en ajouter.");
             e.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 13px; -fx-font-style: italic;");
+            e.setWrapText(true);
             patientFlowPane.getChildren().add(e);
             return;
         }
@@ -198,12 +205,104 @@ public class DoctorDashboardController {
         bgL.getStyleClass().add("stat-badge-info");
 
         card.getChildren().addAll(avatar, nameL, bgL);
+
+        Button removeBtn = new Button("Retirer");
+        removeBtn.setStyle(
+            "-fx-background-color: transparent; -fx-text-fill: #FC8181; -fx-cursor: hand;" +
+            "-fx-font-size: 11px; -fx-padding: 2 0; -fx-border-width: 0;"
+        );
+        removeBtn.setOnAction(e -> {
+            serviceUtilisateur.unassignMedecin(patient.getId());
+            loadPatients();
+        });
+        card.getChildren().add(removeBtn);
+
         card.setOnMouseClicked(e -> {
+            if (e.getTarget() == removeBtn) return;
             patientFlowPane.getChildren().forEach(n -> n.setStyle(""));
             card.setStyle("-fx-border-color: #2BBCB0; -fx-border-width: 2; -fx-border-radius: 12;");
             showPatientDetails(patient);
         });
         return card;
+    }
+
+    @FXML
+    void handleAddPatient(ActionEvent event) {
+        int medecinId = UserSession.getInstance().getCurrentUser().getId();
+        List<Utilisateur> unassigned = serviceUtilisateur.getUnassignedPatients();
+
+        Stage dialog = new Stage();
+        dialog.setTitle("Ajouter un patient");
+        dialog.initModality(Modality.APPLICATION_MODAL);
+
+        VBox root = new VBox(14);
+        root.setPadding(new Insets(24));
+        root.setStyle("-fx-background-color: #F7F4FE;");
+
+        Label title = new Label("Patients disponibles");
+        title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #3A1D7A;");
+        root.getChildren().add(title);
+
+        VBox listBox = new VBox(8);
+
+        if (unassigned.isEmpty()) {
+            Label empty = new Label("Aucun patient disponible.");
+            empty.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 13px;");
+            listBox.getChildren().add(empty);
+        } else {
+            for (Utilisateur patient : unassigned) {
+                HBox row = new HBox(12);
+                row.setAlignment(Pos.CENTER_LEFT);
+                row.setPadding(new Insets(10, 14, 10, 14));
+                row.setStyle(
+                    "-fx-background-color: white; -fx-background-radius: 10;" +
+                    "-fx-border-color: #EDE9F8; -fx-border-radius: 10; -fx-border-width: 1;"
+                );
+
+                Label icon = new Label("👤");
+                icon.setStyle("-fx-font-size: 18px;");
+                Label name = new Label(patient.getPrenom() + " " + patient.getNom());
+                name.setStyle("-fx-font-weight: bold; -fx-text-fill: #2D1B69; -fx-font-size: 13px;");
+                name.setPrefWidth(180);
+
+                Region spacer = new Region();
+                HBox.setHgrow(spacer, Priority.ALWAYS);
+
+                Button addBtn = new Button("Ajouter →");
+                addBtn.setStyle(
+                    "-fx-background-color: #2BBCB0; -fx-text-fill: white; -fx-background-radius: 8;" +
+                    "-fx-cursor: hand; -fx-font-size: 12px; -fx-padding: 6 14; -fx-border-width: 0;"
+                );
+                addBtn.setOnAction(e -> {
+                    serviceUtilisateur.assignMedecin(patient.getId(), medecinId);
+                    listBox.getChildren().remove(row);
+                    loadPatients();
+                    if (listBox.getChildren().isEmpty()) dialog.close();
+                });
+
+                row.getChildren().addAll(icon, name, spacer, addBtn);
+                listBox.getChildren().add(row);
+            }
+        }
+
+        ScrollPane sp = new ScrollPane(listBox);
+        sp.setFitToWidth(true);
+        sp.setPrefHeight(340);
+        sp.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
+        root.getChildren().add(sp);
+
+        Button closeBtn = new Button("Fermer");
+        closeBtn.setStyle(
+            "-fx-background-color: #EDE9F8; -fx-text-fill: #5B35A5; -fx-background-radius: 8;" +
+            "-fx-cursor: hand; -fx-padding: 8 20; -fx-border-width: 0;"
+        );
+        closeBtn.setOnAction(e -> dialog.close());
+        HBox footer = new HBox(closeBtn);
+        footer.setAlignment(Pos.CENTER_RIGHT);
+        root.getChildren().add(footer);
+
+        dialog.setScene(new Scene(root, 460, 480));
+        dialog.showAndWait();
     }
 
     private void showPatientDetails(Utilisateur patient) {
@@ -327,7 +426,7 @@ public class DoctorDashboardController {
             Platform.runLater(() -> {
                 saveDocProfileBtn.setDisable(false); saveDocProfileBtn.setText("💾  Enregistrer le profil");
                 UserSession.getInstance().setCurrentUser(currentDoctor);
-                doctorNameLabel.setText("Dr. " + currentDoctor.getNom() + " " + currentDoctor.getPrenom());
+                doctorSidebarLabel.setText("Dr. " + currentDoctor.getNom() + " " + currentDoctor.getPrenom());
                 showFb(docProfileFeedback, "✅ Profil mis à jour avec succès !", true);
             });
         });

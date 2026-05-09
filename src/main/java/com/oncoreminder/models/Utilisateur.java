@@ -19,7 +19,9 @@ public class Utilisateur {
     /** Notes médicales du médecin */
     private String notes;
 
-    // ── Constructeurs ────────────────────────────────────────────────
+    // Patient ↔ Doctor relationship
+    private Integer medecinId;
+
     public Utilisateur() {}
 
     public Utilisateur(int id, String nom, String prenom, String email, String password, String role) {
@@ -78,6 +80,9 @@ public class Utilisateur {
 
     public String getNotes()      { return notes; }
     public void   setNotes(String notes) { this.notes = notes; }
+
+    public Integer getMedecinId() { return medecinId; }
+    public void setMedecinId(Integer medecinId) { this.medecinId = medecinId; }
 
     @Override
     public String toString() {

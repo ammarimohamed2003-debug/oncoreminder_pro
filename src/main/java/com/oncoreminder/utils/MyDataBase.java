@@ -52,6 +52,7 @@ public class MyDataBase {
             "  `taille` double DEFAULT NULL," +
             "  `traitements` text DEFAULT NULL," +
             "  `notes` text DEFAULT NULL," +
+            "  `medecin_id` int(11) DEFAULT NULL," +
             "  PRIMARY KEY (`id`)," +
             "  UNIQUE KEY `UNIQ_EMAIL` (`email`)" +
             ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
@@ -82,13 +83,15 @@ public class MyDataBase {
                 "ALTER TABLE `utilisateur` ADD COLUMN `poids` double DEFAULT NULL",
                 "ALTER TABLE `utilisateur` ADD COLUMN `taille` double DEFAULT NULL",
                 "ALTER TABLE `utilisateur` ADD COLUMN `traitements` text DEFAULT NULL",
-                "ALTER TABLE `utilisateur` ADD COLUMN `notes` text DEFAULT NULL"
+                "ALTER TABLE `utilisateur` ADD COLUMN `notes` text DEFAULT NULL",
+                "ALTER TABLE `utilisateur` ADD COLUMN `medecin_id` int(11) DEFAULT NULL"
             };
 
             String[] articleAlters = {
                 "ALTER TABLE `article` ADD COLUMN `tags` VARCHAR(500) DEFAULT NULL",
                 "ALTER TABLE `article` ADD COLUMN `views` INT DEFAULT 0",
                 "ALTER TABLE `article` ADD COLUMN `icd_code` VARCHAR(20) DEFAULT NULL",
+                "ALTER TABLE `article` ADD COLUMN `image_path` VARCHAR(500) DEFAULT NULL",
                 "ALTER TABLE `commentaire` ADD COLUMN `likes` INT DEFAULT 0"
             };
             for (String alter : articleAlters) {

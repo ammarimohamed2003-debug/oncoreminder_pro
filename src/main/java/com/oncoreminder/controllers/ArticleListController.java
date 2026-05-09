@@ -3,19 +3,30 @@ package com.oncoreminder.controllers;
 import com.oncoreminder.app.App;
 import com.oncoreminder.models.Article;
 import com.oncoreminder.models.Commentaire;
+import com.oncoreminder.models.Message;
 import com.oncoreminder.models.Utilisateur;
 import com.oncoreminder.services.ServiceArticle;
 import com.oncoreminder.services.ServiceCommentaire;
+import com.oncoreminder.services.ServiceMessage;
+import com.oncoreminder.utils.ImageLoader;
 import com.oncoreminder.utils.MarkdownRenderer;
 import com.oncoreminder.utils.UserSession;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.stage.Popup;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.shape.Rectangle;
 
+import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 public class ArticleListController {
 
@@ -23,33 +34,51 @@ public class ArticleListController {
     @FXML private VBox      gridView;
     @FXML private FlowPane  articleFlowPane;
     @FXML private HBox      filterBar;
+    @FXML private HBox      paginationBar;
     @FXML private TextField searchField;
     @FXML private Button    newArticleBtn;
     @FXML private Label     userNameLabel;
 
     // ── Detail view ───────────────────────────────────────────
-    @FXML private VBox   detailView;
-    @FXML private Label  articleTitreLabel;
-    @FXML private Label  statutBadge;
-    @FXML private Label  dateLabel;
-    @FXML private Label  organeLabel;
-    @FXML private Label  tagsLabel;
-    @FXML private Label  viewsLabel;
-    @FXML private VBox   contenuContainer;
-    @FXML private Button likeBtn;
+    @FXML private VBox      detailView;
+    @FXML private Label     articleTitreLabel;
+    @FXML private Label     statutBadge;
+    @FXML private Label     dateLabel;
+    @FXML private Label     organeLabel;
+    @FXML private Label     tagsLabel;
+    @FXML private Label     viewsLabel;
+    @FXML private Label     medecinLabel;
+    @FXML private VBox      contenuContainer;
+    @FXML private StackPane imageContainer;
+    @FXML private ImageView detailImageView;
+    @FXML private Button    likeBtn;
     @FXML private Label  likesLabel;
     @FXML private HBox   medecinActions;
     @FXML private Button publishBtn;
     @FXML private Button archiveBtn;
     @FXML private VBox   commentsContainer;
     @FXML private TextArea commentField;
+    @FXML private Button   emojiBtn;
+
+    // Messagerie patients
+    @FXML private VBox     msgPatientsSection;
+    @FXML private HBox     patientChipsBar;
+    @FXML private VBox     convContainer;
+    @FXML private HBox     replyBar;
+    @FXML private TextArea msgReplyField;
 
     private final ServiceArticle     serviceArticle     = new ServiceArticle();
     private final ServiceCommentaire serviceCommentaire = new ServiceCommentaire();
+    private final ServiceMessage     serviceMessage     = new ServiceMessage();
+
+    private static final int PAGE_SIZE = 5;
 
     private Article       selectedArticle;
     private boolean       showingAll = true;
     private List<Article> currentArticles;
+    private List<Article> displayedArticles;
+    private int           currentPage          = 0;
+    private int           selectedPatientForMsg = -1;
 
     @FXML
     public void initialize() {
@@ -79,6 +108,7 @@ public class ArticleListController {
     }
 
     private void filterBySearch(String keyword) {
+        currentPage = 0;
         if (keyword == null || keyword.trim().isEmpty()) {
             renderGrid(currentArticles);
             return;
@@ -92,16 +122,91 @@ public class ArticleListController {
     }
 
     private void renderGrid(List<Article> articles) {
+        this.displayedArticles = articles;
         articleFlowPane.getChildren().clear();
-        if (articles.isEmpty()) {
+
+        int total = articles.size();
+        int totalPages = Math.max(1, (int) Math.ceil((double) total / PAGE_SIZE));
+        if (currentPage >= totalPages) currentPage = totalPages - 1;
+        if (currentPage < 0)           currentPage = 0;
+
+        int from = currentPage * PAGE_SIZE;
+        int to   = Math.min(from + PAGE_SIZE, total);
+
+        if (total == 0) {
             Label empty = new Label("Aucun article disponible.");
             empty.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 13px; -fx-padding: 20;");
             articleFlowPane.getChildren().add(empty);
-            return;
+        } else {
+            for (Article article : articles.subList(from, to)) {
+                articleFlowPane.getChildren().add(buildCard(article));
+            }
         }
-        for (Article article : articles) {
-            articleFlowPane.getChildren().add(buildCard(article));
+        updatePaginationBar(total);
+    }
+
+    private void updatePaginationBar(int total) {
+        paginationBar.getChildren().clear();
+        int totalPages = Math.max(1, (int) Math.ceil((double) total / PAGE_SIZE));
+
+        // Prev
+        Button prev = new Button("←");
+        prev.setDisable(currentPage == 0);
+        prev.setStyle(pageStyle(false));
+        prev.setOnAction(e -> { currentPage--; renderGrid(displayedArticles); });
+        paginationBar.getChildren().add(prev);
+
+        // Page numbers (max 7 visible)
+        int start = Math.max(0, currentPage - 3);
+        int end   = Math.min(totalPages - 1, start + 6);
+        start = Math.max(0, end - 6);
+
+        if (start > 0) {
+            paginationBar.getChildren().add(pageBtn(0));
+            if (start > 1) paginationBar.getChildren().add(ellipsisLabel());
         }
+        for (int i = start; i <= end; i++) paginationBar.getChildren().add(pageBtn(i));
+        if (end < totalPages - 1) {
+            if (end < totalPages - 2) paginationBar.getChildren().add(ellipsisLabel());
+            paginationBar.getChildren().add(pageBtn(totalPages - 1));
+        }
+
+        // Next
+        Button next = new Button("→");
+        next.setDisable(currentPage >= totalPages - 1);
+        next.setStyle(pageStyle(false));
+        next.setOnAction(e -> { currentPage++; renderGrid(displayedArticles); });
+        paginationBar.getChildren().add(next);
+
+        // Count label (centré, après les boutons)
+        int from = currentPage * PAGE_SIZE + 1;
+        int to   = Math.min((currentPage + 1) * PAGE_SIZE, total);
+        String range = total == 0 ? "0" : from + "–" + to;
+        Label count = new Label("  " + range + " sur " + total + " article" + (total > 1 ? "s" : ""));
+        count.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 12px;");
+        paginationBar.getChildren().add(count);
+    }
+
+    private Button pageBtn(int index) {
+        Button btn = new Button(String.valueOf(index + 1));
+        btn.setStyle(pageStyle(index == currentPage));
+        btn.setOnAction(e -> { currentPage = index; renderGrid(displayedArticles); });
+        return btn;
+    }
+
+    private Label ellipsisLabel() {
+        Label l = new Label("…");
+        l.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 13px; -fx-padding: 0 4;");
+        return l;
+    }
+
+    private String pageStyle(boolean active) {
+        return active
+            ? "-fx-background-color: #5B35A5; -fx-text-fill: white; -fx-background-radius: 8;" +
+              "-fx-border-width: 0; -fx-font-size: 13px; -fx-min-width: 34; -fx-pref-height: 34; -fx-cursor: hand;"
+            : "-fx-background-color: white; -fx-text-fill: #374151; -fx-background-radius: 8;" +
+              "-fx-border-color: #E5E7EB; -fx-border-radius: 8; -fx-border-width: 1;" +
+              "-fx-font-size: 13px; -fx-min-width: 34; -fx-pref-height: 34; -fx-cursor: hand;";
     }
 
     private VBox buildCard(Article article) {
@@ -113,18 +218,50 @@ public class ArticleListController {
             "-fx-border-color: #E9E4F7; -fx-border-radius: 12; -fx-border-width: 1;" +
             "-fx-effect: dropshadow(gaussian, rgba(90,53,165,0.08), 8, 0, 0, 2);"
         );
-        card.setPadding(new Insets(16));
+        card.setPadding(new Insets(0));
         card.setCursor(javafx.scene.Cursor.HAND);
 
-        // Organe badge
+        // Cover image with rounded-top clip
+        if (article.getImagePath() != null && !article.getImagePath().isEmpty()) {
+            Image img = ImageLoader.load(new File(article.getImagePath()));
+            if (img != null && !img.isError()) {
+                ImageView imgView = new ImageView(img);
+                imgView.setFitWidth(268);
+                imgView.setFitHeight(158);
+                imgView.setPreserveRatio(false);
+                imgView.setSmooth(true);
+                Rectangle clip = new Rectangle(268, 158);
+                clip.setArcWidth(24);
+                clip.setArcHeight(24);
+                imgView.setClip(clip);
+                card.getChildren().add(imgView);
+            }
+        }
+
+        VBox inner = new VBox(8);
+        inner.setPadding(new Insets(12, 16, 14, 16));
+        card.getChildren().add(inner);
+
+        // Organe + médecin badges
+        HBox badgeRow = new HBox(6);
+        badgeRow.setAlignment(Pos.CENTER_LEFT);
         if (article.getOrgane() != null && !article.getOrgane().isEmpty()) {
             Label organeBadge = new Label("🏥 " + article.getOrgane());
             organeBadge.setStyle(
                 "-fx-background-color: #EEF2FF; -fx-text-fill: #5B35A5;" +
                 "-fx-padding: 3 8; -fx-background-radius: 10; -fx-font-size: 10px;"
             );
-            card.getChildren().add(organeBadge);
+            badgeRow.getChildren().add(organeBadge);
         }
+        if (article.getMedecinNom() != null && !article.getMedecinNom().isBlank()) {
+            Label drBadge = new Label("🩺 Dr. " + article.getMedecinNom());
+            drBadge.setStyle(
+                "-fx-background-color: rgba(43,188,176,0.12); -fx-text-fill: #2BBCB0;" +
+                "-fx-padding: 3 8; -fx-background-radius: 10; -fx-font-size: 10px; -fx-font-weight: bold;"
+            );
+            badgeRow.getChildren().add(drBadge);
+        }
+        if (!badgeRow.getChildren().isEmpty()) inner.getChildren().add(badgeRow);
 
         // Title + status badge
         HBox titleRow = new HBox(8);
@@ -136,7 +273,7 @@ public class ArticleListController {
         Label badge = new Label(article.getStatut());
         badge.getStyleClass().add(getBadgeStyle(article.getStatut()));
         titleRow.getChildren().addAll(titre, badge);
-        card.getChildren().add(titleRow);
+        inner.getChildren().add(titleRow);
 
         // Excerpt
         String contenu = article.getContenu() != null ? article.getContenu() : "";
@@ -146,7 +283,7 @@ public class ArticleListController {
             Label excerpt = new Label(plain);
             excerpt.setWrapText(true);
             excerpt.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px;");
-            card.getChildren().add(excerpt);
+            inner.getChildren().add(excerpt);
         }
 
         // Tags pills
@@ -162,13 +299,13 @@ public class ArticleListController {
                 );
                 tagsRow.getChildren().add(pill);
             }
-            card.getChildren().add(tagsRow);
+            inner.getChildren().add(tagsRow);
         }
 
         // Separator
         Separator sep = new Separator();
         sep.setStyle("-fx-background-color: #F0EBF8;");
-        card.getChildren().add(sep);
+        inner.getChildren().add(sep);
 
         // Footer: date, likes, views
         HBox footer = new HBox(10);
@@ -186,7 +323,7 @@ public class ArticleListController {
             views.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 11px;");
             footer.getChildren().add(views);
         }
-        card.getChildren().add(footer);
+        inner.getChildren().add(footer);
 
         // Hover effect
         card.setOnMouseEntered(e -> card.setStyle(
@@ -233,20 +370,49 @@ public class ArticleListController {
         tagsLabel.setVisible(tags != null && !tags.isEmpty());
         tagsLabel.setManaged(tags != null && !tags.isEmpty());
 
+        String nom = article.getMedecinNom();
+        boolean hasNom = nom != null && !nom.isBlank();
+        medecinLabel.setText(hasNom ? "🩺 Dr. " + nom : "");
+        medecinLabel.setVisible(hasNom);
+        medecinLabel.setManaged(hasNom);
+
+        // Image hero
+        String imgPath = article.getImagePath();
+        Image detailImg = (imgPath != null && !imgPath.isEmpty())
+            ? ImageLoader.load(new File(imgPath)) : null;
+        if (detailImg != null && !detailImg.isError()) {
+            detailImageView.setImage(detailImg);
+            imageContainer.setVisible(true);
+            imageContainer.setManaged(true);
+        } else {
+            imageContainer.setVisible(false);
+            imageContainer.setManaged(false);
+        }
+
         MarkdownRenderer.render(article.getContenu(), contenuContainer);
         likesLabel.setText(article.getLikes() + " likes");
 
         applyLikeBtnState(serviceArticle.hasLiked(article.getId(), userId));
 
-        boolean isMedecin = "MEDECIN".equals(user.getRole());
-        medecinActions.setVisible(isMedecin);
-        medecinActions.setManaged(isMedecin);
-        if (isMedecin) {
+        boolean isOwner = "MEDECIN".equals(user.getRole()) && article.getMedecinId() == user.getId();
+        medecinActions.setVisible(isOwner);
+        medecinActions.setManaged(isOwner);
+        if (isOwner) {
             publishBtn.setVisible(!"PUBLIE".equals(article.getStatut()));
             publishBtn.setManaged(!"PUBLIE".equals(article.getStatut()));
             archiveBtn.setVisible(!"ARCHIVE".equals(article.getStatut()));
             archiveBtn.setManaged(!"ARCHIVE".equals(article.getStatut()));
         }
+
+        // Messagerie patients
+        selectedPatientForMsg = -1;
+        msgPatientsSection.setVisible(isOwner);
+        msgPatientsSection.setManaged(isOwner);
+        convContainer.setVisible(false);
+        convContainer.setManaged(false);
+        replyBar.setVisible(false);
+        replyBar.setManaged(false);
+        if (isOwner) loadPatientChips(article.getId(), userId);
 
         loadComments();
         showDetail(true);
@@ -331,8 +497,8 @@ public class ArticleListController {
 
     // ─── Actions ──────────────────────────────────────────────
 
-    @FXML void filterAll(ActionEvent event)  { showingAll = true;  loadArticles(); }
-    @FXML void filterMine(ActionEvent event) { showingAll = false; loadArticles(); }
+    @FXML void filterAll(ActionEvent event)  { currentPage = 0; showingAll = true;  loadArticles(); }
+    @FXML void filterMine(ActionEvent event) { currentPage = 0; showingAll = false; loadArticles(); }
 
     @FXML void handleNewArticle(ActionEvent event) {
         ArticleFormController.setArticleToEdit(null);
@@ -385,6 +551,110 @@ public class ArticleListController {
         });
     }
 
+    @FXML void handleEmojiPicker(ActionEvent event) {
+        showEmojiPopup(commentField, emojiBtn);
+    }
+
+    private void showEmojiPopup(TextArea target, Node anchor) {
+        Popup popup = new Popup();
+        popup.setAutoHide(true);
+
+        String[][] groups = {
+            {"😀","😊","😂","🥰","😍","😢","😮","😡","🤔","😎","🙂","😉","😋","🤗","😴","🤩","😏","🥲","😬","🤭","🤫","🫠"},
+            {"💊","🏥","🩺","🩻","💉","🧬","🫀","🫁","🧪","🩹","💪","🧠","🦷","👁","🫂","🩸","🌡","🔬","🦠","💆","🛌","🏃"},
+            {"❤️","💙","💚","💛","🔥","⭐","✅","❌","⚠️","👍","👎","🙏","💯","🎉","✨","🌟","💥","🌈","🏅","🥇","🌺","🍀"},
+            {"📝","🔍","💬","📌","💡","📊","🏆","📅","📋","🔐","🌐","💼","📱","💻","📤","📥","✉️","📞","📖","⏰","🗓","🔑"}
+        };
+        String[] tabLabels = {"😊 Humeur", "🩺 Médical", "❤️ Général", "📝 Pro"};
+
+        // Grilles
+        FlowPane[] grids = new FlowPane[groups.length];
+        for (int g = 0; g < groups.length; g++) {
+            FlowPane grid = new FlowPane(4, 4);
+            grid.setPadding(new Insets(12));
+            grid.setPrefWidth(350);
+            for (String emoji : groups[g]) {
+                Button btn = new Button(emoji);
+                btn.setStyle("-fx-font-size: 20px; -fx-min-width: 40; -fx-pref-height: 40;"
+                    + "-fx-border-width: 0; -fx-cursor: hand; -fx-background-radius: 8;"
+                    + "-fx-background-color: transparent;");
+                btn.setOnMouseEntered(e -> btn.setStyle("-fx-font-size: 20px; -fx-min-width: 40;"
+                    + "-fx-pref-height: 40; -fx-border-width: 0; -fx-cursor: hand;"
+                    + "-fx-background-radius: 8; -fx-background-color: #EDE9F8;"));
+                btn.setOnMouseExited(e -> btn.setStyle("-fx-font-size: 20px; -fx-min-width: 40;"
+                    + "-fx-pref-height: 40; -fx-border-width: 0; -fx-cursor: hand;"
+                    + "-fx-background-radius: 8; -fx-background-color: transparent;"));
+                final String em = emoji;
+                btn.setOnAction(e -> {
+                    int pos = target.getCaretPosition();
+                    target.insertText(pos, em);
+                    target.requestFocus();
+                    target.positionCaret(pos + em.length());
+                    popup.hide();
+                });
+                grid.getChildren().add(btn);
+            }
+            grids[g] = grid;
+        }
+
+        // Header
+        HBox header = new HBox();
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setPadding(new Insets(10, 14, 10, 16));
+        header.setStyle("-fx-background-color: linear-gradient(to right, #5B35A5, #2BBCB0);"
+            + "-fx-background-radius: 14 14 0 0;");
+        Label title = new Label("Choisir un émoji");
+        title.setStyle("-fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold;");
+        Region sp = new Region(); HBox.setHgrow(sp, Priority.ALWAYS);
+        Button closeBtn = new Button("✕");
+        closeBtn.setStyle("-fx-background-color: rgba(255,255,255,0.20); -fx-text-fill: white;"
+            + "-fx-background-radius: 20; -fx-border-width: 0; -fx-padding: 2 8;"
+            + "-fx-cursor: hand; -fx-font-size: 11px;");
+        closeBtn.setOnAction(e -> popup.hide());
+        header.getChildren().addAll(title, sp, closeBtn);
+
+        // Onglets
+        HBox tabBar = new HBox(0);
+        tabBar.setStyle("-fx-background-color: #F8F5FF;"
+            + "-fx-border-color: transparent transparent #EDE9F8 transparent; -fx-border-width: 1;");
+        StackPane gridContainer = new StackPane(grids[0]);
+        gridContainer.setMinHeight(160);
+
+        Button[] tabBtns = new Button[groups.length];
+        for (int g = 0; g < groups.length; g++) {
+            final int idx = g;
+            Button tab = new Button(tabLabels[g]);
+            tab.setMaxWidth(Double.MAX_VALUE);
+            HBox.setHgrow(tab, Priority.ALWAYS);
+            String activeStyle = "-fx-background-color: white; -fx-border-color: transparent transparent #5B35A5 transparent;"
+                + "-fx-border-width: 0 0 2.5 0; -fx-padding: 8 4; -fx-cursor: hand; -fx-background-radius: 0;"
+                + "-fx-text-fill: #5B35A5; -fx-font-weight: bold; -fx-font-size: 11px;";
+            String inactiveStyle = "-fx-background-color: transparent; -fx-border-width: 0;"
+                + "-fx-padding: 8 4; -fx-cursor: hand; -fx-background-radius: 0;"
+                + "-fx-text-fill: #9CA3AF; -fx-font-size: 11px;";
+            tab.setStyle(g == 0 ? activeStyle : inactiveStyle);
+            tab.setOnAction(e -> {
+                gridContainer.getChildren().setAll(grids[idx]);
+                for (int i = 0; i < tabBtns.length; i++)
+                    tabBtns[i].setStyle(i == idx ? activeStyle : inactiveStyle);
+            });
+            tabBtns[g] = tab;
+            tabBar.getChildren().add(tab);
+        }
+
+        // Assemblage
+        VBox container = new VBox(0);
+        container.setStyle("-fx-background-color: white; -fx-background-radius: 14;"
+            + "-fx-border-color: #E2D9F8; -fx-border-width: 1; -fx-border-radius: 14;"
+            + "-fx-effect: dropshadow(gaussian, rgba(90,53,165,0.25), 20, 0, 0, 6);");
+        container.getChildren().addAll(header, tabBar, gridContainer);
+        popup.getContent().add(container);
+
+        Bounds b = anchor.localToScreen(anchor.getBoundsInLocal());
+        if (b != null)
+            popup.show(anchor.getScene().getWindow(), b.getMaxX() - 350, b.getMinY() - 340);
+    }
+
     @FXML void handleAddComment(ActionEvent event) {
         String text = commentField.getText().trim();
         if (text.isEmpty() || selectedArticle == null) return;
@@ -395,6 +665,83 @@ public class ArticleListController {
         serviceCommentaire.add(new Commentaire(selectedArticle.getId(), text, auteur));
         commentField.clear();
         loadComments();
+    }
+
+    // ─── Messagerie patients ──────────────────────────────────────
+
+    private void loadPatientChips(int articleId, int medecinId) {
+        patientChipsBar.getChildren().clear();
+        Map<Integer, String> patients = serviceMessage.getPatientsByArticle(articleId, medecinId);
+        if (patients.isEmpty()) {
+            Label none = new Label("Aucun message de patient pour cet article.");
+            none.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 12px;");
+            patientChipsBar.getChildren().add(none);
+            return;
+        }
+        String activeChip   = "-fx-background-color: #5B35A5; -fx-text-fill: white; -fx-background-radius: 20; -fx-border-width: 0; -fx-padding: 5 14; -fx-font-size: 12px; -fx-cursor: hand;";
+        String inactiveChip = "-fx-background-color: #EEF2FF; -fx-text-fill: #5B35A5; -fx-background-radius: 20; -fx-border-width: 0; -fx-padding: 5 14; -fx-font-size: 12px; -fx-cursor: hand;";
+        for (Map.Entry<Integer, String> entry : patients.entrySet()) {
+            int patId = entry.getKey();
+            int unread = serviceMessage.countUnread(articleId, medecinId, patId);
+            String label = entry.getValue() + (unread > 0 ? " (" + unread + ")" : "");
+            Button chip = new Button(label);
+            chip.setStyle(inactiveChip);
+            chip.setOnAction(e -> {
+                patientChipsBar.getChildren().forEach(c -> ((Button) c).setStyle(inactiveChip));
+                chip.setStyle(activeChip);
+                selectedPatientForMsg = patId;
+                loadConversation(articleId, medecinId, patId);
+            });
+            patientChipsBar.getChildren().add(chip);
+        }
+    }
+
+    private void loadConversation(int articleId, int medecinId, int patientId) {
+        convContainer.getChildren().clear();
+        List<Message> msgs = serviceMessage.getConversation(articleId, medecinId, patientId);
+        if (msgs.isEmpty()) {
+            Label empty = new Label("Aucun message dans cette conversation.");
+            empty.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 12px;");
+            convContainer.getChildren().add(empty);
+        } else {
+            for (Message m : msgs) convContainer.getChildren().add(createMsgBubble(m, medecinId));
+            serviceMessage.markRead(articleId, medecinId, patientId);
+        }
+        convContainer.setVisible(true);
+        convContainer.setManaged(true);
+        replyBar.setVisible(true);
+        replyBar.setManaged(true);
+    }
+
+    private HBox createMsgBubble(Message m, int myId) {
+        boolean isMine = m.getExpediteurId() == myId;
+        Label bubble = new Label(m.getContenu());
+        bubble.setWrapText(true);
+        bubble.setMaxWidth(400);
+        bubble.setPadding(new Insets(8, 14, 8, 14));
+        bubble.setStyle(
+            "-fx-background-radius: 14; -fx-font-size: 13px;" +
+            (isMine
+                ? "-fx-background-color: #5B35A5; -fx-text-fill: white;"
+                : "-fx-background-color: #EDE9F8; -fx-text-fill: #3A1D7A;")
+        );
+        Label timeLabel = new Label((isMine ? "Moi" : m.getExpediteurNom()) + "  " + m.getFormattedDate());
+        timeLabel.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 10px;");
+        VBox bubbleBox = new VBox(3, bubble, timeLabel);
+        bubbleBox.setAlignment(isMine ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
+        HBox row = new HBox(bubbleBox);
+        row.setAlignment(isMine ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
+        row.setPadding(new Insets(2, 0, 2, 0));
+        return row;
+    }
+
+    @FXML void handleSendReply(ActionEvent event) {
+        String text = msgReplyField.getText().trim();
+        if (text.isEmpty() || selectedArticle == null || selectedPatientForMsg < 0) return;
+        int medecinId = UserSession.getInstance().getCurrentUser().getId();
+        serviceMessage.send(selectedArticle.getId(), medecinId, selectedPatientForMsg, text);
+        msgReplyField.clear();
+        loadConversation(selectedArticle.getId(), medecinId, selectedPatientForMsg);
     }
 
     @FXML void handleBackToGrid(ActionEvent event) {
