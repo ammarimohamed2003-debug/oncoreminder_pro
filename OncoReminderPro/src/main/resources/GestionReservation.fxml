@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/22"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controllers.ReservationController"
+            styleClass="event-root">
+
+    <!-- ══════════════ TOP BAR ══════════════ -->
+    <top>
+        <HBox style="-fx-background-color:#FFFFFF; -fx-padding:10 20 10 20;
+                     -fx-effect:dropshadow(gaussian,rgba(0,0,0,0.10),10,0,0,3);"
+              spacing="12" alignment="CENTER_LEFT">
+
+            <Button text="← Retour" onAction="#retourEvents"
+                    style="-fx-background-color:transparent; -fx-text-fill:#5B35A5;
+                           -fx-font-size:13px; -fx-font-weight:bold;
+                           -fx-background-radius:8; -fx-border-radius:8;
+                           -fx-border-color:#C8DCF0; -fx-border-width:1.5;
+                           -fx-padding:7 14 7 14; -fx-cursor:hand;"/>
+
+            <Separator orientation="VERTICAL" style="-fx-opacity:0.3; -fx-padding:0 4 0 4;"/>
+
+            <!-- Logo -->
+            <HBox styleClass="event-logo" spacing="8" alignment="CENTER"
+                  style="-fx-padding:7 14 7 14; -fx-background-radius:10;">
+                <Label text="≋" styleClass="event-logo-mark"/>
+                <Label text="OncoReminder" styleClass="event-logo-text"/>
+            </HBox>
+
+            <Label text="/" style="-fx-text-fill:#CBD5E0; -fx-font-size:18px; -fx-padding:0 4 0 4;"/>
+            <Label text="Gestion des Réservations"
+                   style="-fx-text-fill:#4A2D8F; -fx-font-size:14px; -fx-font-weight:bold;"/>
+
+            <HBox HBox.hgrow="ALWAYS"/>
+
+            <!-- Info badge -->
+            <HBox styleClass="stat-badge" spacing="5" alignment="CENTER"
+                  style="-fx-padding:5 14 5 14;">
+                <Label text="🎟" style="-fx-font-size:13px;"/>
+                <Label text="Réservations en ligne" styleClass="stat-label"/>
+            </HBox>
+        </HBox>
+    </top>
+
+    <!-- ══════════════ MAIN CONTENT ══════════════ -->
+    <center>
+        <HBox spacing="16" style="-fx-padding:16; -fx-background-color:#EBF4FF;">
+
+            <!-- ── LEFT : Form panel ── -->
+            <VBox spacing="0" prefWidth="320" minWidth="290" styleClass="form-panel">
+
+                <!-- Panel header -->
+                <VBox style="-fx-background-color:linear-gradient(to right,#5B35A5,#4372C4);
+                             -fx-background-radius:12 12 0 0; -fx-padding:14 18 14 18;">
+                    <Label text="🎟  Nouvelle Réservation"
+                           style="-fx-text-fill:#FFFFFF; -fx-font-size:15px; -fx-font-weight:bold;"/>
+                    <Label text="Remplissez les champs ci-dessous"
+                           style="-fx-text-fill:rgba(255,255,255,0.70); -fx-font-size:11px;"/>
+                </VBox>
+
+                <!-- Form body -->
+                <VBox spacing="12" style="-fx-padding:18;">
+
+                    <Label text="Événement *" styleClass="field-label"/>
+                    <ComboBox fx:id="cbEvent" styleClass="field-combo"
+                              maxWidth="Infinity"
+                              promptText="Sélectionnez un événement…"/>
+
+                    <Label text="ID Utilisateur (patient) *" styleClass="field-label"/>
+                    <TextField fx:id="tfUserId" styleClass="field-input"
+                               promptText="Ex : 3"
+                               style="-fx-pref-height:36px;"/>
+
+                    <Button text="✔  Confirmer la réservation" onAction="#reserverPlace"
+                            maxWidth="Infinity"
+                            style="-fx-background-color:#0D9488; -fx-text-fill:#FFFFFF;
+                                   -fx-font-weight:bold; -fx-font-size:13px;
+                                   -fx-background-radius:10; -fx-border-radius:10;
+                                   -fx-padding:12 0 12 0; -fx-cursor:hand;
+                                   -fx-effect:dropshadow(gaussian,rgba(13,148,136,0.40),10,0,0,4);"/>
+
+                    <Separator style="-fx-padding:4 0 4 0;"/>
+
+                    <!-- Cancel section -->
+                    <VBox spacing="8"
+                          style="-fx-background-color:#FFF5F5; -fx-background-radius:10;
+                                 -fx-border-color:#FED7D7; -fx-border-radius:10;
+                                 -fx-border-width:1.2; -fx-padding:14;">
+                        <HBox spacing="6" alignment="CENTER_LEFT">
+                            <Label text="⚠" style="-fx-font-size:14px; -fx-text-fill:#C53030;"/>
+                            <Label text="Annuler une réservation"
+                                   style="-fx-text-fill:#C53030; -fx-font-size:13px; -fx-font-weight:bold;"/>
+                        </HBox>
+                        <Label text="Sélectionnez une ligne dans le tableau puis cliquez sur le bouton."
+                               style="-fx-text-fill:#718096; -fx-font-size:11px;" wrapText="true"/>
+                        <Button text="✖  Annuler la réservation sélectionnée"
+                                onAction="#annulerReservation"
+                                maxWidth="Infinity"
+                                style="-fx-background-color:#FC8181; -fx-text-fill:#FFFFFF;
+                                       -fx-font-weight:bold; -fx-font-size:12px;
+                                       -fx-background-radius:8; -fx-border-radius:8;
+                                       -fx-padding:10 0 10 0; -fx-cursor:hand;"/>
+                    </VBox>
+
+                    <!-- Feedback -->
+                    <Label fx:id="lbMessage" wrapText="true"
+                           style="-fx-text-fill:#2BBCB0; -fx-font-size:12px;
+                                  -fx-font-weight:bold; -fx-padding:4 0 0 0;"/>
+                </VBox>
+            </VBox>
+
+            <!-- ── RIGHT : Table panel ── -->
+            <VBox spacing="0" HBox.hgrow="ALWAYS" styleClass="form-panel">
+
+                <!-- Table header -->
+                <HBox style="-fx-background-color:linear-gradient(to right,#5B35A5,#4372C4);
+                             -fx-background-radius:12 12 0 0; -fx-padding:12 18 12 18;"
+                      alignment="CENTER_LEFT" spacing="10">
+                    <Label text="📋  Liste des Réservations"
+                           style="-fx-text-fill:#FFFFFF; -fx-font-size:14px; -fx-font-weight:bold;"/>
+                    <HBox HBox.hgrow="ALWAYS"/>
+                    <Label text="Cliquez sur une ligne pour la sélectionner"
+                           style="-fx-text-fill:rgba(255,255,255,0.65); -fx-font-size:11px;"/>
+                </HBox>
+
+                <!-- Table -->
+                <TableView fx:id="tableReservation" VBox.vgrow="ALWAYS"
+                           styleClass="main-table"
+                           style="-fx-background-radius:0 0 12 12;">
+                    <columns>
+                        <TableColumn fx:id="colId"      text="ID Résa"    prefWidth="90"/>
+                        <TableColumn fx:id="colEventId" text="ID Événement" prefWidth="130"/>
+                        <TableColumn fx:id="colUserId"  text="ID Patient"  prefWidth="120"/>
+                        <TableColumn fx:id="colStatut"  text="Statut"      prefWidth="160"/>
+                    </columns>
+                    <placeholder>
+                        <VBox alignment="CENTER" spacing="12" style="-fx-padding:50;">
+                            <Label text="🎟" style="-fx-font-size:48px; -fx-text-fill:#C8DCF0;"/>
+                            <Label text="Aucune réservation enregistrée"
+                                   style="-fx-text-fill:#B0C4D8; -fx-font-size:14px; -fx-font-style:italic;"/>
+                        </VBox>
+                    </placeholder>
+                </TableView>
+            </VBox>
+
+        </HBox>
+    </center>
+
+    <!-- ══════════════ FOOTER ══════════════ -->
+    <bottom>
+        <HBox style="-fx-background-color:#FFFFFF; -fx-padding:9 20 9 20;
+                     -fx-border-color:#C8DCF0; -fx-border-width:1 0 0 0;"
+              alignment="CENTER_LEFT" spacing="8">
+            <Label text="≋" style="-fx-text-fill:#5B35A5; -fx-font-size:13px;"/>
+            <Label text="OncoReminder Pro v2.0  —  Module Événements &amp; Réservations"
+                   style="-fx-text-fill:#2BBCB0; -fx-font-size:11px;"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>
