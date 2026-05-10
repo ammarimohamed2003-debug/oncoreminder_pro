@@ -143,62 +143,56 @@ public class PatientArticleListController {
 
     private void updatePaginationBar(int total) {
         paginationBar.getChildren().clear();
+        paginationBar.setAlignment(Pos.CENTER);
+        paginationBar.setSpacing(7);
+
         int totalPages = Math.max(1, (int) Math.ceil((double) total / PAGE_SIZE));
+        if (totalPages <= 1) return;
 
-        Button prev = new Button("←");
-        prev.setDisable(currentPage == 0);
-        prev.setStyle(pageStyle(false));
-        prev.setOnAction(e -> { currentPage--; renderGrid(displayedArticles); });
-        paginationBar.getChildren().add(prev);
+        // Sliding window of max 9 dots
+        int maxDots = 9;
+        int start = Math.max(0, Math.min(currentPage - maxDots / 2, totalPages - maxDots));
+        int end   = Math.min(totalPages, start + maxDots);
+        start = Math.max(0, end - maxDots);
 
-        int start = Math.max(0, currentPage - 3);
-        int end   = Math.min(totalPages - 1, start + 6);
-        start = Math.max(0, end - 6);
-
-        if (start > 0) {
-            paginationBar.getChildren().add(pageBtn(0));
-            if (start > 1) paginationBar.getChildren().add(ellipsisLabel());
-        }
-        for (int i = start; i <= end; i++) paginationBar.getChildren().add(pageBtn(i));
-        if (end < totalPages - 1) {
-            if (end < totalPages - 2) paginationBar.getChildren().add(ellipsisLabel());
-            paginationBar.getChildren().add(pageBtn(totalPages - 1));
+        if (currentPage > 0) {
+            Button prev = carouselArrow("‹");
+            prev.setOnAction(e -> { currentPage--; renderGrid(displayedArticles); });
+            paginationBar.getChildren().add(prev);
         }
 
-        Button next = new Button("→");
-        next.setDisable(currentPage >= totalPages - 1);
-        next.setStyle(pageStyle(false));
-        next.setOnAction(e -> { currentPage++; renderGrid(displayedArticles); });
-        paginationBar.getChildren().add(next);
+        for (int i = start; i < end; i++) {
+            final int page = i;
+            boolean active = i == currentPage;
+            Button dot = new Button();
+            double size = active ? 13 : 9;
+            dot.setPrefSize(size, size);
+            dot.setMinSize(size, size);
+            dot.setMaxSize(size, size);
+            dot.setStyle(
+                "-fx-background-radius: 50; -fx-border-width: 0; -fx-padding: 0;" +
+                "-fx-background-color: " + (active ? "#5B35A5" : "#D4C4EE") + ";" +
+                (active ? "" : "-fx-cursor: hand;")
+            );
+            if (!active) dot.setOnAction(e -> { currentPage = page; renderGrid(displayedArticles); });
+            paginationBar.getChildren().add(dot);
+        }
 
-        int from = currentPage * PAGE_SIZE + 1;
-        int to   = Math.min((currentPage + 1) * PAGE_SIZE, total);
-        String range = total == 0 ? "0" : from + "–" + to;
-        Label count = new Label("  " + range + " sur " + total + " article" + (total > 1 ? "s" : ""));
-        count.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 12px;");
-        paginationBar.getChildren().add(count);
+        if (currentPage < totalPages - 1) {
+            Button next = carouselArrow("›");
+            next.setOnAction(e -> { currentPage++; renderGrid(displayedArticles); });
+            paginationBar.getChildren().add(next);
+        }
     }
 
-    private Button pageBtn(int index) {
-        Button btn = new Button(String.valueOf(index + 1));
-        btn.setStyle(pageStyle(index == currentPage));
-        btn.setOnAction(e -> { currentPage = index; renderGrid(displayedArticles); });
+    private Button carouselArrow(String label) {
+        Button btn = new Button(label);
+        btn.setStyle(
+            "-fx-background-color: transparent; -fx-text-fill: #5B35A5;" +
+            "-fx-font-size: 18px; -fx-font-weight: bold; -fx-border-width: 0;" +
+            "-fx-cursor: hand; -fx-padding: 0 2;"
+        );
         return btn;
-    }
-
-    private Label ellipsisLabel() {
-        Label l = new Label("…");
-        l.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 13px; -fx-padding: 0 4;");
-        return l;
-    }
-
-    private String pageStyle(boolean active) {
-        return active
-            ? "-fx-background-color: #5B35A5; -fx-text-fill: white; -fx-background-radius: 8;" +
-              "-fx-border-width: 0; -fx-font-size: 13px; -fx-min-width: 34; -fx-pref-height: 34; -fx-cursor: hand;"
-            : "-fx-background-color: white; -fx-text-fill: #374151; -fx-background-radius: 8;" +
-              "-fx-border-color: #E5E7EB; -fx-border-radius: 8; -fx-border-width: 1;" +
-              "-fx-font-size: 13px; -fx-min-width: 34; -fx-pref-height: 34; -fx-cursor: hand;";
     }
 
     private VBox buildCard(Article article) {
