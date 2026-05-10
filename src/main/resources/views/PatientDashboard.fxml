@@ -71,6 +71,8 @@
                         maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
                 <Button fx:id="btnEvenements" text="📅  Événements" onAction="#handleRendezVous"
                         maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
+                <Button fx:id="btnReclamations" text="📣  Réclamations" onAction="#handleReclamations"
+                        maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
             </VBox>
 
             <Region VBox.vgrow="ALWAYS"/>
@@ -423,6 +425,11 @@
         <!-- Zone réservations -->
         <VBox fx:id="patientReservationsPane" visible="false" managed="false">
             <fx:include fx:id="patientReservationContent" source="ReservationContent.fxml" VBox.vgrow="ALWAYS"/>
+        </VBox>
+
+        <!-- Zone réclamations -->
+        <VBox fx:id="patientReclamationsPane" visible="false" managed="false">
+            <fx:include fx:id="patientReclamationContent" source="ReclamationPatient.fxml" VBox.vgrow="ALWAYS"/>
         </VBox>
 
         </StackPane>

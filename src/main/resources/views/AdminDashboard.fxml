@@ -240,7 +240,12 @@
                         </HBox>
                     </Tab>
 
-                    <!-- ════════ ONGLET 2 — LOGS ════════ -->
+                    <!-- ════════ ONGLET 2 — RÉCLAMATIONS ════════ -->
+                    <Tab text="📣  Réclamations">
+                        <fx:include source="AdminReclamation.fxml"/>
+                    </Tab>
+
+                    <!-- ════════ ONGLET 3 — LOGS ════════ -->
                     <Tab text="📋  Historique d'accès">
                         <VBox spacing="15">
                             <padding><Insets bottom="10" left="0" right="0" top="12"/></padding>

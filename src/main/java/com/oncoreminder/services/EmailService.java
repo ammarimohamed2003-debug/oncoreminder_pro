@@ -7,126 +7,23 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-/**
- * EmailService — Envoi d'emails via SMTP Gmail.
- * Implémentation pure Java (aucune dépendance externe).
- *
- * ⚠️ Configuration requise :
- *   1. Activez l'authentification à 2 facteurs sur votre compte Gmail.
- *   2. Créez un "Mot de passe d'application" (Compte Google → Sécurité → App Passwords).
- *   3. Remplacez GMAIL_USER et GMAIL_APP_PASSWORD ci-dessous.
- *
- * 💡 Mode DEV : Si non configuré, le code OTP apparaît dans la console IntelliJ.
- */
 public class EmailService {
 
-    // ── ⚙️  CONFIGURATION — Modifiez ces deux valeurs ─────────────────
-    private static final String GMAIL_USER         = "votre.email@gmail.com";   // ← Votre Gmail
-    private static final String GMAIL_APP_PASSWORD = "xxxx xxxx xxxx xxxx";     // ← App Password Google
-    // ──────────────────────────────────────────────────────────────────
+    private static final String GMAIL_USER         = "votre.email@gmail.com";
+    private static final String GMAIL_APP_PASSWORD = "xxxx xxxx xxxx xxxx";
 
     private static final String SMTP_HOST = "smtp.gmail.com";
     private static final int    SMTP_PORT = 587;
 
-    /**
-     * Vérifie si l'email est configuré (non placeholder).
-     */
     public static boolean isConfigured() {
         return !GMAIL_USER.startsWith("votre.email") &&
                !GMAIL_APP_PASSWORD.startsWith("xxxx");
     }
 
-    /**
-     * Envoie un email OTP HTML au destinataire via SMTP Gmail avec STARTTLS.
-     * Utilise uniquement les APIs Java standard (javax.net.ssl).
-     *
-     * @param toEmail  Adresse email du destinataire
-     * @param otpCode  Code OTP 6 chiffres
-     * @throws Exception si l'envoi échoue
-     */
     public static void sendOtpEmail(String toEmail, String otpCode) throws Exception {
-        if (!isConfigured()) {
-            throw new Exception("EmailService non configuré — mode DEV activé.");
-        }
-
-        // ── Étape 1 : Connexion TCP plain-text sur port 587 ───────────
-        try (Socket socket = new Socket(SMTP_HOST, SMTP_PORT)) {
-            socket.setSoTimeout(15_000); // 15 secondes timeout
-
-            BufferedReader reader = new BufferedReader(
-                new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-            PrintWriter writer = new PrintWriter(
-                new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
-
-            // Lire le message de bienvenue du serveur : "220 smtp.gmail.com ..."
-            readSmtpResponse(reader, "220");
-
-            // ── EHLO ──────────────────────────────────────────────────
-            writeLine(writer, "EHLO localhost");
-            readSmtpResponse(reader, "250");
-
-            // ── STARTTLS — demande de mise à niveau en SSL ────────────
-            writeLine(writer, "STARTTLS");
-            readSmtpResponse(reader, "220");
-
-            // ── Mise à niveau SSL ──────────────────────────────────────
-            SSLSocketFactory sslFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-            SSLSocket sslSocket = (SSLSocket) sslFactory.createSocket(socket, SMTP_HOST, SMTP_PORT, true);
-            sslSocket.startHandshake();
-
-            BufferedReader sslReader = new BufferedReader(
-                new InputStreamReader(sslSocket.getInputStream(), StandardCharsets.UTF_8));
-            PrintWriter sslWriter = new PrintWriter(
-                new OutputStreamWriter(sslSocket.getOutputStream(), StandardCharsets.UTF_8), true);
-
-            // ── EHLO à nouveau après STARTTLS ──────────────────────────
-            writeLine(sslWriter, "EHLO localhost");
-            readSmtpResponse(sslReader, "250");
-
-            // ── AUTH LOGIN ────────────────────────────────────────────
-            writeLine(sslWriter, "AUTH LOGIN");
-            readSmtpResponse(sslReader, "334");
-
-            writeLine(sslWriter, base64(GMAIL_USER));
-            readSmtpResponse(sslReader, "334");
-
-            writeLine(sslWriter, base64(GMAIL_APP_PASSWORD));
-            readSmtpResponse(sslReader, "235"); // 235 = authentification réussie
-
-            // ── MAIL FROM ──────────────────────────────────────────────
-            writeLine(sslWriter, "MAIL FROM:<" + GMAIL_USER + ">");
-            readSmtpResponse(sslReader, "250");
-
-            // ── RCPT TO ────────────────────────────────────────────────
-            writeLine(sslWriter, "RCPT TO:<" + toEmail + ">");
-            readSmtpResponse(sslReader, "250");
-
-            // ── DATA ───────────────────────────────────────────────────
-            writeLine(sslWriter, "DATA");
-            readSmtpResponse(sslReader, "354");
-
-            // Construire l'email RFC 2822
-            String subjectB64 = base64("Réinitialisation mot de passe - OncoReminder");
-            String htmlBody   = buildHtmlBody(otpCode);
-
-            sslWriter.println("From: OncoReminder Pro <" + GMAIL_USER + ">");
-            sslWriter.println("To: " + toEmail);
-            sslWriter.println("Subject: =?UTF-8?B?" + subjectB64 + "?=");
-            sslWriter.println("MIME-Version: 1.0");
-            sslWriter.println("Content-Type: text/html; charset=UTF-8");
-            sslWriter.println("Content-Transfer-Encoding: quoted-printable");
-            sslWriter.println(); // ligne vide obligatoire entre headers et body
-            sslWriter.println(htmlBody);
-            sslWriter.println("."); // fin du DATA
-            sslWriter.flush();
-            readSmtpResponse(sslReader, "250");
-
-            // ── QUIT ───────────────────────────────────────────────────
-            writeLine(sslWriter, "QUIT");
-            readSmtpResponse(sslReader, "221");
-
-            System.out.println("[EmailService] ✅ Email OTP envoyé à : " + toEmail);
-        }
+        if (!isConfigured()) throw new Exception("EmailService non configuré — mode DEV activé.");
+        sendMail(toEmail, "Réinitialisation mot de passe - OncoReminder", buildHtmlBody(otpCode));
+        System.out.println("[EmailService] ✅ Email OTP envoyé à : " + toEmail);
     }
 
     // ── Helpers SMTP ──────────────────────────────────────────────────
@@ -136,17 +33,12 @@ public class EmailService {
         w.flush();
     }
 
-    /**
-     * Lit la réponse du serveur SMTP et vérifie le code attendu.
-     * Gère les réponses multi-lignes (ex: EHLO retourne plusieurs lignes 250-...).
-     */
     private static String readSmtpResponse(BufferedReader reader, String expectedCode)
             throws IOException {
         StringBuilder sb = new StringBuilder();
         String line;
         while ((line = reader.readLine()) != null) {
             sb.append(line).append("\n");
-            // Réponse multi-ligne : "250-..." (tiret) vs "250 ..." (espace = dernière ligne)
             if (line.length() >= 4 && line.charAt(3) != '-') break;
         }
         String response = sb.toString();
@@ -160,7 +52,62 @@ public class EmailService {
         return Base64.getEncoder().encodeToString(text.getBytes(StandardCharsets.UTF_8));
     }
 
-    // ── Template HTML de l'email ──────────────────────────────────────
+    private static void sendMail(String toEmail, String subject, String htmlBody) throws Exception {
+        try (Socket socket = new Socket(SMTP_HOST, SMTP_PORT)) {
+            socket.setSoTimeout(15_000);
+            BufferedReader reader = new BufferedReader(
+                new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+            PrintWriter writer = new PrintWriter(
+                new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
+
+            readSmtpResponse(reader, "220");
+            writeLine(writer, "EHLO localhost");
+            readSmtpResponse(reader, "250");
+            writeLine(writer, "STARTTLS");
+            readSmtpResponse(reader, "220");
+
+            SSLSocketFactory sslFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+            SSLSocket sslSocket = (SSLSocket) sslFactory.createSocket(socket, SMTP_HOST, SMTP_PORT, true);
+            sslSocket.startHandshake();
+
+            BufferedReader sr = new BufferedReader(
+                new InputStreamReader(sslSocket.getInputStream(), StandardCharsets.UTF_8));
+            PrintWriter sw = new PrintWriter(
+                new OutputStreamWriter(sslSocket.getOutputStream(), StandardCharsets.UTF_8), true);
+
+            writeLine(sw, "EHLO localhost");
+            readSmtpResponse(sr, "250");
+            writeLine(sw, "AUTH LOGIN");
+            readSmtpResponse(sr, "334");
+            writeLine(sw, base64(GMAIL_USER));
+            readSmtpResponse(sr, "334");
+            writeLine(sw, base64(GMAIL_APP_PASSWORD));
+            readSmtpResponse(sr, "235");
+
+            writeLine(sw, "MAIL FROM:<" + GMAIL_USER + ">");
+            readSmtpResponse(sr, "250");
+            writeLine(sw, "RCPT TO:<" + toEmail + ">");
+            readSmtpResponse(sr, "250");
+            writeLine(sw, "DATA");
+            readSmtpResponse(sr, "354");
+
+            sw.println("From: OncoReminder Pro <" + GMAIL_USER + ">");
+            sw.println("To: " + toEmail);
+            sw.println("Subject: =?UTF-8?B?" + base64(subject) + "?=");
+            sw.println("MIME-Version: 1.0");
+            sw.println("Content-Type: text/html; charset=UTF-8");
+            sw.println("Content-Transfer-Encoding: quoted-printable");
+            sw.println();
+            sw.println(htmlBody);
+            sw.println(".");
+            sw.flush();
+            readSmtpResponse(sr, "250");
+            writeLine(sw, "QUIT");
+            readSmtpResponse(sr, "221");
+        }
+    }
+
+    // ── Template OTP ──────────────────────────────────────────────────
 
     private static String buildHtmlBody(String otpCode) {
         return "<!DOCTYPE html>" +

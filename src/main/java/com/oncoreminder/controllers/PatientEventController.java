@@ -16,14 +16,18 @@ import javafx.scene.shape.Rectangle;
 import java.io.File;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class PatientEventController {
 
     @FXML private FlowPane eventsFlowPane;
     @FXML private Label    lbCount;
 
-    private Runnable onReserver;
-    public void setOnReserver(Runnable r) { this.onReserver = r; }
+    private Runnable           onReserver;
+    private Consumer<String>   onReclamer;
+
+    public void setOnReserver(Runnable r)          { this.onReserver = r; }
+    public void setOnReclamer(Consumer<String> c)  { this.onReclamer = c; }
 
     private final ServiceEvent serviceEvent = new ServiceEvent();
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -102,7 +106,17 @@ public class PatientEventController {
         );
         if (!complet) btn.setOnAction(e -> { if (onReserver != null) onReserver.run(); else App.navigate("GestionReservation"); });
 
-        body.getChildren().addAll(titre, date, lieu, badge, btn);
+        Button btnReclamer = new Button("📣  Réclamer");
+        btnReclamer.setMaxWidth(Double.MAX_VALUE);
+        btnReclamer.setStyle(
+            "-fx-background-color: #EDE8FF; -fx-text-fill: #5B35A5;" +
+            "-fx-font-weight: bold; -fx-font-size: 11px; -fx-background-radius: 10;" +
+            "-fx-border-radius: 10; -fx-padding: 7 0; -fx-cursor: hand;" +
+            "-fx-effect: dropshadow(gaussian,rgba(91,53,165,0.15),6,0,0,2);"
+        );
+        btnReclamer.setOnAction(e -> { if (onReclamer != null) onReclamer.accept(ev.getTitre()); });
+
+        body.getChildren().addAll(titre, date, lieu, badge, btn, btnReclamer);
         card.getChildren().add(body);
 
         card.setOnMouseEntered(e -> card.setStyle(

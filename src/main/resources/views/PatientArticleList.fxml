@@ -72,6 +72,8 @@
                         maxWidth="Infinity" styleClass="sidebar-nav-btn-active"/>
                 <Button text="📅  Événements" onAction="#handleRendezVous"
                         maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
+                <Button text="📣  Réclamations" onAction="#handleReclamations"
+                        maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
             </VBox>
 
             <Region VBox.vgrow="ALWAYS"/>
