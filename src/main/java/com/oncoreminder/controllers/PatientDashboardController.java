@@ -25,20 +25,24 @@ import org.mindrot.jbcrypt.BCrypt;
  */
 public class PatientDashboardController {
 
-    public static boolean showEventsOnLoad = false;
+    public static boolean showEventsOnLoad       = false;
+    public static boolean showReclamationsOnLoad = false;
 
     // ── Sidebar ───────────────────────────────────────────────────────
     @FXML private TabPane patientTabPane;
     @FXML private VBox    patientEventsPane;
     @FXML private VBox    patientReservationsPane;
+    @FXML private VBox    patientReclamationsPane;
     @FXML private Button  btnMaSante;
     @FXML private Button  btnEvenements;
+    @FXML private Button  btnReclamations;
     @FXML private Label   patientNameLabel;
     @FXML private Label   medecinSidebarLabel;
 
     // ── Sous-contrôleurs (fx:include) ─────────────────────────────────
-    @FXML private PatientEventController patientEventContentController;
-    @FXML private ReservationController  patientReservationContentController;
+    @FXML private PatientEventController      patientEventContentController;
+    @FXML private ReservationController       patientReservationContentController;
+    @FXML private ReclamationPatientController patientReclamationContentController;
 
     // ── Onglet 1 : Dossier médical ────────────────────────────────────
     @FXML private Label bloodGroupLabelDisplay;
@@ -102,13 +106,22 @@ public class PatientDashboardController {
     @FXML
     public void initialize() {
         currentUser = UserSession.getInstance().getCurrentUser();
-        if (showEventsOnLoad) { showEventsOnLoad = false; showPane(1); }
+        if (showEventsOnLoad)       { showEventsOnLoad = false;       showPane(1); }
+        if (showReclamationsOnLoad) { showReclamationsOnLoad = false; showPane(3); }
 
         Platform.runLater(() -> {
-            if (patientEventContentController != null)
+            if (patientEventContentController != null) {
                 patientEventContentController.setOnReserver(() -> showPane(2));
+                patientEventContentController.setOnReclamer(eventTitre -> {
+                    if (patientReclamationContentController != null)
+                        patientReclamationContentController.preselectEvent(eventTitre);
+                    showPane(3);
+                });
+            }
             if (patientReservationContentController != null)
                 patientReservationContentController.setOnRetourEvents(() -> showPane(1));
+            if (patientReclamationContentController != null)
+                patientReclamationContentController.setOnFermer(() -> showPane(0));
         });
 
         // ComboBoxes
@@ -328,19 +341,23 @@ public class PatientDashboardController {
 
     // ── Navigation ────────────────────────────────────────────────────
 
-    @FXML void handleArticles(ActionEvent event)   { App.navigate("PatientArticleList"); }
-    @FXML void handleMaSante(ActionEvent event)    { showPane(0); }
-    @FXML void handleRendezVous(ActionEvent event) { showPane(1); }
+    @FXML void handleArticles(ActionEvent event)     { App.navigate("PatientArticleList"); }
+    @FXML void handleMaSante(ActionEvent event)      { showPane(0); }
+    @FXML void handleRendezVous(ActionEvent event)   { showPane(1); }
+    @FXML void handleReclamations(ActionEvent event) { showPane(3); }
 
     private static final String PAT_ACTIVE = "sidebar-nav-btn-active";
     private static final String PAT_NORMAL = "sidebar-nav-btn";
 
     private void showPane(int which) {
-        patientTabPane.setVisible(which == 0);          patientTabPane.setManaged(which == 0);
-        patientEventsPane.setVisible(which == 1);       patientEventsPane.setManaged(which == 1);
-        patientReservationsPane.setVisible(which == 2); patientReservationsPane.setManaged(which == 2);
+        patientTabPane.setVisible(which == 0);           patientTabPane.setManaged(which == 0);
+        patientEventsPane.setVisible(which == 1);        patientEventsPane.setManaged(which == 1);
+        patientReservationsPane.setVisible(which == 2);  patientReservationsPane.setManaged(which == 2);
+        patientReclamationsPane.setVisible(which == 3);  patientReclamationsPane.setManaged(which == 3);
         btnMaSante.getStyleClass().setAll(which == 0 ? PAT_ACTIVE : PAT_NORMAL);
-        btnEvenements.getStyleClass().setAll(which >= 1 ? PAT_ACTIVE : PAT_NORMAL);
+        btnEvenements.getStyleClass().setAll(which == 1 || which == 2 ? PAT_ACTIVE : PAT_NORMAL);
+        if (btnReclamations != null)
+            btnReclamations.getStyleClass().setAll(which == 3 ? PAT_ACTIVE : PAT_NORMAL);
     }
 
     @FXML void handleLogout(ActionEvent event) {

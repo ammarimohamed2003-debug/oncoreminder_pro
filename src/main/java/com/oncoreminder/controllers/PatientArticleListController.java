@@ -665,8 +665,9 @@ public class PatientArticleListController {
         loadMessages(selectedArticle.getId(), u.getId(), currentMedecinId);
     }
 
-    @FXML void handleDashboard(ActionEvent event) { App.navigate("PatientDashboard"); }
-    @FXML void handleRendezVous(ActionEvent event) { PatientDashboardController.showEventsOnLoad = true; App.navigate("PatientDashboard"); }
+    @FXML void handleDashboard(ActionEvent event)     { App.navigate("PatientDashboard"); }
+    @FXML void handleRendezVous(ActionEvent event)    { PatientDashboardController.showEventsOnLoad = true; App.navigate("PatientDashboard"); }
+    @FXML void handleReclamations(ActionEvent event)  { PatientDashboardController.showReclamationsOnLoad = true; App.navigate("PatientDashboard"); }
 
     @FXML void handleLogout(ActionEvent event) {
         UserSession.getInstance().logout();
