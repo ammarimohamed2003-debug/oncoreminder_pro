@@ -6,6 +6,7 @@ import com.oncoreminder.models.Commentaire;
 import com.oncoreminder.models.Message;
 import com.oncoreminder.models.Utilisateur;
 import com.oncoreminder.services.ServiceArticle;
+import com.oncoreminder.services.ServiceArticleEvaluation;
 import com.oncoreminder.services.ServiceCommentaire;
 import com.oncoreminder.services.ServiceMessage;
 import com.oncoreminder.services.ServiceUtilisateur;
@@ -62,14 +63,21 @@ public class PatientArticleListController {
     @FXML private TextArea commentField;
     @FXML private Button   emojiBtn;
 
+    // Évaluation
+    @FXML private VBox  evalSection;
+    @FXML private Label evalTitre;
+    @FXML private HBox  evalStarsBox;
+    @FXML private Label evalMessage;
+
     // Messagerie
     @FXML private VBox     msgSection;
     @FXML private VBox     msgContainer;
     @FXML private TextArea msgField;
 
-    private final ServiceArticle     serviceArticle     = new ServiceArticle();
-    private final ServiceCommentaire serviceCommentaire = new ServiceCommentaire();
-    private final ServiceMessage     serviceMessage     = new ServiceMessage();
+    private final ServiceArticle           serviceArticle     = new ServiceArticle();
+    private final ServiceArticleEvaluation serviceEval        = new ServiceArticleEvaluation();
+    private final ServiceCommentaire       serviceCommentaire = new ServiceCommentaire();
+    private final ServiceMessage           serviceMessage     = new ServiceMessage();
 
     private static final int PAGE_SIZE = 5;
 
@@ -195,10 +203,12 @@ public class PatientArticleListController {
         return btn;
     }
 
+    private static final int CARD_W = 340;
+
     private VBox buildCard(Article article) {
         VBox card = new VBox(10);
-        card.setPrefWidth(268);
-        card.setMaxWidth(268);
+        card.setPrefWidth(CARD_W);
+        card.setMaxWidth(CARD_W);
         card.setPadding(new Insets(0));
         card.setCursor(Cursor.HAND);
         card.setStyle(
@@ -215,11 +225,11 @@ public class PatientArticleListController {
             Image img = ImageLoader.load(new File(article.getImagePath()));
             if (img != null && !img.isError()) {
                 ImageView imgView = new ImageView(img);
-                imgView.setFitWidth(268);
+                imgView.setFitWidth(CARD_W);
                 imgView.setFitHeight(158);
                 imgView.setPreserveRatio(false);
                 imgView.setSmooth(true);
-                Rectangle clip = new Rectangle(268, 158);
+                Rectangle clip = new Rectangle(CARD_W, 158);
                 clip.setArcWidth(24);
                 clip.setArcHeight(24);
                 imgView.setClip(clip);
@@ -256,7 +266,7 @@ public class PatientArticleListController {
         Label titre = new Label(article.getTitre());
         titre.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #3A1D7A;");
         titre.setWrapText(true);
-        titre.setMaxWidth(236);
+        titre.setMaxWidth(278);
         inner.getChildren().add(titre);
 
         // Extrait du contenu (texte brut, 130 chars max)
@@ -267,7 +277,7 @@ public class PatientArticleListController {
             String excerpt = raw.length() > 130 ? raw.substring(0, 127) + "…" : raw;
             Label excLabel = new Label(excerpt);
             excLabel.setWrapText(true);
-            excLabel.setMaxWidth(236);
+            excLabel.setMaxWidth(278);
             excLabel.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 11px;");
             inner.getChildren().add(excLabel);
         }
@@ -292,8 +302,8 @@ public class PatientArticleListController {
         sep.setStyle("-fx-background-color: #E9E3FF;");
         inner.getChildren().add(sep);
 
-        // Footer : date + likes + vues
-        HBox footer = new HBox(12);
+        // Footer : date + likes + vues + commentaires
+        HBox footer = new HBox(10);
         footer.setAlignment(Pos.CENTER_LEFT);
         if (article.getDatePublication() != null) {
             Label date = new Label("📅 " + article.getDatePublication());
@@ -309,6 +319,17 @@ public class PatientArticleListController {
             Label views = new Label("👁 " + article.getViews());
             views.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 11px;");
             footer.getChildren().add(views);
+        }
+        int nbComments = serviceCommentaire.countByArticle(article.getId());
+        Label comments = new Label("💬 " + nbComments);
+        comments.setStyle("-fx-text-fill: #5B35A5; -fx-font-size: 11px;");
+        footer.getChildren().add(comments);
+        int evalCount = serviceEval.getCount(article.getId());
+        if (evalCount > 0) {
+            int pct = (int) Math.round(serviceEval.getAverage(article.getId()) / 5.0 * 100);
+            Label evalLbl = new Label("⭐ " + pct + "% (" + evalCount + ")");
+            evalLbl.setStyle("-fx-text-fill: #D97706; -fx-font-size: 11px; -fx-font-weight: bold;");
+            footer.getChildren().add(evalLbl);
         }
         inner.getChildren().add(footer);
 
@@ -379,6 +400,8 @@ public class PatientArticleListController {
 
         applyLikeBtnState(serviceArticle.hasLiked(article.getId(), userId));
 
+        loadEvalSection(article, userId);
+
         // Messagerie avec le médecin
         currentMedecinId = u.getMedecinId();
         boolean hasMedecin = currentMedecinId != null;
@@ -412,6 +435,82 @@ public class PatientArticleListController {
         gridView.setManaged(!show);
         detailView.setVisible(show);
         detailView.setManaged(show);
+    }
+
+    // ─── Évaluation ──────────────────────────────────────────────────
+
+    private void loadEvalSection(Article article, int userId) {
+        evalSection.setVisible(true);
+        evalSection.setManaged(true);
+        evalStarsBox.getChildren().clear();
+        evalMessage.setVisible(false);
+        evalMessage.setManaged(false);
+
+        Integer existing = serviceEval.getUserNote(article.getId(), userId);
+        if (existing != null) {
+            evalTitre.setText("⭐  Votre évaluation");
+            afficherEtoilesLecture(existing);
+            evalMessage.setText(noteLabel(existing));
+            evalMessage.setVisible(true);
+            evalMessage.setManaged(true);
+        } else {
+            evalTitre.setText("⭐  Évaluez cet article");
+            afficherEtoilesCliquables(article, userId);
+        }
+    }
+
+    private void afficherEtoilesLecture(int note) {
+        for (int i = 1; i <= 5; i++) {
+            Label star = new Label(i <= note ? "★" : "☆");
+            star.setStyle("-fx-font-size: 26px; -fx-text-fill: " + (i <= note ? "#F6AD55;" : "#CBD5E0;"));
+            evalStarsBox.getChildren().add(star);
+        }
+    }
+
+    private void afficherEtoilesCliquables(Article article, int userId) {
+        Button[] stars = new Button[5];
+        for (int i = 1; i <= 5; i++) {
+            final int val = i;
+            Button star = new Button("☆");
+            star.setStyle("-fx-background-color: transparent; -fx-font-size: 28px; " +
+                          "-fx-text-fill: #CBD5E0; -fx-cursor: hand; -fx-padding: 0 2;");
+            star.setOnMouseEntered(ev -> survoleEtoiles(stars, val));
+            star.setOnMouseExited(ev  -> resetEtoiles(stars));
+            star.setOnAction(ev -> {
+                serviceEval.saveNote(article.getId(), userId, val);
+                evalStarsBox.getChildren().clear();
+                afficherEtoilesLecture(val);
+                evalTitre.setText("⭐  Votre évaluation");
+                evalMessage.setText(noteLabel(val));
+                evalMessage.setVisible(true);
+                evalMessage.setManaged(true);
+            });
+            stars[i - 1] = star;
+            evalStarsBox.getChildren().add(star);
+        }
+    }
+
+    private void survoleEtoiles(Button[] stars, int jusqua) {
+        for (int i = 0; i < 5; i++)
+            stars[i].setStyle("-fx-background-color: transparent; -fx-font-size: 28px; " +
+                "-fx-text-fill: " + (i < jusqua ? "#F6AD55;" : "#CBD5E0;") + " -fx-cursor: hand; -fx-padding: 0 2;");
+    }
+
+    private void resetEtoiles(Button[] stars) {
+        for (Button s : stars)
+            s.setStyle("-fx-background-color: transparent; -fx-font-size: 28px; " +
+                       "-fx-text-fill: #CBD5E0; -fx-cursor: hand; -fx-padding: 0 2;");
+    }
+
+    private String noteLabel(int note) {
+        return switch (note) {
+            case 1 -> "Très insatisfait(e)";
+            case 2 -> "Insatisfait(e)";
+            case 3 -> "Correct";
+            case 4 -> "Satisfait(e)";
+            case 5 -> "Très satisfait(e) ✓";
+            default -> "";
+        };
     }
 
     // ─── Commentaires ────────────────────────────────────────────────

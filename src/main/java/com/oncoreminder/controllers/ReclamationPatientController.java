@@ -217,7 +217,6 @@ public class ReclamationPatientController {
         deleteBtn.setVisible(peutSupprimer);
         deleteBtn.setManaged(peutSupprimer);
 
-        // Évaluation
         afficherEvaluation(r);
 
         reponsesContainer.getChildren().clear();
@@ -234,7 +233,7 @@ public class ReclamationPatientController {
     }
 
     private void afficherEvaluation(Reclamation r) {
-        boolean traitee = "TRAITEE".equals(r.getStatut()) || "FERMEE".equals(r.getStatut());
+        boolean traitee  = "TRAITEE".equals(r.getStatut()) || "FERMEE".equals(r.getStatut());
         boolean aReponse = serviceReponse.hasReponse(r.getId());
         noteSection.setVisible(traitee && aReponse);
         noteSection.setManaged(traitee && aReponse);
@@ -244,7 +243,6 @@ public class ReclamationPatientController {
         noteMessage.setVisible(false); noteMessage.setManaged(false);
 
         if (r.getNote() != null) {
-            // Affichage lecture seule
             noteTitre.setText("⭐  Votre évaluation");
             for (int i = 1; i <= 5; i++) {
                 Label star = new Label(i <= r.getNote() ? "★" : "☆");
@@ -254,7 +252,6 @@ public class ReclamationPatientController {
             noteMessage.setText(noteLabel(r.getNote()));
             noteMessage.setVisible(true); noteMessage.setManaged(true);
         } else {
-            // Étoiles cliquables
             noteTitre.setText("⭐  Évaluez la prise en charge");
             Button[] stars = new Button[5];
             for (int i = 1; i <= 5; i++) {
@@ -286,10 +283,8 @@ public class ReclamationPatientController {
     private void soumettrNote(Reclamation r, int note, Button[] stars) {
         serviceReclamation.updateNote(r.getId(), note);
         r.setNote(note);
-        // Mise à jour dans la liste locale
         allReclamations.stream().filter(x -> x.getId() == r.getId())
             .findFirst().ifPresent(x -> x.setNote(note));
-        // Afficher étoiles fixes
         starsContainer.getChildren().clear();
         for (int i = 1; i <= 5; i++) {
             Label star = new Label(i <= note ? "★" : "☆");
