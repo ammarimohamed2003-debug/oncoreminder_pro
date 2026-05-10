@@ -264,31 +264,6 @@
                                       style="-fx-padding: 8 0 0 0;"/>
                             </VBox>
 
-                            <!-- Messagerie patients -->
-                            <VBox fx:id="msgPatientsSection" spacing="14" visible="false" managed="false"
-                                  style="-fx-background-color: white;
-                                         -fx-background-radius: 14;
-                                         -fx-border-color: #EDE9F8;
-                                         -fx-border-radius: 14;
-                                         -fx-border-width: 1;
-                                         -fx-padding: 22;">
-                                <Label text="📨 Messages des Patients"
-                                       style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #3A1D7A;"/>
-                                <Separator style="-fx-background-color: #EDE9F8;"/>
-                                <HBox fx:id="patientChipsBar" spacing="8" alignment="CENTER_LEFT" minHeight="32"/>
-                                <VBox fx:id="convContainer" spacing="10" minHeight="40"
-                                      visible="false" managed="false"/>
-                                <HBox fx:id="replyBar" spacing="12" alignment="CENTER"
-                                      visible="false" managed="false">
-                                    <TextArea fx:id="msgReplyField" promptText="Répondre au patient..."
-                                              styleClass="field-input" HBox.hgrow="ALWAYS"
-                                              prefHeight="64" wrapText="true"/>
-                                    <Button text="Répondre →" onAction="#handleSendReply"
-                                            styleClass="btn-primary" minWidth="110" prefHeight="64"
-                                            style="-fx-padding: 0 14; -fx-font-size: 13px;"/>
-                                </HBox>
-                            </VBox>
-
                             <!-- Commentaires -->
                             <VBox spacing="14"
                                   style="-fx-background-color: white; -fx-background-radius: 14;
