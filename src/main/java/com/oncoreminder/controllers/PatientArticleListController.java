@@ -3,12 +3,10 @@ package com.oncoreminder.controllers;
 import com.oncoreminder.app.App;
 import com.oncoreminder.models.Article;
 import com.oncoreminder.models.Commentaire;
-import com.oncoreminder.models.Message;
 import com.oncoreminder.models.Utilisateur;
 import com.oncoreminder.services.ServiceArticle;
 import com.oncoreminder.services.ServiceArticleEvaluation;
 import com.oncoreminder.services.ServiceCommentaire;
-import com.oncoreminder.services.ServiceMessage;
 import com.oncoreminder.services.ServiceUtilisateur;
 import com.oncoreminder.utils.ImageLoader;
 import com.oncoreminder.utils.MarkdownRenderer;
@@ -69,15 +67,9 @@ public class PatientArticleListController {
     @FXML private HBox  evalStarsBox;
     @FXML private Label evalMessage;
 
-    // Messagerie
-    @FXML private VBox     msgSection;
-    @FXML private VBox     msgContainer;
-    @FXML private TextArea msgField;
-
     private final ServiceArticle           serviceArticle     = new ServiceArticle();
     private final ServiceArticleEvaluation serviceEval        = new ServiceArticleEvaluation();
     private final ServiceCommentaire       serviceCommentaire = new ServiceCommentaire();
-    private final ServiceMessage           serviceMessage     = new ServiceMessage();
 
     private static final int PAGE_SIZE = 5;
 
@@ -85,7 +77,6 @@ public class PatientArticleListController {
     private List<Article> currentArticles;
     private List<Article> displayedArticles;
     private int           currentPage    = 0;
-    private Integer       currentMedecinId;
 
     private final ServiceUtilisateur serviceUtilisateur = new ServiceUtilisateur();
 
@@ -402,13 +393,6 @@ public class PatientArticleListController {
 
         loadEvalSection(article, userId);
 
-        // Messagerie avec le médecin
-        currentMedecinId = u.getMedecinId();
-        boolean hasMedecin = currentMedecinId != null;
-        msgSection.setVisible(hasMedecin);
-        msgSection.setManaged(hasMedecin);
-        if (hasMedecin) loadMessages(article.getId(), userId, currentMedecinId);
-
         loadComments();
         showDetail(true);
     }
@@ -549,7 +533,7 @@ public class PatientArticleListController {
         int userId = UserSession.getInstance().getCurrentUser().getId();
         boolean alreadyLiked = serviceCommentaire.hasLiked(c.getId(), userId);
 
-        HBox likeRow = new HBox(6);
+        HBox likeRow = new HBox(8);
         likeRow.setAlignment(Pos.CENTER_LEFT);
         Label likeCount = new Label("👍 " + c.getLikes());
         likeCount.setStyle("-fx-text-fill: #5B35A5; -fx-font-size: 11px;");
@@ -564,9 +548,101 @@ public class PatientArticleListController {
             cLikeBtn.setStyle("-fx-background-color: " + (nowLiked ? "#EEF2FF" : "transparent") +
                 "; -fx-cursor: hand; -fx-font-size: 13px; -fx-padding: 0 6; -fx-border-radius: 5;");
         });
-        likeRow.getChildren().addAll(cLikeBtn, likeCount);
 
-        card.getChildren().addAll(header, contenu, likeRow);
+        // ── Threaded replies ──
+        VBox repliesBox = new VBox(6);
+        repliesBox.setPadding(new Insets(4, 0, 0, 24));
+        List<Commentaire> replies = serviceCommentaire.getReplies(c.getId());
+        repliesBox.setVisible(!replies.isEmpty());
+        repliesBox.setManaged(!replies.isEmpty());
+
+        TextArea replyField = new TextArea();
+        replyField.setPromptText("Votre réponse...");
+        replyField.setPrefHeight(52);
+        replyField.setWrapText(true);
+        replyField.getStyleClass().add("field-input");
+
+        Button sendReplyBtn = new Button("Envoyer →");
+        sendReplyBtn.getStyleClass().add("btn-primary");
+        sendReplyBtn.setStyle("-fx-padding: 0 12; -fx-font-size: 12px;");
+
+        HBox replyInputRow = new HBox(8, replyField, sendReplyBtn);
+        replyInputRow.setAlignment(Pos.CENTER);
+        HBox.setHgrow(replyField, Priority.ALWAYS);
+
+        VBox replyInputBox = new VBox(6, replyInputRow);
+        replyInputBox.setPadding(new Insets(6, 0, 0, 24));
+        replyInputBox.setVisible(false);
+        replyInputBox.setManaged(false);
+
+        Utilisateur currentUser = UserSession.getInstance().getCurrentUser();
+        String replyAuteur = currentUser.getPrenom() + " " + currentUser.getNom();
+
+        // populate replies now that replyField/replyInputBox exist
+        for (Commentaire r : replies) repliesBox.getChildren().add(createReplyCard(r, replyField, replyInputBox));
+
+        sendReplyBtn.setOnAction(ev -> {
+            String text = replyField.getText().trim();
+            if (text.isEmpty()) return;
+            Commentaire reply = new Commentaire(c.getArticleId(), text, replyAuteur);
+            reply.setParentId(c.getId());
+            serviceCommentaire.add(reply);
+            replyField.clear();
+            replyInputBox.setVisible(false);
+            replyInputBox.setManaged(false);
+            repliesBox.getChildren().clear();
+            List<Commentaire> updated = serviceCommentaire.getReplies(c.getId());
+            for (Commentaire r : updated) repliesBox.getChildren().add(createReplyCard(r, replyField, replyInputBox));
+            repliesBox.setVisible(true);
+            repliesBox.setManaged(true);
+        });
+
+        Button replyBtn = new Button("💬 Répondre");
+        replyBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #5B35A5; " +
+            "-fx-font-size: 11px; -fx-cursor: hand; -fx-padding: 0 4; -fx-border-width: 0;");
+        replyBtn.setOnAction(ev -> {
+            boolean show = !replyInputBox.isVisible();
+            replyInputBox.setVisible(show);
+            replyInputBox.setManaged(show);
+            if (show) replyField.requestFocus();
+        });
+
+        likeRow.getChildren().addAll(cLikeBtn, likeCount, replyBtn);
+        card.getChildren().addAll(header, contenu, likeRow, repliesBox, replyInputBox);
+        return card;
+    }
+
+    private VBox createReplyCard(Commentaire r, TextArea parentReplyField, VBox parentReplyInputBox) {
+        VBox card = new VBox(4);
+        card.setStyle("-fx-background-color: #EEF4FF; -fx-background-radius: 6; " +
+            "-fx-border-color: #B8D4F0; -fx-border-radius: 6; -fx-border-width: 1;");
+        card.setPadding(new Insets(7, 10, 7, 10));
+
+        HBox header = new HBox(8);
+        header.setAlignment(Pos.CENTER_LEFT);
+        Label auteur = new Label("↳ " + r.getAuteur());
+        auteur.setStyle("-fx-font-weight: bold; -fx-text-fill: #2BBCB0; -fx-font-size: 11px;");
+        Region sp = new Region(); HBox.setHgrow(sp, Priority.ALWAYS);
+        Label date = new Label(r.getFormattedDate());
+        date.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 10px;");
+        header.getChildren().addAll(auteur, sp, date);
+
+        Label contenu = new Label(r.getContenu());
+        contenu.setWrapText(true);
+        contenu.setStyle("-fx-text-fill: #2D3748; -fx-font-size: 12px;");
+
+        Button replyBtn = new Button("💬 Répondre");
+        replyBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #2BBCB0; " +
+            "-fx-font-size: 10px; -fx-cursor: hand; -fx-padding: 0 2; -fx-border-width: 0;");
+        replyBtn.setOnAction(ev -> {
+            parentReplyInputBox.setVisible(true);
+            parentReplyInputBox.setManaged(true);
+            parentReplyField.setText("@" + r.getAuteur() + " ");
+            parentReplyField.requestFocus();
+            parentReplyField.positionCaret(parentReplyField.getText().length());
+        });
+
+        card.getChildren().addAll(header, contenu, replyBtn);
         return card;
     }
 
@@ -716,52 +792,6 @@ public class PatientArticleListController {
         serviceCommentaire.add(new Commentaire(selectedArticle.getId(), text, user.getPrenom() + " " + user.getNom()));
         commentField.clear();
         loadComments();
-    }
-
-    // ─── Messagerie ──────────────────────────────────────────────────
-
-    private void loadMessages(int articleId, int patientId, int medecinId) {
-        msgContainer.getChildren().clear();
-        List<Message> msgs = serviceMessage.getConversation(articleId, patientId, medecinId);
-        if (msgs.isEmpty()) {
-            Label empty = new Label("Aucun échange avec votre médecin pour cet article.");
-            empty.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 12px;");
-            msgContainer.getChildren().add(empty);
-        } else {
-            for (Message m : msgs) msgContainer.getChildren().add(createMsgBubble(m, patientId));
-            serviceMessage.markRead(articleId, patientId, medecinId);
-        }
-    }
-
-    private HBox createMsgBubble(Message m, int myId) {
-        boolean isMine = m.getExpediteurId() == myId;
-        Label bubble = new Label(m.getContenu());
-        bubble.setWrapText(true);
-        bubble.setMaxWidth(340);
-        bubble.setPadding(new Insets(8, 14, 8, 14));
-        bubble.setStyle(
-            "-fx-background-radius: 14; -fx-font-size: 13px;" +
-            (isMine
-                ? "-fx-background-color: #5B35A5; -fx-text-fill: white;"
-                : "-fx-background-color: #EDE9F8; -fx-text-fill: #3A1D7A;")
-        );
-        Label timeLabel = new Label((isMine ? "Moi" : m.getExpediteurNom()) + "  " + m.getFormattedDate());
-        timeLabel.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 10px;");
-        VBox bubbleBox = new VBox(3, bubble, timeLabel);
-        bubbleBox.setAlignment(isMine ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
-        HBox row = new HBox(bubbleBox);
-        row.setAlignment(isMine ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
-        row.setPadding(new Insets(2, 0, 2, 0));
-        return row;
-    }
-
-    @FXML void handleSendMessage(ActionEvent event) {
-        String text = msgField.getText().trim();
-        if (text.isEmpty() || selectedArticle == null || currentMedecinId == null) return;
-        Utilisateur u = UserSession.getInstance().getCurrentUser();
-        serviceMessage.send(selectedArticle.getId(), u.getId(), currentMedecinId, text);
-        msgField.clear();
-        loadMessages(selectedArticle.getId(), u.getId(), currentMedecinId);
     }
 
     @FXML void handleDashboard(ActionEvent event)     { App.navigate("PatientDashboard"); }

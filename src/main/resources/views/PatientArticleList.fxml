@@ -229,28 +229,6 @@
                                        style="-fx-text-fill: #5B35A5; -fx-font-size: 12px; -fx-font-style: italic;"/>
                             </VBox>
 
-                            <!-- Messagerie médecin -->
-                            <VBox fx:id="msgSection" spacing="14" visible="false" managed="false"
-                                  style="-fx-background-color: white;
-                                         -fx-background-radius: 14;
-                                         -fx-border-color: #EDE9F8;
-                                         -fx-border-radius: 14;
-                                         -fx-border-width: 1;
-                                         -fx-padding: 22;">
-                                <Label text="📨 Mon Médecin"
-                                       style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #3A1D7A;"/>
-                                <Separator style="-fx-background-color: #EDE9F8;"/>
-                                <VBox fx:id="msgContainer" spacing="10" minHeight="40"/>
-                                <HBox spacing="12" alignment="CENTER">
-                                    <TextArea fx:id="msgField" promptText="Écrire à mon médecin..."
-                                              styleClass="field-input" HBox.hgrow="ALWAYS"
-                                              prefHeight="64" wrapText="true"/>
-                                    <Button text="Envoyer →" onAction="#handleSendMessage"
-                                            styleClass="btn-primary" minWidth="110" prefHeight="64"
-                                            style="-fx-padding: 0 14; -fx-font-size: 13px;"/>
-                                </HBox>
-                            </VBox>
-
                             <!-- Carte commentaires -->
                             <VBox spacing="14"
                                   style="-fx-background-color: white;

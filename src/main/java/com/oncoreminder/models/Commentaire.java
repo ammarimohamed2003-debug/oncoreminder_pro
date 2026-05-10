@@ -10,6 +10,7 @@ public class Commentaire {
     private String auteur;
     private LocalDateTime dateCommentaire;
     private int likes;
+    private int parentId; // 0 = root comment
 
     public Commentaire() {}
 
@@ -40,6 +41,9 @@ public class Commentaire {
 
     public int getLikes() { return likes; }
     public void setLikes(int likes) { this.likes = likes; }
+
+    public int getParentId() { return parentId; }
+    public void setParentId(int parentId) { this.parentId = parentId; }
 
     public String getFormattedDate() {
         if (dateCommentaire == null) return "";
