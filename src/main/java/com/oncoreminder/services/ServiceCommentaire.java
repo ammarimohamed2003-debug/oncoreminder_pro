@@ -107,6 +107,18 @@ public class ServiceCommentaire {
         } catch (SQLException e) { return false; }
     }
 
+    public int countByArticle(int articleId) {
+        if (!updateConnection()) return 0;
+        try {
+            PreparedStatement pst = cnx.prepareStatement(
+                "SELECT COUNT(*) FROM commentaire WHERE article_id = ?");
+            pst.setInt(1, articleId);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (SQLException e) { System.out.println(e.getMessage()); }
+        return 0;
+    }
+
     /** @deprecated Utiliser toggleLike(commentaireId, userId) */
     public void addLike(int id) {
         if (!updateConnection()) return;

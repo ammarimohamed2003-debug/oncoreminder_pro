@@ -6,6 +6,7 @@ import com.oncoreminder.models.Commentaire;
 import com.oncoreminder.models.Message;
 import com.oncoreminder.models.Utilisateur;
 import com.oncoreminder.services.ServiceArticle;
+import com.oncoreminder.services.ServiceArticleEvaluation;
 import com.oncoreminder.services.ServiceCommentaire;
 import com.oncoreminder.services.ServiceMessage;
 import com.oncoreminder.utils.ImageLoader;
@@ -27,6 +28,7 @@ import javafx.scene.shape.Rectangle;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ArticleListController {
 
@@ -38,6 +40,13 @@ public class ArticleListController {
     @FXML private TextField searchField;
     @FXML private Button    newArticleBtn;
     @FXML private Label     userNameLabel;
+
+    // ── Statut filters (médecin) ──────────────────────────────
+    @FXML private HBox   statutFilterBar;
+    @FXML private Button btnStatutTous;
+    @FXML private Button btnStatutPublie;
+    @FXML private Button btnStatutBrouillon;
+    @FXML private Button btnStatutArchive;
 
     // ── Detail view ───────────────────────────────────────────
     @FXML private VBox      detailView;
@@ -60,6 +69,13 @@ public class ArticleListController {
     @FXML private TextArea commentField;
     @FXML private Button   emojiBtn;
 
+    // Évaluation
+    @FXML private VBox  evalSection;
+    @FXML private Label evalTitre;
+    @FXML private HBox  evalStarsBox;
+    @FXML private Label evalMessage;
+    @FXML private VBox  evalListBox;
+
     // Messagerie patients
     @FXML private VBox     msgPatientsSection;
     @FXML private HBox     patientChipsBar;
@@ -67,14 +83,16 @@ public class ArticleListController {
     @FXML private HBox     replyBar;
     @FXML private TextArea msgReplyField;
 
-    private final ServiceArticle     serviceArticle     = new ServiceArticle();
-    private final ServiceCommentaire serviceCommentaire = new ServiceCommentaire();
-    private final ServiceMessage     serviceMessage     = new ServiceMessage();
+    private final ServiceArticle           serviceArticle     = new ServiceArticle();
+    private final ServiceArticleEvaluation serviceEval        = new ServiceArticleEvaluation();
+    private final ServiceCommentaire       serviceCommentaire = new ServiceCommentaire();
+    private final ServiceMessage           serviceMessage     = new ServiceMessage();
 
     private static final int PAGE_SIZE = 5;
 
     private Article       selectedArticle;
     private boolean       showingAll = true;
+    private String        currentStatutFilter  = null;
     private List<Article> currentArticles;
     private List<Article> displayedArticles;
     private int           currentPage          = 0;
@@ -91,6 +109,8 @@ public class ArticleListController {
         newArticleBtn.setManaged(isMedecin);
         filterBar.setVisible(isMedecin);
         filterBar.setManaged(isMedecin);
+        statutFilterBar.setVisible(isMedecin);
+        statutFilterBar.setManaged(isMedecin);
 
         searchField.textProperty().addListener((obs, o, n) -> filterBySearch(n));
 
@@ -99,11 +119,15 @@ public class ArticleListController {
 
     private void loadArticles() {
         Utilisateur user = UserSession.getInstance().getCurrentUser();
+        List<Article> all;
         if ("MEDECIN".equals(user.getRole())) {
-            currentArticles = showingAll ? serviceArticle.getAll() : serviceArticle.getByMedecin(user.getId());
+            all = showingAll ? serviceArticle.getAll() : serviceArticle.getByMedecin(user.getId());
+            if (currentStatutFilter != null)
+                all = all.stream().filter(a -> currentStatutFilter.equals(a.getStatut())).collect(Collectors.toList());
         } else {
-            currentArticles = serviceArticle.getPublished();
+            all = serviceArticle.getPublished();
         }
+        currentArticles = all;
         renderGrid(currentArticles);
     }
 
@@ -199,10 +223,12 @@ public class ArticleListController {
         return btn;
     }
 
+    private static final int CARD_W = 340;
+
     private VBox buildCard(Article article) {
         VBox card = new VBox(8);
-        card.setPrefWidth(268);
-        card.setMaxWidth(268);
+        card.setPrefWidth(CARD_W);
+        card.setMaxWidth(CARD_W);
         card.setStyle(
             "-fx-background-color: white; -fx-background-radius: 12;" +
             "-fx-border-color: #E9E4F7; -fx-border-radius: 12; -fx-border-width: 1;" +
@@ -216,11 +242,11 @@ public class ArticleListController {
             Image img = ImageLoader.load(new File(article.getImagePath()));
             if (img != null && !img.isError()) {
                 ImageView imgView = new ImageView(img);
-                imgView.setFitWidth(268);
+                imgView.setFitWidth(CARD_W);
                 imgView.setFitHeight(158);
                 imgView.setPreserveRatio(false);
                 imgView.setSmooth(true);
-                Rectangle clip = new Rectangle(268, 158);
+                Rectangle clip = new Rectangle(CARD_W, 158);
                 clip.setArcWidth(24);
                 clip.setArcHeight(24);
                 imgView.setClip(clip);
@@ -231,6 +257,14 @@ public class ArticleListController {
         VBox inner = new VBox(8);
         inner.setPadding(new Insets(12, 16, 14, 16));
         card.getChildren().add(inner);
+
+        // Statut — ligne dédiée, toujours visible
+        HBox statutRow = new HBox();
+        statutRow.setAlignment(Pos.CENTER_RIGHT);
+        Label badge = new Label(statutLabel(article.getStatut()));
+        badge.getStyleClass().add(getBadgeStyle(article.getStatut()));
+        statutRow.getChildren().add(badge);
+        inner.getChildren().add(statutRow);
 
         // Organe + médecin badges
         HBox badgeRow = new HBox(6);
@@ -253,17 +287,11 @@ public class ArticleListController {
         }
         if (!badgeRow.getChildren().isEmpty()) inner.getChildren().add(badgeRow);
 
-        // Title + status badge
-        HBox titleRow = new HBox(8);
-        titleRow.setAlignment(Pos.TOP_LEFT);
+        // Titre — toute la largeur
         Label titre = new Label(article.getTitre());
         titre.setWrapText(true);
         titre.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #2D1B69;");
-        HBox.setHgrow(titre, Priority.ALWAYS);
-        Label badge = new Label(article.getStatut());
-        badge.getStyleClass().add(getBadgeStyle(article.getStatut()));
-        titleRow.getChildren().addAll(titre, badge);
-        inner.getChildren().add(titleRow);
+        inner.getChildren().add(titre);
 
         // Excerpt
         String contenu = article.getContenu() != null ? article.getContenu() : "";
@@ -297,7 +325,7 @@ public class ArticleListController {
         sep.setStyle("-fx-background-color: #F0EBF8;");
         inner.getChildren().add(sep);
 
-        // Footer: date, likes, views
+        // Footer: date, likes, views, comments
         HBox footer = new HBox(10);
         footer.setAlignment(Pos.CENTER_LEFT);
         if (article.getDatePublication() != null) {
@@ -305,6 +333,8 @@ public class ArticleListController {
             date.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 11px;");
             footer.getChildren().add(date);
         }
+        Region footerSpacer = new Region(); HBox.setHgrow(footerSpacer, Priority.ALWAYS);
+        footer.getChildren().add(footerSpacer);
         Label likes = new Label("❤ " + article.getLikes());
         likes.setStyle("-fx-text-fill: #FC8181; -fx-font-size: 11px;");
         footer.getChildren().add(likes);
@@ -312,6 +342,17 @@ public class ArticleListController {
             Label views = new Label("👁 " + article.getViews());
             views.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 11px;");
             footer.getChildren().add(views);
+        }
+        int nbComments = serviceCommentaire.countByArticle(article.getId());
+        Label comments = new Label("💬 " + nbComments);
+        comments.setStyle("-fx-text-fill: #5B35A5; -fx-font-size: 11px;");
+        footer.getChildren().add(comments);
+        int evalCount = serviceEval.getCount(article.getId());
+        if (evalCount > 0) {
+            int pct = (int) Math.round(serviceEval.getAverage(article.getId()) / 5.0 * 100);
+            Label evalLbl = new Label("⭐ " + pct + "% (" + evalCount + ")");
+            evalLbl.setStyle("-fx-text-fill: #D97706; -fx-font-size: 11px; -fx-font-weight: bold;");
+            footer.getChildren().add(evalLbl);
         }
         inner.getChildren().add(footer);
 
@@ -337,6 +378,16 @@ public class ArticleListController {
             case "PUBLIE"    -> "stat-badge-success";
             case "BROUILLON" -> "stat-badge-warning";
             default          -> "stat-badge-info";
+        };
+    }
+
+    private String statutLabel(String statut) {
+        if (statut == null) return "";
+        return switch (statut) {
+            case "PUBLIE"    -> "✅ Publié";
+            case "BROUILLON" -> "📝 Brouillon";
+            case "ARCHIVE"   -> "📦 Archivé";
+            default          -> statut;
         };
     }
 
@@ -387,6 +438,9 @@ public class ArticleListController {
         boolean isOwner = "MEDECIN".equals(user.getRole()) && article.getMedecinId() == user.getId();
         medecinActions.setVisible(isOwner);
         medecinActions.setManaged(isOwner);
+
+        if (isOwner) loadEvalAggregate(article.getId());
+        else         loadEvalUser(article, userId);
         if (isOwner) {
             publishBtn.setVisible(!"PUBLIE".equals(article.getStatut()));
             publishBtn.setManaged(!"PUBLIE".equals(article.getStatut()));
@@ -406,6 +460,131 @@ public class ArticleListController {
 
         loadComments();
         showDetail(true);
+    }
+
+    // ─── Évaluation ──────────────────────────────────────────────────
+
+    private void loadEvalAggregate(int articleId) {
+        evalSection.setVisible(true);
+        evalSection.setManaged(true);
+        evalStarsBox.getChildren().clear();
+        evalListBox.getChildren().clear();
+        evalListBox.setVisible(false); evalListBox.setManaged(false);
+        evalMessage.setVisible(false); evalMessage.setManaged(false);
+
+        evalTitre.setText("📊  Notes reçues sur cet article");
+
+        int count = serviceEval.getCount(articleId);
+        if (count == 0) {
+            evalMessage.setText("Aucune évaluation pour le moment.");
+            evalMessage.setVisible(true); evalMessage.setManaged(true);
+            return;
+        }
+
+        double avg   = serviceEval.getAverage(articleId);
+        int    pct   = (int) Math.round(avg / 5.0 * 100);
+        int    rounded = (int) Math.round(avg);
+        for (int i = 1; i <= 5; i++) {
+            Label star = new Label(i <= rounded ? "★" : "☆");
+            star.setStyle("-fx-font-size: 24px; -fx-text-fill: " + (i <= rounded ? "#F6AD55;" : "#CBD5E0;"));
+            evalStarsBox.getChildren().add(star);
+        }
+        evalMessage.setText(String.format("%.1f / 5  ·  %d%%  ·  %d évaluation(s)", avg, pct, count));
+        evalMessage.setVisible(true); evalMessage.setManaged(true);
+
+        // Liste détaillée des évaluateurs
+        var evals = serviceEval.getEvaluations(articleId);
+        if (!evals.isEmpty()) {
+            Separator sep = new Separator();
+            sep.setStyle("-fx-background-color: #EDE9F8;");
+            evalListBox.getChildren().add(sep);
+            for (String[] e : evals) {
+                int    n    = Integer.parseInt(e[1]);
+                String stars = "★".repeat(n) + "☆".repeat(5 - n);
+                HBox row = new HBox(10);
+                row.setAlignment(Pos.CENTER_LEFT);
+                Label nomLbl = new Label("👤 " + e[0]);
+                nomLbl.setStyle("-fx-font-size: 12px; -fx-text-fill: #2D1B69; -fx-font-weight: bold;");
+                Label starLbl = new Label(stars);
+                starLbl.setStyle("-fx-font-size: 14px; -fx-text-fill: #F6AD55;");
+                Label noteLbl = new Label("(" + n + "/5)");
+                noteLbl.setStyle("-fx-font-size: 11px; -fx-text-fill: #718096;");
+                row.getChildren().addAll(nomLbl, starLbl, noteLbl);
+                evalListBox.getChildren().add(row);
+            }
+            evalListBox.setVisible(true); evalListBox.setManaged(true);
+        }
+    }
+
+    private void loadEvalUser(Article article, int userId) {
+        evalSection.setVisible(true);
+        evalSection.setManaged(true);
+        evalStarsBox.getChildren().clear();
+        evalMessage.setVisible(false); evalMessage.setManaged(false);
+
+        Integer existing = serviceEval.getUserNote(article.getId(), userId);
+        if (existing != null) {
+            evalTitre.setText("⭐  Votre évaluation");
+            afficherEtoilesLecture(existing);
+            evalMessage.setText(noteLabel(existing));
+            evalMessage.setVisible(true); evalMessage.setManaged(true);
+        } else {
+            evalTitre.setText("⭐  Évaluez cet article");
+            afficherEtoilesCliquables(article, userId);
+        }
+    }
+
+    private void afficherEtoilesLecture(int note) {
+        for (int i = 1; i <= 5; i++) {
+            Label star = new Label(i <= note ? "★" : "☆");
+            star.setStyle("-fx-font-size: 26px; -fx-text-fill: " + (i <= note ? "#F6AD55;" : "#CBD5E0;"));
+            evalStarsBox.getChildren().add(star);
+        }
+    }
+
+    private void afficherEtoilesCliquables(Article article, int userId) {
+        Button[] stars = new Button[5];
+        for (int i = 1; i <= 5; i++) {
+            final int val = i;
+            Button star = new Button("☆");
+            star.setStyle("-fx-background-color: transparent; -fx-font-size: 28px; " +
+                          "-fx-text-fill: #CBD5E0; -fx-cursor: hand; -fx-padding: 0 2;");
+            star.setOnMouseEntered(ev -> survoleEtoiles(stars, val));
+            star.setOnMouseExited(ev  -> resetEtoiles(stars));
+            star.setOnAction(ev -> {
+                serviceEval.saveNote(article.getId(), userId, val);
+                evalStarsBox.getChildren().clear();
+                afficherEtoilesLecture(val);
+                evalTitre.setText("⭐  Votre évaluation");
+                evalMessage.setText(noteLabel(val));
+                evalMessage.setVisible(true); evalMessage.setManaged(true);
+            });
+            stars[i - 1] = star;
+            evalStarsBox.getChildren().add(star);
+        }
+    }
+
+    private void survoleEtoiles(Button[] stars, int jusqua) {
+        for (int i = 0; i < 5; i++)
+            stars[i].setStyle("-fx-background-color: transparent; -fx-font-size: 28px; " +
+                "-fx-text-fill: " + (i < jusqua ? "#F6AD55;" : "#CBD5E0;") + " -fx-cursor: hand; -fx-padding: 0 2;");
+    }
+
+    private void resetEtoiles(Button[] stars) {
+        for (Button s : stars)
+            s.setStyle("-fx-background-color: transparent; -fx-font-size: 28px; " +
+                       "-fx-text-fill: #CBD5E0; -fx-cursor: hand; -fx-padding: 0 2;");
+    }
+
+    private String noteLabel(int note) {
+        return switch (note) {
+            case 1 -> "Très insatisfait(e)";
+            case 2 -> "Insatisfait(e)";
+            case 3 -> "Correct";
+            case 4 -> "Satisfait(e)";
+            case 5 -> "Très satisfait(e) ✓";
+            default -> "";
+        };
     }
 
     private void applyLikeBtnState(boolean liked) {
@@ -489,6 +668,27 @@ public class ArticleListController {
 
     @FXML void filterAll(ActionEvent event)  { currentPage = 0; showingAll = true;  loadArticles(); }
     @FXML void filterMine(ActionEvent event) { currentPage = 0; showingAll = false; loadArticles(); }
+
+    @FXML void filterStatutAll(ActionEvent e)       { currentPage = 0; currentStatutFilter = null;       updateStatutButtons(); loadArticles(); }
+    @FXML void filterStatutPublie(ActionEvent e)    { currentPage = 0; currentStatutFilter = "PUBLIE";   updateStatutButtons(); loadArticles(); }
+    @FXML void filterStatutBrouillon(ActionEvent e) { currentPage = 0; currentStatutFilter = "BROUILLON"; updateStatutButtons(); loadArticles(); }
+    @FXML void filterStatutArchive(ActionEvent e)   { currentPage = 0; currentStatutFilter = "ARCHIVE";  updateStatutButtons(); loadArticles(); }
+
+    private void updateStatutButtons() {
+        String active   = "-fx-background-color: #5B35A5; -fx-text-fill: white; -fx-padding: 3 12; -fx-background-radius: 7; -fx-font-size: 10px; -fx-cursor: hand;";
+        String publie   = "PUBLIE".equals(currentStatutFilter)
+            ? active : "-fx-background-color: #C6F6D5; -fx-text-fill: #276749; -fx-padding: 3 10; -fx-background-radius: 7; -fx-font-size: 10px; -fx-cursor: hand;";
+        String brouillon= "BROUILLON".equals(currentStatutFilter)
+            ? active : "-fx-background-color: #FEF3C7; -fx-text-fill: #D97706; -fx-padding: 3 10; -fx-background-radius: 7; -fx-font-size: 10px; -fx-cursor: hand;";
+        String archive  = "ARCHIVE".equals(currentStatutFilter)
+            ? active : "-fx-background-color: #E2E8F0; -fx-text-fill: #4A5568; -fx-padding: 3 10; -fx-background-radius: 7; -fx-font-size: 10px; -fx-cursor: hand;";
+        String tous     = currentStatutFilter == null
+            ? active : "-fx-background-color: #EDE8FF; -fx-text-fill: #5B35A5; -fx-padding: 3 12; -fx-background-radius: 7; -fx-font-size: 10px; -fx-cursor: hand;";
+        btnStatutTous.setStyle(tous);
+        btnStatutPublie.setStyle(publie);
+        btnStatutBrouillon.setStyle(brouillon);
+        btnStatutArchive.setStyle(archive);
+    }
 
     @FXML void handleNewArticle(ActionEvent event) {
         ArticleFormController.setArticleToEdit(null);

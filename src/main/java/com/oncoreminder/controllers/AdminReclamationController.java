@@ -195,7 +195,6 @@ public class AdminReclamationController {
         hide(resumeLabel);
         hide(iaLoadingLabel);
 
-        // Afficher la note du patient
         afficherNotePatient(r);
 
         adminReponsesContainer.getChildren().clear();

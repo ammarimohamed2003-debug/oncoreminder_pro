@@ -116,6 +116,28 @@
                             style="-fx-padding: 0 18;"/>
                 </HBox>
 
+                <!-- Barre filtres statut (médecin) -->
+                <HBox fx:id="statutFilterBar" spacing="6" alignment="CENTER_LEFT"
+                      visible="false" managed="false"
+                      style="-fx-background-color: white; -fx-padding: 7 20;
+                             -fx-border-color: transparent transparent #E9E4F7 transparent;
+                             -fx-border-width: 1;">
+                    <Label text="Statut :"
+                           style="-fx-text-fill: #718096; -fx-font-size: 11px; -fx-padding: 0 4 0 0;"/>
+                    <Button fx:id="btnStatutTous"      text="Tous"       onAction="#filterStatutAll"
+                            prefHeight="27" style="-fx-background-color: #5B35A5; -fx-text-fill: white;
+                                   -fx-padding: 3 12; -fx-background-radius: 7; -fx-font-size: 10px; -fx-cursor: hand;"/>
+                    <Button fx:id="btnStatutPublie"    text="✅ PUBLIÉ"   onAction="#filterStatutPublie"
+                            prefHeight="27" style="-fx-background-color: #C6F6D5; -fx-text-fill: #276749;
+                                   -fx-padding: 3 10; -fx-background-radius: 7; -fx-font-size: 10px; -fx-cursor: hand;"/>
+                    <Button fx:id="btnStatutBrouillon" text="📝 BROUILLON" onAction="#filterStatutBrouillon"
+                            prefHeight="27" style="-fx-background-color: #FEF3C7; -fx-text-fill: #D97706;
+                                   -fx-padding: 3 10; -fx-background-radius: 7; -fx-font-size: 10px; -fx-cursor: hand;"/>
+                    <Button fx:id="btnStatutArchive"   text="📦 ARCHIVÉ"  onAction="#filterStatutArchive"
+                            prefHeight="27" style="-fx-background-color: #E2E8F0; -fx-text-fill: #4A5568;
+                                   -fx-padding: 3 10; -fx-background-radius: 7; -fx-font-size: 10px; -fx-cursor: hand;"/>
+                </HBox>
+
                 <!-- Grille scrollable -->
                 <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" hbarPolicy="NEVER"
                             style="-fx-background-color: #F7F4FE; -fx-background: #F7F4FE;">
@@ -221,6 +243,26 @@
                                             style="-fx-padding: 0 16;"/>
                                 </HBox>
                             </HBox>
+
+                            <!-- Évaluation article -->
+                            <VBox fx:id="evalSection" spacing="10" visible="false" managed="false"
+                                  style="-fx-background-color: white;
+                                         -fx-background-radius: 14;
+                                         -fx-border-color: #EDE9F8;
+                                         -fx-border-radius: 14;
+                                         -fx-border-width: 1;
+                                         -fx-padding: 18 22;">
+                                <Label fx:id="evalTitre" text="⭐  Évaluez cet article"
+                                       style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #3A1D7A;"/>
+                                <Separator style="-fx-background-color: #EDE9F8;"/>
+                                <HBox fx:id="evalStarsBox" spacing="6" alignment="CENTER_LEFT"/>
+                                <Label fx:id="evalMessage" text="" wrapText="true"
+                                       visible="false" managed="false"
+                                       style="-fx-text-fill: #5B35A5; -fx-font-size: 12px; -fx-font-style: italic;"/>
+                                <VBox fx:id="evalListBox" spacing="6"
+                                      visible="false" managed="false"
+                                      style="-fx-padding: 8 0 0 0;"/>
+                            </VBox>
 
                             <!-- Messagerie patients -->
                             <VBox fx:id="msgPatientsSection" spacing="14" visible="false" managed="false"
