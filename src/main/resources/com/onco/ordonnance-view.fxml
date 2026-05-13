@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="720.0" prefWidth="1180.0" styleClass="root-pane" stylesheets="@styles/rendez-vous.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml" fx:controller="com.onco.controller.OrdonnanceController">
+    <top>
+        <VBox spacing="14.0" styleClass="topbar">
+            <padding>
+                <Insets bottom="18.0" left="24.0" right="24.0" top="24.0" />
+            </padding>
+            <HBox alignment="CENTER_LEFT" spacing="16.0">
+                <VBox HBox.hgrow="ALWAYS">
+                    <Label styleClass="brand-title" text="OncoReminder Pro - Ordonnances" />
+                    <Label styleClass="brand-subtitle" text="Gestion des ordonnances medicales" />
+                </VBox>
+                <VBox alignment="CENTER" styleClass="stat-badge">
+                    <Label styleClass="stat-label" text="Aujourd'hui" />
+                    <Label fx:id="todayCountLabel" styleClass="stat-value" text="00" />
+                </VBox>
+                <VBox alignment="CENTER" styleClass="stat-badge">
+                    <Label styleClass="stat-label" text="Cette semaine" />
+                    <Label fx:id="weekCountLabel" styleClass="stat-value" text="00" />
+                </VBox>
+                <VBox alignment="CENTER" styleClass="stat-badge">
+                    <Label styleClass="stat-label" text="Total" />
+                    <Label fx:id="totalCountLabel" styleClass="stat-value" text="00" />
+                </VBox>
+            </HBox>
+            <HBox spacing="10.0">
+                <Button mnemonicParsing="false" onAction="#onNewOrdonnance" styleClass="btn-primary" text="Nouvelle ordonnance" />
+                <Button mnemonicParsing="false" onAction="#onRefresh" styleClass="btn-secondary" text="Actualiser" />
+                <Button mnemonicParsing="false" onAction="#onExport" styleClass="btn-outline" text="Exporter" />
+                <Button mnemonicParsing="false" onAction="#onSwitchToRendezVous" styleClass="btn-outline" text="Retour aux Rendez-vous" />
+            </HBox>
+        </VBox>
+    </top>
+    <left>
+        <ScrollPane fitToWidth="true" prefWidth="400.0" styleClass="form-scroll-pane" BorderPane.alignment="CENTER">
+            <content>
+                <VBox spacing="18.0" styleClass="form-panel">
+                    <padding>
+                        <Insets bottom="24.0" left="24.0" right="24.0" top="24.0" />
+                    </padding>
+                    <Label styleClass="form-title" text="Formulaire Ordonnance" />
+                    <GridPane hgap="12.0" vgap="12.0">
+                        <columnConstraints>
+                            <ColumnConstraints hgrow="NEVER" minWidth="120.0" prefWidth="130.0" />
+                            <ColumnConstraints hgrow="ALWAYS" />
+                        </columnConstraints>
+                        <Label styleClass="field-label" text="ID Ordonnance" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                        <TextField fx:id="selectedIdField" editable="false" promptText="Auto-genere" styleClass="field-input" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                        
+                        <Label styleClass="field-label" text="ID Rendez-vous" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                        <TextField fx:id="rendezVousIdField" promptText="Ex: 5" styleClass="field-input" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        
+                        <Label styleClass="field-label" text="Date émission" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                        <DatePicker fx:id="issueDatePicker" maxWidth="1.7976931348623157E308" styleClass="field-input" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        
+                        <Label styleClass="field-label" text="Durée (jours)" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                        <TextField fx:id="durationField" promptText="Ex: 7" styleClass="field-input" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                    </GridPane>
+                    
+                    <VBox spacing="8.0">
+                        <Label styleClass="field-label" text="Médicaments" />
+                        <TextArea fx:id="medicationArea" prefHeight="100.0" promptText="Liste des médicaments..." styleClass="field-input" wrapText="true" />
+                    </VBox>
+                    
+                    <VBox spacing="8.0">
+                        <Label styleClass="field-label" text="Posologie / Dosage" />
+                        <TextArea fx:id="dosageArea" prefHeight="100.0" promptText="Instructions de prise..." styleClass="field-input" wrapText="true" />
+                    </VBox>
+                    
+                    <Label fx:id="formMessageLabel" styleClass="helper-label" text="Remplissez les champs pour créer ou modifier une ordonnance." wrapText="true" />
+                    <Separator />
+                    <HBox spacing="10.0">
+                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onSaveOrdonnance" styleClass="btn-primary" text="Enregistrer" HBox.hgrow="ALWAYS" />
+                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onUpdateOrdonnance" styleClass="btn-warning" text="Modifier" HBox.hgrow="ALWAYS" />
+                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onDeleteOrdonnance" styleClass="btn-danger" text="Supprimer" HBox.hgrow="ALWAYS" />
+                    </HBox>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </left>
+    <center>
+        <VBox spacing="18.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="24.0" left="0.0" right="24.0" top="24.0" />
+            </padding>
+            <HBox spacing="12.0">
+                <TextField fx:id="searchField" promptText="Rechercher par ID, médicament, posologie..." styleClass="search-field" HBox.hgrow="ALWAYS" />
+                <ComboBox fx:id="filterComboBox" prefWidth="180.0" promptText="Période" styleClass="field-combo" />
+            </HBox>
+            <StackPane VBox.vgrow="ALWAYS">
+                <TableView fx:id="prescriptionTable" styleClass="main-table">
+                    <columns>
+                        <TableColumn fx:id="idColumn" prefWidth="60.0" text="ID" />
+                        <TableColumn fx:id="rendezVousColumn" prefWidth="100.0" text="RDV ID" />
+                        <TableColumn fx:id="emissionDateColumn" prefWidth="120.0" text="Date émission" />
+                        <TableColumn fx:id="durationColumn" prefWidth="80.0" text="Durée" />
+                        <TableColumn fx:id="medicamentsColumn" prefWidth="250.0" text="Médicaments" />
+                        <TableColumn fx:id="posologieColumn" prefWidth="250.0" text="Posologie" />
+                    </columns>
+                    <placeholder>
+                        <Label styleClass="table-placeholder" text="Aucune ordonnance trouvée." />
+                    </placeholder>
+                </TableView>
+            </StackPane>
+        </VBox>
+    </center>
+    <bottom>
+        <HBox alignment="CENTER_LEFT" styleClass="footer">
+            <padding>
+                <Insets bottom="14.0" left="24.0" right="24.0" top="14.0" />
+            </padding>
+            <Label fx:id="footerStatusLabel" text="Initialisation du module ordonnances..." />
+        </HBox>
+    </bottom>
+</BorderPane>
