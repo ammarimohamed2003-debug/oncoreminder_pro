@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.geometry.Insets?>
+
+<HBox styleClass="root-pane" stylesheets="@../css/style.css"
+      xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.oncoreminder.controllers.SignUpController">
+
+    <!-- ═══ PANNEAU GAUCHE — Branding ═══ -->
+    <VBox styleClass="auth-left" prefWidth="480" minWidth="380" alignment="CENTER" spacing="28">
+        <padding><Insets bottom="60" left="50" right="50" top="60"/></padding>
+
+        <StackPane>
+            <Circle radius="76" fill="rgba(255,255,255,0.03)"/>
+            <Circle radius="60" fill="rgba(43,188,176,0.09)"/>
+            <Circle radius="48" fill="#0C2E2C"/>
+            <Circle radius="48" fill="transparent" stroke="#2BBCB0" strokeWidth="2.5"/>
+            <Circle radius="41" fill="transparent" stroke="rgba(43,188,176,0.22)" strokeWidth="1"/>
+            <Rectangle width="10" height="40" fill="white" arcWidth="8" arcHeight="8"/>
+            <Rectangle width="40" height="10" fill="white" arcWidth="8" arcHeight="8"/>
+            <Circle radius="5.5" fill="#2BBCB0"/>
+        </StackPane>
+
+        <!-- Nom de l'application -->
+        <VBox alignment="CENTER" spacing="6">
+            <HBox alignment="CENTER" spacing="0">
+                <Label text="Onco" style="-fx-text-fill: white; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+                <Label text="Reminder" style="-fx-text-fill: #2BBCB0; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+            </HBox>
+            <HBox alignment="CENTER">
+                <Label text="PRO"
+                       style="-fx-background-color: rgba(43,188,176,0.28); -fx-text-fill: #2BBCB0;
+                              -fx-background-radius: 8; -fx-padding: 3 14; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+            </HBox>
+        </VBox>
+
+        <HBox alignment="CENTER" spacing="10">
+            <Line startX="0" endX="60" stroke="rgba(255,255,255,0.25)" strokeWidth="1"/>
+            <Circle radius="4" fill="#2BBCB0"/>
+            <Line startX="0" endX="60" stroke="rgba(255,255,255,0.25)" strokeWidth="1"/>
+        </HBox>
+
+        <Label text="Rejoignez la communauté médicale&#10;et gérez vos patients en toute sérénité"
+               styleClass="auth-tagline" alignment="CENTER" wrapText="true"/>
+
+        <VBox spacing="14" alignment="CENTER_LEFT" maxWidth="280">
+            <HBox spacing="14" alignment="CENTER_LEFT">
+                <StackPane>
+                    <Circle radius="16" fill="rgba(43,188,176,0.25)"/>
+                    <Label text="👨‍⚕️" style="-fx-font-size: 14px;"/>
+                </StackPane>
+                <Label text="Espace Médecin dédié" styleClass="auth-feature-label"/>
+            </HBox>
+            <HBox spacing="14" alignment="CENTER_LEFT">
+                <StackPane>
+                    <Circle radius="16" fill="rgba(43,188,176,0.25)"/>
+                    <Label text="👤" style="-fx-font-size: 14px;"/>
+                </StackPane>
+                <Label text="Espace Patient personnalisé" styleClass="auth-feature-label"/>
+            </HBox>
+            <HBox spacing="14" alignment="CENTER_LEFT">
+                <StackPane>
+                    <Circle radius="16" fill="rgba(43,188,176,0.25)"/>
+                    <Label text="✅" style="-fx-font-size: 14px;"/>
+                </StackPane>
+                <Label text="Inscription rapide et gratuite" styleClass="auth-feature-label"/>
+            </HBox>
+        </VBox>
+
+        <!-- Règles mot de passe (panel gauche) -->
+        <VBox spacing="8" alignment="CENTER_LEFT" maxWidth="280">
+            <Label text="Sécurité du mot de passe :"
+                   style="-fx-text-fill: rgba(255,255,255,0.6); -fx-font-size: 11px; -fx-font-weight: bold;"/>
+            <Label fx:id="ruleLength" text="● 8 caractères minimum"
+                   style="-fx-text-fill: rgba(255,255,255,0.35); -fx-font-size: 11px;"/>
+            <Label fx:id="ruleUpper" text="● 1 majuscule"
+                   style="-fx-text-fill: rgba(255,255,255,0.35); -fx-font-size: 11px;"/>
+            <Label fx:id="ruleDigit" text="● 1 chiffre"
+                   style="-fx-text-fill: rgba(255,255,255,0.35); -fx-font-size: 11px;"/>
+        </VBox>
+
+        <Region VBox.vgrow="ALWAYS"/>
+        <HBox spacing="8" alignment="CENTER">
+            <Circle radius="5" fill="rgba(255,255,255,0.15)"/>
+            <Circle radius="5" fill="rgba(255,255,255,0.15)"/>
+            <Circle radius="5" fill="#2BBCB0"/>
+            <Circle radius="5" fill="rgba(255,255,255,0.15)"/>
+        </HBox>
+    </VBox>
+
+    <!-- ═══ PANNEAU DROIT — Formulaire ═══ -->
+    <VBox styleClass="auth-right" HBox.hgrow="ALWAYS" alignment="CENTER" spacing="12">
+        <padding><Insets bottom="30" left="80" right="80" top="30"/></padding>
+
+        <StackPane>
+            <Circle radius="28" fill="rgba(43,188,176,0.12)"/>
+            <Circle radius="28" fill="transparent" stroke="#2BBCB0" strokeWidth="1.5"/>
+            <Rectangle width="7" height="24" fill="#2BBCB0" arcWidth="6" arcHeight="6"/>
+            <Rectangle width="24" height="7" fill="#2BBCB0" arcWidth="6" arcHeight="6"/>
+            <Circle radius="4" fill="white"/>
+        </StackPane>
+
+        <Label text="Créer un compte" styleClass="auth-right-title"/>
+        <Label text="Rejoignez OncoReminder Pro gratuitement" styleClass="auth-right-sub"/>
+
+        <VBox spacing="10" maxWidth="400" fillWidth="true">
+
+            <!-- Nom + Prénom -->
+            <HBox spacing="12">
+                <VBox spacing="3" HBox.hgrow="ALWAYS">
+                    <Label text="Nom" styleClass="field-label"/>
+                    <TextField fx:id="nomField" styleClass="field-input" prefHeight="40"/>
+                    <Label fx:id="errorNom" text="" styleClass="field-error"
+                           visible="false" managed="false"/>
+                </VBox>
+                <VBox spacing="3" HBox.hgrow="ALWAYS">
+                    <Label text="Prénom" styleClass="field-label"/>
+                    <TextField fx:id="prenomField" styleClass="field-input" prefHeight="40"/>
+                    <Label fx:id="errorPrenom" text="" styleClass="field-error"
+                           visible="false" managed="false"/>
+                </VBox>
+            </HBox>
+
+            <!-- Email -->
+            <VBox spacing="3">
+                <Label text="Email" styleClass="field-label"/>
+                <TextField fx:id="emailField" promptText="exemple@domain.com"
+                           styleClass="field-input" prefHeight="40"/>
+                <Label fx:id="errorEmail" text="" styleClass="field-error"
+                       visible="false" managed="false"/>
+            </VBox>
+
+            <!-- Mot de passe -->
+            <VBox spacing="3">
+                <Label text="Mot de passe" styleClass="field-label"/>
+                <StackPane>
+                    <PasswordField fx:id="passwordField" promptText="Minimum 8 caractères"
+                                  styleClass="field-input" prefHeight="40"/>
+                    <TextField fx:id="passwordVisible" promptText="Minimum 8 caractères"
+                               styleClass="field-input" prefHeight="40"
+                               visible="false" managed="false"/>
+                </StackPane>
+                <!-- Barre de force -->
+                <ProgressBar fx:id="strengthBar" prefWidth="400" prefHeight="4" progress="0"
+                             style="-fx-accent: #FC8181;"/>
+                <Label fx:id="errorPassword" text="" styleClass="field-error"
+                       visible="false" managed="false"/>
+            </VBox>
+
+            <!-- Confirmer mot de passe -->
+            <VBox spacing="3">
+                <Label text="Confirmer le mot de passe" styleClass="field-label"/>
+                <StackPane>
+                    <PasswordField fx:id="confirmField" promptText="Répétez le mot de passe"
+                                  styleClass="field-input" prefHeight="40"/>
+                    <TextField fx:id="confirmVisible" promptText="Répétez le mot de passe"
+                               styleClass="field-input" prefHeight="40"
+                               visible="false" managed="false"/>
+                </StackPane>
+                <Label fx:id="errorConfirm" text="" styleClass="field-error"
+                       visible="false" managed="false"/>
+            </VBox>
+
+            <!-- Afficher mot de passe -->
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <CheckBox fx:id="showPwdCheck" onAction="#toggleShowPassword"/>
+                <Label text="Afficher le mot de passe"
+                       style="-fx-text-fill: #666; -fx-font-size: 11px;"/>
+            </HBox>
+
+            <!-- Rôle -->
+            <VBox spacing="4">
+                <Label text="Je suis un..." styleClass="field-label"/>
+                <ComboBox fx:id="roleCombo" styleClass="field-combo"
+                          maxWidth="Infinity" prefHeight="40"/>
+            </VBox>
+
+            <!-- Bouton créer compte -->
+            <Button fx:id="signUpButton" text="Créer mon compte" onAction="#handleSignUp"
+                    styleClass="btn-primary" maxWidth="Infinity" prefHeight="42"/>
+
+            <!-- Déjà inscrit -->
+            <HBox alignment="CENTER" spacing="6">
+                <Label text="Déjà inscrit ?" styleClass="auth-right-sub"/>
+                <Hyperlink text="Se connecter" onAction="#goToLogin"
+                           style="-fx-text-fill: #2BBCB0; -fx-font-weight: bold;
+                                  -fx-border-color: transparent;"/>
+            </HBox>
+        </VBox>
+    </VBox>
+
+</HBox>

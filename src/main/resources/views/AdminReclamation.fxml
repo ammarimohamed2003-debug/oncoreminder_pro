@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<HBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.oncoreminder.controllers.AdminReclamationController">
+
+    <!-- ── LEFT: liste ── -->
+    <VBox prefWidth="370" minWidth="370" maxWidth="370" spacing="10"
+          HBox.hgrow="NEVER"
+          style="-fx-background-color: white;
+                 -fx-border-color: transparent #E9E4F7 transparent transparent; -fx-border-width: 1;">
+        <padding><Insets top="16" right="12" bottom="14" left="14"/></padding>
+
+        <Label text="📣  Réclamations"
+               style="-fx-font-weight: bold; -fx-text-fill: #2D1B69; -fx-font-size: 14px;"/>
+
+        <!-- Stats bar -->
+        <HBox spacing="6">
+            <VBox fx:id="statTotal" alignment="CENTER" spacing="2" HBox.hgrow="ALWAYS"
+                  style="-fx-background-color: #EDE8FF; -fx-background-radius: 8; -fx-padding: 8 4;">
+                <Label fx:id="statTotalCount" text="0"
+                       style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #5B35A5;"/>
+                <Label text="Total" style="-fx-font-size: 9px; -fx-text-fill: #5B35A5;"/>
+            </VBox>
+            <VBox fx:id="statEnCours" alignment="CENTER" spacing="2" HBox.hgrow="ALWAYS"
+                  style="-fx-background-color: #FEF3C7; -fx-background-radius: 8; -fx-padding: 8 4;">
+                <Label fx:id="statEnCoursCount" text="0"
+                       style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #D97706;"/>
+                <Label text="En cours" style="-fx-font-size: 9px; -fx-text-fill: #D97706;"/>
+            </VBox>
+            <VBox fx:id="statTraitee" alignment="CENTER" spacing="2" HBox.hgrow="ALWAYS"
+                  style="-fx-background-color: #C6F6D5; -fx-background-radius: 8; -fx-padding: 8 4;">
+                <Label fx:id="statTraiteeCount" text="0"
+                       style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #276749;"/>
+                <Label text="Traitées" style="-fx-font-size: 9px; -fx-text-fill: #276749;"/>
+            </VBox>
+            <VBox fx:id="statFermee" alignment="CENTER" spacing="2" HBox.hgrow="ALWAYS"
+                  style="-fx-background-color: #E2E8F0; -fx-background-radius: 8; -fx-padding: 8 4;">
+                <Label fx:id="statFermeeCount" text="0"
+                       style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #4A5568;"/>
+                <Label text="Fermées" style="-fx-font-size: 9px; -fx-text-fill: #4A5568;"/>
+            </VBox>
+        </HBox>
+
+        <!-- Recherche -->
+        <TextField fx:id="searchField" promptText="🔍  Rechercher par sujet ou patient..."
+                   style="-fx-background-radius: 8; -fx-border-color: #E9E4F7;
+                          -fx-border-radius: 8; -fx-border-width: 1;
+                          -fx-padding: 6 10; -fx-font-size: 11px;" prefHeight="32"/>
+
+        <!-- Filtres statut -->
+        <HBox spacing="5" alignment="CENTER_LEFT">
+            <Button fx:id="btnTout" text="Toutes" onAction="#handleFiltreAll"
+                    style="-fx-background-color: #5B35A5; -fx-text-fill: white;
+                           -fx-padding: 4 10; -fx-background-radius: 8;
+                           -fx-font-size: 10px; -fx-cursor: hand;" prefHeight="26"/>
+            <Button fx:id="btnEnCours" text="EN COURS" onAction="#handleFiltreEnCours"
+                    style="-fx-background-color: #FEF3C7; -fx-text-fill: #D97706;
+                           -fx-padding: 4 8; -fx-background-radius: 8;
+                           -fx-font-size: 10px; -fx-cursor: hand;" prefHeight="26"/>
+            <Button fx:id="btnTraitee" text="TRAITÉE" onAction="#handleFiltreTraitee"
+                    style="-fx-background-color: #C6F6D5; -fx-text-fill: #276749;
+                           -fx-padding: 4 8; -fx-background-radius: 8;
+                           -fx-font-size: 10px; -fx-cursor: hand;" prefHeight="26"/>
+            <Button fx:id="btnFermee" text="FERMÉE" onAction="#handleFiltreFermee"
+                    style="-fx-background-color: #E2E8F0; -fx-text-fill: #4A5568;
+                           -fx-padding: 4 8; -fx-background-radius: 8;
+                           -fx-font-size: 10px; -fx-cursor: hand;" prefHeight="26"/>
+        </HBox>
+
+        <Label fx:id="reclamCountLabel" text="0 réclamation(s)"
+               style="-fx-text-fill: #718096; -fx-font-size: 11px;"/>
+
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                    style="-fx-background-color: transparent; -fx-background: transparent;
+                           -fx-border-color: transparent;">
+            <VBox fx:id="adminReclamListContainer" spacing="8">
+                <padding><Insets top="4" bottom="8"/></padding>
+            </VBox>
+        </ScrollPane>
+    </VBox>
+
+    <!-- ── RIGHT: détail + réponse ── -->
+    <StackPane HBox.hgrow="ALWAYS">
+
+        <!-- État vide -->
+        <VBox fx:id="adminEmptyPane" alignment="CENTER" spacing="14">
+            <Label text="📋" style="-fx-font-size: 46px;"/>
+            <Label text="Sélectionnez une réclamation"
+                   style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #2D1B69;"/>
+            <Label text="Cliquez sur une réclamation dans la liste pour voir les détails"
+                   style="-fx-text-fill: #718096; -fx-font-size: 12px;"/>
+        </VBox>
+
+        <!-- Détail -->
+        <ScrollPane fx:id="adminDetailPane" fitToWidth="true"
+                    visible="false" managed="false"
+                    style="-fx-background-color: #F5F7FF; -fx-background: #F5F7FF;
+                           -fx-border-color: transparent;">
+            <VBox spacing="14" maxWidth="680"
+                  style="-fx-padding: 24 36 24 36;">
+
+                <!-- En-tête réclamation -->
+                <Label fx:id="adminDetailSujet" text="" wrapText="true"
+                       style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2D1B69;"/>
+
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <Label fx:id="adminDetailPatient" text=""
+                           style="-fx-text-fill: #5B35A5; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                    <Label fx:id="adminDetailDate" text=""
+                           style="-fx-text-fill: #718096; -fx-font-size: 11px;"/>
+                    <Label fx:id="adminDetailStatut" text=""
+                           style="-fx-padding: 3 10; -fx-background-radius: 8;
+                                  -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                </HBox>
+
+                <!-- Message patient -->
+                <VBox styleClass="form-panel" spacing="6">
+                    <padding><Insets top="14" right="16" bottom="14" left="16"/></padding>
+                    <Label text="Message du patient :"
+                           style="-fx-font-weight: bold; -fx-text-fill: #5B35A5; -fx-font-size: 12px;"/>
+                    <Label fx:id="adminDetailMessage" text="" wrapText="true"
+                           style="-fx-text-fill: #2D3748; -fx-font-size: 13px;"/>
+                </VBox>
+
+                <Separator/>
+
+                <!-- Réponses existantes -->
+                <Label text="Réponses précédentes"
+                       style="-fx-font-weight: bold; -fx-text-fill: #2D1B69; -fx-font-size: 13px;"/>
+                <VBox fx:id="adminReponsesContainer" spacing="8"/>
+
+                <!-- Note patient -->
+                <HBox fx:id="adminNoteBox" spacing="8" alignment="CENTER_LEFT"
+                      visible="false" managed="false">
+                    <Label text="⭐ Note patient :"
+                           style="-fx-text-fill: #718096; -fx-font-size: 11px;"/>
+                    <HBox fx:id="adminStarsDisplay" spacing="2"/>
+                    <Label fx:id="adminNoteText" text=""
+                           style="-fx-text-fill: #D97706; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                </HBox>
+
+                <Separator/>
+
+                <!-- Badge urgence IA -->
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Niveau d'urgence :"
+                           style="-fx-text-fill: #718096; -fx-font-size: 11px;"/>
+                    <Label fx:id="urgenceLabel" text=""
+                           style="-fx-padding: 2 10; -fx-background-radius: 8;
+                                  -fx-font-size: 11px; -fx-font-weight: bold;"
+                           visible="false" managed="false"/>
+                    <Label fx:id="resumeLabel" text="" wrapText="true"
+                           style="-fx-text-fill: #5B35A5; -fx-font-size: 11px; -fx-font-style: italic;"
+                           visible="false" managed="false" maxWidth="320"/>
+                </HBox>
+
+                <!-- Formulaire réponse -->
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="✍️  Répondre"
+                           style="-fx-font-weight: bold; -fx-text-fill: #2D1B69; -fx-font-size: 13px;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="💡  Suggérer IA" onAction="#handleSuggestIA"
+                            style="-fx-background-color: #EDE8FF; -fx-text-fill: #5B35A5;
+                                   -fx-font-weight: bold; -fx-font-size: 11px;
+                                   -fx-background-radius: 8; -fx-padding: 5 12; -fx-cursor: hand;"
+                            prefHeight="30"/>
+                    <Label fx:id="iaLoadingLabel" text="⏳ IA en cours..."
+                           style="-fx-text-fill: #5B35A5; -fx-font-size: 11px; -fx-font-style: italic;"
+                           visible="false" managed="false"/>
+                </HBox>
+
+                <TextArea fx:id="reponseArea" promptText="Écrivez votre réponse ou utilisez 💡 Suggérer IA..."
+                          styleClass="field-input" wrapText="true" prefHeight="130"/>
+                <Label fx:id="errorReponse" text="" styleClass="field-error"
+                       visible="false" managed="false"/>
+
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <Label text="Changer le statut :" styleClass="field-label"/>
+                    <ComboBox fx:id="statutCombo" styleClass="field-combo"
+                              prefHeight="36" prefWidth="160"/>
+                </HBox>
+
+                <Label fx:id="adminFeedbackLabel" text="" wrapText="true"
+                       visible="false" managed="false"
+                       style="-fx-font-size: 12px; -fx-font-weight: bold;
+                              -fx-padding: 8 12; -fx-background-radius: 6;
+                              -fx-border-radius: 6; -fx-border-width: 1;"/>
+
+                <HBox alignment="CENTER_RIGHT" spacing="12">
+                    <Button text="🗑  Supprimer" onAction="#handleDelete"
+                            style="-fx-background-color: #FFF5F5; -fx-text-fill: #E53E3E;
+                                   -fx-border-color: #FC8181; -fx-border-radius: 8;
+                                   -fx-background-radius: 8; -fx-border-width: 1;
+                                   -fx-font-weight: bold; -fx-font-size: 11px;
+                                   -fx-padding: 5 14; -fx-cursor: hand;" prefHeight="38"/>
+                    <Button text="📤  Envoyer la réponse" onAction="#handleEnvoyerReponse"
+                            styleClass="btn-primary" prefHeight="38" prefWidth="200"/>
+                </HBox>
+
+            </VBox>
+        </ScrollPane>
+
+    </StackPane>
+</HBox>

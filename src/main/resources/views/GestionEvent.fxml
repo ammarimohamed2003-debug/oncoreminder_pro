@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.web.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.geometry.*?>
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.oncoreminder.controllers.EventController"
+            stylesheets="@../css/event-modern.css"
+            styleClass="em-root">
+
+  <!-- SIDEBAR -->
+  <left>
+    <VBox prefWidth="240" styleClass="em-sidebar">
+      <VBox styleClass="em-brand-box" spacing="3">
+        <HBox spacing="10" alignment="CENTER_LEFT">
+          <Label text="&#9670;" style="-fx-text-fill:#7c3aed;-fx-font-size:20px;"/>
+          <VBox spacing="1">
+            <Label text="OncoReminder" styleClass="em-brand-title"/>
+            <Label text="PRO" styleClass="em-brand-sub"/>
+          </VBox>
+        </HBox>
+      </VBox>
+      <VBox spacing="2" style="-fx-padding:14 10 0 10;">
+        <Label text="NAVIGATION" styleClass="em-nav-section"/>
+        <Button text="&#127968;  Mon Espace"    onAction="#handleBack"    maxWidth="Infinity" styleClass="em-nav-btn"/>
+        <Button text="&#128240;  Articles"       onAction="#handleArticles" maxWidth="Infinity" styleClass="em-nav-btn"/>
+        <Button text="&#128197;  Evenements"                               maxWidth="Infinity" styleClass="em-nav-btn-active"/>
+        <Button text="&#127903;  Reservations"  onAction="#ouvrirReservations" maxWidth="Infinity" styleClass="em-nav-btn"/>
+      </VBox>
+      <Region VBox.vgrow="ALWAYS"/>
+      <VBox style="-fx-padding:8 10 18 10;">
+        <Button text="&#128274;  Deconnexion" onAction="#handleLogout" maxWidth="Infinity" styleClass="em-logout-btn"/>
+      </VBox>
+    </VBox>
+  </left>
+
+  <!-- TOPBAR -->
+  <top>
+    <HBox styleClass="em-topbar" alignment="CENTER_LEFT" spacing="16">
+      <VBox spacing="2">
+        <Label text="Gestion des Evenements" styleClass="em-page-title"/>
+        <Label text="Dashboard administration - module evenements" styleClass="em-page-sub"/>
+      </VBox>
+      <Region HBox.hgrow="ALWAYS"/>
+      <Button text="+ Ajouter" onAction="#handleAjouterClick" styleClass="em-btn-add"/>
+      <Button text="Export PDF" onAction="#exporterPdf" styleClass="em-top-action"/>
+      <Button fx:id="btnDarkMode" text="Mode clair" onAction="#toggleDarkMode" styleClass="em-top-action"/>
+      <Button text="&#10003; Reservations" onAction="#ouvrirReservations"
+              style="-fx-background-color:rgba(255,255,255,0.1);-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:12px;-fx-background-radius:10;-fx-border-width:0;-fx-padding:9 18;-fx-cursor:hand;"/>
+    </HBox>
+  </top>
+
+  <!-- MAIN -->
+  <center>
+    <ScrollPane fitToWidth="true" styleClass="em-root"
+                style="-fx-background-color:transparent;-fx-background:transparent;-fx-border-color:transparent;">
+      <VBox spacing="20" styleClass="em-content">
+
+        <!-- STAT CARDS ROW -->
+        <HBox spacing="16">
+          <VBox styleClass="em-stat-card" spacing="8" HBox.hgrow="ALWAYS">
+            <HBox spacing="10" alignment="CENTER_LEFT">
+              <Label text="&#128197;" styleClass="em-stat-icon"/>
+              <VBox spacing="2">
+                <Label fx:id="lbTotalEvents" text="0" styleClass="em-stat-value"/>
+                <Label text="Total Evenements" styleClass="em-stat-label"/>
+              </VBox>
+              <Region HBox.hgrow="ALWAYS"/>
+              <Label text="actifs" styleClass="em-stat-badge-purple"/>
+            </HBox>
+          </VBox>
+          <VBox styleClass="em-stat-card" spacing="8" HBox.hgrow="ALWAYS">
+            <HBox spacing="10" alignment="CENTER_LEFT">
+              <Label text="&#127903;" styleClass="em-stat-icon"/>
+              <VBox spacing="2">
+                <Label fx:id="lbReservationsActives" text="0" styleClass="em-stat-value"/>
+                <Label text="Reservations" styleClass="em-stat-label"/>
+              </VBox>
+              <Region HBox.hgrow="ALWAYS"/>
+              <Label text="confirmees" styleClass="em-stat-badge-green"/>
+            </HBox>
+          </VBox>
+          <VBox styleClass="em-stat-card" spacing="8" HBox.hgrow="ALWAYS">
+            <HBox spacing="10" alignment="CENTER_LEFT">
+              <Label text="&#9989;" styleClass="em-stat-icon"/>
+              <VBox spacing="2">
+                <Label fx:id="lbEventsActifs" text="0" styleClass="em-stat-value"/>
+                <Label text="Evenements Actifs" styleClass="em-stat-label"/>
+              </VBox>
+              <Region HBox.hgrow="ALWAYS"/>
+              <Label text="a venir" styleClass="em-stat-badge-blue"/>
+            </HBox>
+          </VBox>
+          <VBox styleClass="em-stat-card" spacing="8" HBox.hgrow="ALWAYS">
+            <HBox spacing="10" alignment="CENTER_LEFT">
+              <Label text="&#128200;" styleClass="em-stat-icon"/>
+              <VBox spacing="2">
+                <Label fx:id="lbTauxRemplissage" text="0%" styleClass="em-stat-value"/>
+                <Label text="Taux Remplissage" styleClass="em-stat-label"/>
+              </VBox>
+              <Region HBox.hgrow="ALWAYS"/>
+              <Label text="moyen" styleClass="em-stat-badge-orange"/>
+            </HBox>
+          </VBox>
+        </HBox>
+
+        <!-- TABLE + FORM ROW -->
+        <HBox spacing="16" VBox.vgrow="ALWAYS">
+
+          <!-- LEFT: Search + Table -->
+          <VBox spacing="12" HBox.hgrow="ALWAYS">
+
+            <!-- Search + Filters -->
+            <VBox styleClass="em-glass" spacing="12" style="-fx-padding:16;">
+              <HBox spacing="12" alignment="CENTER_LEFT">
+                <TextField fx:id="tfRecherche" styleClass="em-search"
+                           promptText="&#128269;  Rechercher un evenement (titre, lieu...)"
+                           HBox.hgrow="ALWAYS"/>
+                <Label fx:id="lbMessage" text="0 evenement(s)"
+                       style="-fx-text-fill:rgba(255,255,255,0.5);-fx-font-size:12px;-fx-font-weight:bold;"/>
+              </HBox>
+              <HBox spacing="8" alignment="CENTER_LEFT">
+                <Button fx:id="btnFiltreTous"       text="Tous"          onAction="#filtrerTous"       styleClass="em-filter-active"/>
+                <Button fx:id="btnFiltreAujourdhui" text="Aujourd'hui"   onAction="#filtrerAujourdhui" styleClass="em-filter-btn"/>
+                <Button fx:id="btnFiltreSemaine"    text="Cette semaine" onAction="#filtrerSemaine"    styleClass="em-filter-btn"/>
+                <Button fx:id="btnFiltreComplet"    text="Complet"       onAction="#filtrerComplet"    styleClass="em-filter-btn"/>
+                <Button fx:id="btnFiltreDisponible" text="Disponible"    onAction="#filtrerDisponible" styleClass="em-filter-btn"/>
+              </HBox>
+            </VBox>
+
+            <!-- Table -->
+            <VBox VBox.vgrow="ALWAYS" styleClass="em-glass" spacing="0">
+              <HBox styleClass="em-section-header" alignment="CENTER_LEFT" spacing="10">
+                <Label text="&#128203;  Liste des Evenements" styleClass="em-section-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label text="Cliquez sur une ligne pour selectionner"
+                       style="-fx-text-fill:rgba(255,255,255,0.4);-fx-font-size:11px;"/>
+              </HBox>
+              <TableView fx:id="tableEvent" VBox.vgrow="ALWAYS" styleClass="em-table"
+                         style="-fx-min-height:380px;">
+                <columns>
+                  <TableColumn fx:id="colImage"    text="Image"       prefWidth="80"/>
+                  <TableColumn fx:id="colTitre"    text="Titre"       prefWidth="160"/>
+                  <TableColumn fx:id="colLieu"     text="Lieu"        prefWidth="130"/>
+                  <TableColumn fx:id="colDate"     text="Date / Heure" prefWidth="130"/>
+                  <TableColumn fx:id="colCapacite" text="Capacite"    prefWidth="75"/>
+                  <TableColumn fx:id="colPlaces"   text="Places"      prefWidth="75"/>
+                  <TableColumn fx:id="colStatut"   text="Statut"      prefWidth="100"/>
+                  <TableColumn fx:id="colActions"  text="Actions"     prefWidth="180"/>
+                </columns>
+                <placeholder>
+                  <VBox alignment="CENTER" spacing="12" style="-fx-padding:60;">
+                    <Label text="&#128197;" style="-fx-font-size:52px;-fx-text-fill:rgba(124,58,237,0.3);"/>
+                    <Label text="Aucun evenement — cliquez sur + Ajouter"
+                           style="-fx-text-fill:rgba(255,255,255,0.25);-fx-font-size:14px;-fx-font-style:italic;"/>
+                  </VBox>
+                </placeholder>
+              </TableView>
+            </VBox>
+          </VBox>
+
+          <!-- RIGHT: Form (hidden by default) -->
+          <ScrollPane fx:id="formulairePane" fitToWidth="true" prefWidth="370" minWidth="340"
+                      visible="false" managed="false"
+                      style="-fx-background-color:transparent;-fx-background:transparent;-fx-border-color:transparent;-fx-padding:0;">
+            <VBox spacing="0" styleClass="em-form-panel">
+              <VBox styleClass="em-form-header" spacing="3">
+                <Label fx:id="formTitle" text="Ajouter un Evenement" styleClass="em-form-title"/>
+                <Label text="Remplissez les champs ci-dessous" styleClass="em-form-sub"/>
+              </VBox>
+              <VBox spacing="10" style="-fx-padding:18;">
+                <Label text="Titre *" styleClass="em-field-label"/>
+                <TextField fx:id="tfTitre" styleClass="em-field" promptText="Ex : Conference oncologie"/>
+
+                <HBox spacing="10">
+                  <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Date *" styleClass="em-field-label"/>
+                    <DatePicker fx:id="dpDate" maxWidth="Infinity" styleClass="em-field"
+                                style="-fx-pref-height:38px;"/>
+                  </VBox>
+                  <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Heure *" styleClass="em-field-label"/>
+                    <TextField fx:id="tfHeure" styleClass="em-field" promptText="10:00"/>
+                  </VBox>
+                </HBox>
+
+                <Label text="Capacite *" styleClass="em-field-label"/>
+                <TextField fx:id="tfCapacite" styleClass="em-field" promptText="Ex : 50"/>
+
+                <Label text="Lieu *" styleClass="em-field-label"/>
+                <TextField fx:id="tfLieu" styleClass="em-field" promptText="Ex : Hopital Tunis"
+                           onKeyReleased="#onLieuChanged"/>
+
+                <!-- Mini Maps -->
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                  <Label text="&#128205; Localisation" styleClass="em-field-label"/>
+                  <Region HBox.hgrow="ALWAYS"/>
+                  <Button text="&#127758; Voir sur Maps" onAction="#ouvrirGoogleMaps" styleClass="em-btn-maps"/>
+                </HBox>
+                <VBox styleClass="em-maps-box" alignment="CENTER" spacing="6" style="-fx-padding:16;">
+                  <Label fx:id="lbMapsInfo" text="Saisissez un lieu pour voir la carte"
+                         style="-fx-text-fill:rgba(255,255,255,0.3);-fx-font-size:12px;-fx-text-alignment:center;"
+                         wrapText="true"/>
+                  <Label fx:id="lbMapsCoords" text=""
+                         style="-fx-text-fill:rgba(124,58,237,0.8);-fx-font-size:11px;"/>
+                  <WebView fx:id="webMap" prefHeight="150" maxHeight="150"/>
+                </VBox>
+
+                <Label text="Description" styleClass="em-field-label"/>
+                <TextArea fx:id="taDescription" prefRowCount="3" wrapText="true"
+                          styleClass="em-field" promptText="Description de l'evenement..."/>
+                <Button text="&#10024;  Generer avec IA" onAction="#genererDescription"
+                        maxWidth="Infinity" styleClass="em-btn-ai"/>
+
+                <Label text="Image" styleClass="em-field-label"/>
+                <StackPane styleClass="em-img-box">
+                  <ImageView fx:id="imagePreview" fitHeight="100" fitWidth="320" preserveRatio="true"/>
+                  <Label fx:id="imageHint" text="&#128247; Aucune image selectionnee"
+                         style="-fx-text-fill:rgba(255,255,255,0.25);-fx-font-size:12px;"/>
+                </StackPane>
+                <HBox spacing="8">
+                  <TextField fx:id="tfImagePath" HBox.hgrow="ALWAYS" editable="false"
+                             styleClass="em-field" promptText="Chemin image..."
+                             style="-fx-pref-height:34px;"/>
+                  <Button text="Parcourir" onAction="#choisirImage"
+                          style="-fx-background-color:rgba(255,255,255,0.1);-fx-text-fill:white;-fx-font-size:12px;-fx-font-weight:bold;-fx-background-radius:8;-fx-border-width:0;-fx-padding:6 14;-fx-cursor:hand;"/>
+                </HBox>
+
+                <Button text="Annuler" onAction="#handleAjouterClick"
+                        maxWidth="Infinity" styleClass="em-btn-secondary"/>
+                <Button fx:id="btnEnregistrer" text="+ Enregistrer l'evenement" onAction="#enregistrerEvent"
+                        maxWidth="Infinity" styleClass="em-btn-primary"/>
+              </VBox>
+            </VBox>
+          </ScrollPane>
+
+        </HBox>
+
+        <!-- ANALYTICS + CALENDAR -->
+        <HBox spacing="16">
+          <VBox styleClass="em-glass" spacing="12" prefWidth="260" style="-fx-padding:16;">
+            <Label text="Calendrier" styleClass="em-section-title"/>
+            <DatePicker fx:id="dpCalendrier" maxWidth="Infinity" styleClass="em-field"/>
+            <ListView fx:id="listCalendrier" prefHeight="150" styleClass="em-list"/>
+          </VBox>
+          <VBox styleClass="em-glass" spacing="12" HBox.hgrow="ALWAYS" style="-fx-padding:16;">
+            <Label text="Statuts des evenements" styleClass="em-section-title"/>
+            <PieChart fx:id="chartStatuts" prefHeight="210" legendVisible="true"/>
+          </VBox>
+          <VBox styleClass="em-glass" spacing="12" HBox.hgrow="ALWAYS" style="-fx-padding:16;">
+            <Label text="Remplissage par evenement" styleClass="em-section-title"/>
+            <BarChart fx:id="chartRemplissage" prefHeight="210" legendVisible="false">
+              <xAxis>
+                <CategoryAxis side="BOTTOM"/>
+              </xAxis>
+              <yAxis>
+                <NumberAxis side="LEFT" lowerBound="0" upperBound="100" tickUnit="25"/>
+              </yAxis>
+            </BarChart>
+          </VBox>
+        </HBox>
+
+        <!-- TOAST -->
+        <StackPane fx:id="toastPane" visible="false" managed="false"
+                   style="-fx-alignment:bottom-right;-fx-padding:0 20 20 0;">
+          <Label fx:id="toastLabel" text="" styleClass="em-toast-success"/>
+        </StackPane>
+
+      </VBox>
+    </ScrollPane>
+  </center>
+
+  <!-- FOOTER -->
+  <bottom>
+    <HBox style="-fx-background-color:rgba(255,255,255,0.03);-fx-padding:10 24 10 24;-fx-border-color:rgba(255,255,255,0.07);-fx-border-width:1 0 0 0;"
+          alignment="CENTER_LEFT" spacing="10">
+      <Label text="&#9670;" style="-fx-text-fill:#7c3aed;-fx-font-size:12px;"/>
+      <Label text="OncoReminder Pro v2.0  —  Module Evenements"
+             style="-fx-text-fill:rgba(255,255,255,0.3);-fx-font-size:11px;"/>
+      <Region HBox.hgrow="ALWAYS"/>
+      <Label fx:id="lbFooterTime" text=""
+             style="-fx-text-fill:rgba(255,255,255,0.25);-fx-font-size:11px;"/>
+    </HBox>
+  </bottom>
+
+</BorderPane>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.oncoreminder.controllers.ReservationController"
+      spacing="0">
+
+    <!-- Top bar -->
+    <HBox style="-fx-background-color:#FFFFFF; -fx-padding:10 20 10 20;
+                 -fx-effect:dropshadow(gaussian,rgba(0,0,0,0.10),10,0,0,3);"
+          spacing="12" alignment="CENTER_LEFT">
+        <Button text="← Événements" onAction="#retourEvents"
+                style="-fx-background-color:#EEF2FF; -fx-text-fill:#5B35A5;
+                       -fx-font-weight:bold; -fx-font-size:12px;
+                       -fx-background-radius:8; -fx-border-radius:8;
+                       -fx-padding:7 14 7 14; -fx-cursor:hand; -fx-border-width:0;"/>
+        <Label text="Gestion des Réservations"
+               style="-fx-text-fill:#4A2D8F; -fx-font-size:14px; -fx-font-weight:bold;"/>
+    </HBox>
+
+    <!-- Main content -->
+    <HBox spacing="16" VBox.vgrow="ALWAYS" style="-fx-padding:16; -fx-background-color:#EBF4FF;">
+
+        <!-- Form panel -->
+        <VBox spacing="0" prefWidth="320" minWidth="290" styleClass="form-panel">
+            <VBox style="-fx-background-color:linear-gradient(to right,#5B35A5,#4372C4);
+                         -fx-background-radius:12 12 0 0; -fx-padding:14 18 14 18;">
+                <Label text="🎟  Nouvelle Réservation"
+                       style="-fx-text-fill:#FFFFFF; -fx-font-size:15px; -fx-font-weight:bold;"/>
+                <Label text="Réserver une place pour l'utilisateur connecté"
+                       style="-fx-text-fill:rgba(255,255,255,0.70); -fx-font-size:11px;"/>
+            </VBox>
+            <VBox spacing="12" style="-fx-padding:18;">
+                <Label text="Événement *" styleClass="field-label"/>
+                <ComboBox fx:id="cbEvent" styleClass="field-combo" maxWidth="Infinity"
+                          promptText="Sélectionnez un événement…"/>
+                <Button text="✔  Confirmer la réservation" onAction="#reserverPlace"
+                        maxWidth="Infinity"
+                        style="-fx-background-color:#0D9488; -fx-text-fill:#FFFFFF;
+                               -fx-font-weight:bold; -fx-font-size:13px;
+                               -fx-background-radius:10; -fx-border-radius:10;
+                               -fx-padding:12 0 12 0; -fx-cursor:hand;
+                               -fx-effect:dropshadow(gaussian,rgba(13,148,136,0.40),10,0,0,4);"/>
+                <Separator style="-fx-padding:4 0 4 0;"/>
+                <VBox spacing="8"
+                      style="-fx-background-color:#FFF5F5; -fx-background-radius:10;
+                             -fx-border-color:#FED7D7; -fx-border-radius:10;
+                             -fx-border-width:1.2; -fx-padding:14;">
+                    <HBox spacing="6" alignment="CENTER_LEFT">
+                        <Label text="⚠" style="-fx-font-size:14px; -fx-text-fill:#C53030;"/>
+                        <Label text="Annuler une réservation"
+                               style="-fx-text-fill:#C53030; -fx-font-size:13px; -fx-font-weight:bold;"/>
+                    </HBox>
+                    <Label text="Sélectionnez une ligne dans le tableau puis cliquez sur le bouton."
+                           style="-fx-text-fill:#718096; -fx-font-size:11px;" wrapText="true"/>
+                    <Button text="✖  Annuler la réservation sélectionnée"
+                            onAction="#annulerReservation" maxWidth="Infinity"
+                            style="-fx-background-color:#FC8181; -fx-text-fill:#FFFFFF;
+                                   -fx-font-weight:bold; -fx-font-size:12px;
+                                   -fx-background-radius:8; -fx-border-radius:8;
+                                   -fx-padding:10 0 10 0; -fx-cursor:hand;"/>
+                </VBox>
+                <Label fx:id="lbMessage" wrapText="true"
+                       style="-fx-text-fill:#2BBCB0; -fx-font-size:12px;
+                              -fx-font-weight:bold; -fx-padding:4 0 0 0;"/>
+            </VBox>
+        </VBox>
+
+        <!-- Table panel -->
+        <VBox spacing="0" HBox.hgrow="ALWAYS" styleClass="form-panel">
+            <HBox style="-fx-background-color:linear-gradient(to right,#5B35A5,#4372C4);
+                         -fx-background-radius:12 12 0 0; -fx-padding:12 18 12 18;"
+                  alignment="CENTER_LEFT" spacing="10">
+                <Label text="📋  Liste des Réservations"
+                       style="-fx-text-fill:#FFFFFF; -fx-font-size:14px; -fx-font-weight:bold;"/>
+                <HBox HBox.hgrow="ALWAYS"/>
+                <Label text="Cliquez sur une ligne pour la sélectionner"
+                       style="-fx-text-fill:rgba(255,255,255,0.65); -fx-font-size:11px;"/>
+            </HBox>
+            <TableView fx:id="tableReservation" VBox.vgrow="ALWAYS"
+                       styleClass="main-table"
+                       style="-fx-background-radius:0 0 12 12;">
+                <columns>
+                    <TableColumn fx:id="colId"      text="ID"            prefWidth="70"/>
+                    <TableColumn fx:id="colEvent"   text="Evenement"     prefWidth="220"/>
+                    <TableColumn fx:id="colLieu"    text="Lieu"          prefWidth="160"/>
+                    <TableColumn fx:id="colDate"    text="Date event"    prefWidth="145"/>
+                    <TableColumn fx:id="colUserId"  text="ID Patient"    prefWidth="95"/>
+                    <TableColumn fx:id="colStatut"  text="Statut"        prefWidth="130"/>
+                </columns>
+                <placeholder>
+                    <VBox alignment="CENTER" spacing="12" style="-fx-padding:50;">
+                        <Label text="🎟" style="-fx-font-size:48px; -fx-text-fill:#C8DCF0;"/>
+                        <Label text="Aucune réservation enregistrée"
+                               style="-fx-text-fill:#B0C4D8; -fx-font-size:14px; -fx-font-style:italic;"/>
+                    </VBox>
+                </placeholder>
+            </TableView>
+        </VBox>
+
+    </HBox>
+</VBox>

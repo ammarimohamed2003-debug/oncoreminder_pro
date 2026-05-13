@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.oncoreminder.controllers.BodySelectorController"
+      styleClass="body-selector-root"
+      stylesheets="@../css/style.css"
+      prefWidth="820" prefHeight="640">
+
+    <!-- Top bar -->
+    <HBox styleClass="bs-topbar" alignment="CENTER_LEFT" spacing="12">
+        <padding><Insets bottom="12" left="20" right="20" top="12"/></padding>
+        <Label fx:id="lblTitle" text="🫁 Sélecteur de corps" styleClass="bs-title"/>
+    </HBox>
+
+    <!-- Main content -->
+    <HBox VBox.vgrow="ALWAYS" spacing="0">
+
+        <!-- Left: search + list -->
+        <VBox styleClass="bs-list-panel" prefWidth="220" minWidth="200" spacing="8">
+            <padding><Insets bottom="12" left="12" right="12" top="12"/></padding>
+            <Label text="Organes / Cancers" styleClass="bs-panel-label"/>
+            <TextField fx:id="tfSearch" promptText="🔍 Rechercher..."
+                       styleClass="bs-search" onKeyReleased="#onSearch"/>
+            <ListView fx:id="listCancers" styleClass="bs-listview" VBox.vgrow="ALWAYS"/>
+        </VBox>
+
+        <!-- Center: interactive body map -->
+        <VBox styleClass="bs-body-panel" HBox.hgrow="ALWAYS" alignment="TOP_CENTER" spacing="4">
+            <padding><Insets bottom="10" left="10" right="10" top="10"/></padding>
+            <Label text="Cliquez sur une zone pour la sélectionner" styleClass="bs-hint-label"/>
+            <ScrollPane fitToWidth="false" fitToHeight="false" styleClass="bs-scroll"
+                        VBox.vgrow="ALWAYS" hbarPolicy="AS_NEEDED" vbarPolicy="AS_NEEDED"
+                        style="-fx-background-color: transparent; -fx-background: transparent;">
+                <Pane fx:id="bodyPane" prefWidth="320" prefHeight="555"/>
+            </ScrollPane>
+            <Label fx:id="lblSelectedZone" text="" styleClass="bs-hint-label"
+                   style="-fx-font-weight: bold; -fx-text-fill: #2BBCB0;"/>
+        </VBox>
+
+        <!-- Right: organe info panel (visible in organeMode only) -->
+        <VBox fx:id="organeInfoPanel" styleClass="bs-form-panel"
+              prefWidth="250" minWidth="230" spacing="8"
+              visible="false" managed="false">
+            <padding><Insets bottom="15" left="14" right="14" top="14"/></padding>
+
+            <Label text="Types de cancer associés" styleClass="bs-panel-label"/>
+            <Label text="Sélection optionnelle — cliquez pour ajouter un type aux tags"
+                   style="-fx-text-fill: #9CA3AF; -fx-font-size: 10px;" wrapText="true"/>
+            <ListView fx:id="listCancerTypes" styleClass="bs-listview" VBox.vgrow="ALWAYS"/>
+
+            <Separator style="-fx-background-color: #E0D8F0;"/>
+
+            <Label text="🏷 Tags suggérés" styleClass="bs-panel-label"/>
+            <Label fx:id="suggestedTagsLabel" text="—"
+                   style="-fx-text-fill: #5B35A5; -fx-font-size: 11px;
+                          -fx-background-color: #F3F0FF; -fx-background-radius: 6;
+                          -fx-padding: 6 8; -fx-border-color: #D6CBFF;
+                          -fx-border-radius: 6; -fx-border-width: 1;"
+                   wrapText="true"/>
+            <Label text="Ces tags seront automatiquement ajoutés à l'article."
+                   style="-fx-text-fill: #9CA3AF; -fx-font-size: 10px;" wrapText="true"/>
+        </VBox>
+
+        <!-- Right: cancer form panel (hidden in organeMode) -->
+        <VBox fx:id="rightFormPanel" styleClass="bs-form-panel" prefWidth="240" minWidth="220" spacing="8">
+            <padding><Insets bottom="15" left="15" right="15" top="15"/></padding>
+
+            <Label text="Nom du cancer *" styleClass="bs-field-label"/>
+            <TextField fx:id="tfNom" styleClass="bs-field" promptText="Nom du cancer..."/>
+
+            <Label text="Classification" styleClass="bs-field-label"/>
+            <ComboBox fx:id="cbClassification" styleClass="bs-field"
+                      maxWidth="Infinity" promptText="Choisir..."/>
+
+            <Label text="Stade" styleClass="bs-field-label"/>
+            <ComboBox fx:id="cbStade" styleClass="bs-field"
+                      maxWidth="Infinity" promptText="Stade..."/>
+
+            <Label text="Organe / Zone" styleClass="bs-field-label"/>
+            <TextField fx:id="tfOrgane" styleClass="bs-field" promptText="ex: Sein, Poumon..."/>
+
+            <Label text="Description" styleClass="bs-field-label"/>
+            <TextArea fx:id="taDescription" styleClass="bs-textarea"
+                      promptText="Description médicale..."
+                      prefHeight="75" wrapText="true"/>
+
+            <Label text="Symptômes" styleClass="bs-field-label"/>
+            <TextArea fx:id="taSymptomes" styleClass="bs-textarea"
+                      promptText="Symptômes principaux..."
+                      prefHeight="75" wrapText="true"/>
+
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <HBox spacing="8">
+                <Button text="Annuler" onAction="#onAnnuler" styleClass="bs-btn-cancel"
+                        HBox.hgrow="ALWAYS" maxWidth="Infinity" prefHeight="34"/>
+                <Button fx:id="btnEnregistrer" text="Enregistrer" onAction="#onEnregistrer"
+                        styleClass="bs-btn-save" disable="true"
+                        HBox.hgrow="ALWAYS" maxWidth="Infinity" prefHeight="34"/>
+            </HBox>
+        </VBox>
+
+    </HBox>
+
+    <!-- Barre de confirmation multi-sélection (organeMode uniquement) -->
+    <HBox fx:id="confirmBar" visible="false" managed="false"
+          spacing="14" alignment="CENTER_LEFT"
+          style="-fx-background-color: #3D1F8A; -fx-padding: 10 20;">
+        <Label text="🫁" style="-fx-font-size: 16px;"/>
+        <Label fx:id="selectedOrganesLabel" text="Aucun organe sélectionné"
+               style="-fx-text-fill: #D4C9F8; -fx-font-size: 12px;" HBox.hgrow="ALWAYS"/>
+        <Button text="✕ Effacer" onAction="#onClearOrganes"
+                style="-fx-background-color: transparent; -fx-text-fill: #D4C9F8;
+                       -fx-border-color: #8B6DE0; -fx-border-radius: 5; -fx-background-radius: 5;
+                       -fx-cursor: hand; -fx-font-size: 11px; -fx-padding: 5 12;"/>
+        <Button text="✓  Confirmer la sélection" onAction="#onConfirmer"
+                style="-fx-background-color: #2BBCB0; -fx-text-fill: white; -fx-font-weight: bold;
+                       -fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 12px;
+                       -fx-padding: 7 18;" prefHeight="34"/>
+        <Button text="Annuler" onAction="#onAnnuler"
+                styleClass="bs-btn-cancel" prefHeight="34" prefWidth="80"/>
+    </HBox>
+
+</VBox>

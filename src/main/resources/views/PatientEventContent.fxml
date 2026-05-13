@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.oncoreminder.controllers.PatientEventController"
+      spacing="0">
+
+    <!-- Action bar -->
+    <HBox spacing="10" alignment="CENTER_LEFT"
+          style="-fx-background-color:#FFFFFF; -fx-padding:10 16 10 16;
+                 -fx-border-color:#EEF4FB; -fx-border-width:0 0 1 0;">
+        <Label text="📅 Événements disponibles"
+               style="-fx-text-fill:#4A2D8F; -fx-font-size:14px; -fx-font-weight:bold;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="lbCount" text="0 événement(s)"
+               style="-fx-text-fill:#5B35A5; -fx-font-size:12px; -fx-font-weight:bold;"/>
+        <Button text="↻ Actualiser" onAction="#handleRefresh"
+                style="-fx-background-color:#FFFFFF; -fx-text-fill:#5B35A5; -fx-font-size:12px;
+                       -fx-font-weight:bold; -fx-border-color:#C8DCF0; -fx-border-width:1.5;
+                       -fx-background-radius:8; -fx-border-radius:8;
+                       -fx-padding:6 14 6 14; -fx-cursor:hand;"/>
+    </HBox>
+
+    <!-- Cards grid -->
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                style="-fx-background-color:#EBF4FF; -fx-background:#EBF4FF;
+                       -fx-border-color:transparent;">
+        <FlowPane fx:id="eventsFlowPane" hgap="16" vgap="16"
+                  style="-fx-padding:20; -fx-background-color:#EBF4FF;"/>
+    </ScrollPane>
+
+</VBox>

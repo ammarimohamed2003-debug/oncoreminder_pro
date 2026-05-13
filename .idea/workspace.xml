@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="3f20f808-4e6c-4c71-9676-fdba2af2db09" name="Changes" comment="final commit">
+      <change afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/db_utilisateur.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/emails_dev.log" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/Main.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/app/App.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/app/AppLauncher.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/controllers/AdminDashboardController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/controllers/AdminReclamationController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/controllers/ArticleFormController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/controllers/ArticleListController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/controllers/BodySelectorController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/controllers/DoctorDashboardController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/controllers/EventController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/controllers/ForgotPasswordController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/controllers/LoginController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/controllers/PatientArticleListController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/controllers/PatientDashboardController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/controllers/PatientEventController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/controllers/ReclamationPatientController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/controllers/ReservationController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/controllers/ResetPasswordController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/controllers/SignUpController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/controllers/VerifyOtpController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/models/Article.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/models/Cancer.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/models/Commentaire.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/models/Event.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/models/LogConnexion.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/models/Message.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/models/Reclamation.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/models/ReclamationStats.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/models/Reponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/models/Reservation.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/models/Utilisateur.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/services/EmailService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/services/ReclamationAIService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/services/ServiceArticle.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/services/ServiceArticleEvaluation.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/services/ServiceCommentaire.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/services/ServiceEvent.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/services/ServiceMessage.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/services/ServiceReclamation.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/services/ServiceReponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/services/ServiceReservation.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/services/ServiceUtilisateur.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/utils/ArticleGeneratorService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/utils/GeminiService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/utils/ImageLoader.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/utils/MarkdownRenderer.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/utils/MyDataBase.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/utils/OtpStore.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/utils/PdfExporter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/oncoreminder/utils/UserSession.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/css/event-modern.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/css/style.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/css/styles.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/gemini.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/imagesArticles/article_1778266837797.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/imagesArticles/article_1778267054917.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/imagesArticles/article_1778267344321.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/imagesArticles/article_1778267747947.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/imagesArticles/article_1778267889023.JPG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/imagesArticles/article_1778270584048.JPG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/imagesArticles/article_1778273556908.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/imagesArticles/article_1778275974454.jfif" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/imagesArticles/article_1778276079107.jfif" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/imagesArticles/article_1778276158400.jfif" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/imagesArticles/article_1778276301650.jfif" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/imagesArticles/article_1778276371618.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/imagesArticles/article_1778294224989.jfif" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/imagesArticles/article_1778296069930.jfif" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/imagesArticles/article_1778441514481.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/views/AdminDashboard.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/views/AdminReclamation.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/views/ArticleForm.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/views/ArticleList.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/views/BodySelector.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/views/DoctorDashboard.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/views/EventTabContent.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/views/ForgotPassword.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/views/GestionEvent.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/views/GestionReservation.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/views/Login.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/views/PatientArticleList.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/views/PatientDashboard.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/views/PatientEventContent.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/views/ReclamationPatient.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/views/ReservationContent.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/views/ResetPassword.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/views/SignUp.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/views/VerifyOtp.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/task.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3DH2i6oAQki4sJ2Sn3kom3AGCiK" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.AppLauncher.executor": "Run",
+    "Application.Main.executor": "Run",
+    "Application.RendezVousApplication.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "Merging aahd",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/ahdas/IdeaProjects/demo",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.JavaFX",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\ahdas\IdeaProjects\demo\src\main\resources\com\onco" />
+    </key>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="3f20f808-4e6c-4c71-9676-fdba2af2db09" name="Changes" comment="" />
+      <created>1777924814222</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1777924814222</updated>
+      <workItem from="1777924815653" duration="14852000" />
+      <workItem from="1777993749553" duration="1657000" />
+      <workItem from="1778096542359" duration="3477000" />
+      <workItem from="1778157524635" duration="1996000" />
+      <workItem from="1778679300475" duration="2347000" />
+      <workItem from="1778682051507" duration="313000" />
+      <workItem from="1778682468615" duration="1628000" />
+      <workItem from="1778685776816" duration="3521000" />
+      <workItem from="1778699098404" duration="187000" />
+    </task>
+    <task id="LOCAL-00001" summary="final commit">
+      <option name="closed" value="true" />
+      <created>1778686383593</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1778686383593</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="final commit" />
+    <option name="LAST_COMMIT_MESSAGE" value="final commit" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>

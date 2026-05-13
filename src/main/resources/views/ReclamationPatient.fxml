@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.oncoreminder.controllers.ReclamationPatientController"
+      style="-fx-background-color: #F5F7FF;">
+
+    <!-- ═══ Header ═══ -->
+    <HBox alignment="CENTER_LEFT" spacing="16"
+          style="-fx-padding: 15 24 13 24; -fx-background-color: white;
+                 -fx-border-color: transparent transparent #E9E4F7 transparent; -fx-border-width: 1;">
+        <Label text="📣" style="-fx-font-size: 20px;"/>
+        <Label text="Mes Réclamations"
+               style="-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #2D1B69;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="← Retour" onAction="#handleFermer" styleClass="btn-secondary" prefHeight="34"/>
+    </HBox>
+
+    <!-- ═══ Body ═══ -->
+    <HBox VBox.vgrow="ALWAYS">
+
+        <!-- ── LEFT: liste réclamations ── -->
+        <VBox prefWidth="370" minWidth="370" maxWidth="370" spacing="10"
+              HBox.hgrow="NEVER"
+              style="-fx-background-color: white;
+                     -fx-border-color: transparent #E9E4F7 transparent transparent; -fx-border-width: 1;">
+            <padding><Insets top="14" right="12" bottom="14" left="14"/></padding>
+
+            <HBox alignment="CENTER_LEFT" spacing="8">
+                <Label text="Mes réclamations"
+                       style="-fx-font-weight: bold; -fx-text-fill: #2D1B69; -fx-font-size: 13px;"/>
+                <Label fx:id="countLabel" text="(0)"
+                       style="-fx-text-fill: #999; -fx-font-size: 12px;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="+ Nouvelle" onAction="#handleNouvelleReclamation"
+                        styleClass="btn-primary" prefHeight="30" prefWidth="90"/>
+            </HBox>
+
+            <!-- Filtres statut patient -->
+            <HBox spacing="5" alignment="CENTER_LEFT">
+                <Button fx:id="btnFiltreToutes" text="Toutes" onAction="#handleFiltreToutes"
+                        style="-fx-background-color: #5B35A5; -fx-text-fill: white;
+                               -fx-padding: 4 10; -fx-background-radius: 8;
+                               -fx-font-size: 10px; -fx-cursor: hand;" prefHeight="24"/>
+                <Button fx:id="btnFiltreEnCours" text="EN COURS" onAction="#handleFiltreEnCours"
+                        style="-fx-background-color: #FEF3C7; -fx-text-fill: #D97706;
+                               -fx-padding: 4 8; -fx-background-radius: 8;
+                               -fx-font-size: 10px; -fx-cursor: hand;" prefHeight="24"/>
+                <Button fx:id="btnFiltreTraitee" text="TRAITÉE" onAction="#handleFiltreTraitee"
+                        style="-fx-background-color: #C6F6D5; -fx-text-fill: #276749;
+                               -fx-padding: 4 8; -fx-background-radius: 8;
+                               -fx-font-size: 10px; -fx-cursor: hand;" prefHeight="24"/>
+                <Button fx:id="btnFiltreFermee" text="FERMÉE" onAction="#handleFiltreFermee"
+                        style="-fx-background-color: #E2E8F0; -fx-text-fill: #4A5568;
+                               -fx-padding: 4 8; -fx-background-radius: 8;
+                               -fx-font-size: 10px; -fx-cursor: hand;" prefHeight="24"/>
+            </HBox>
+
+            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                        style="-fx-background-color: transparent; -fx-background: transparent;
+                               -fx-border-color: transparent;">
+                <VBox fx:id="reclamationListContainer" spacing="8">
+                    <padding><Insets top="4" bottom="8"/></padding>
+                </VBox>
+            </ScrollPane>
+        </VBox>
+
+        <!-- ── RIGHT: formulaire ou détail ── -->
+        <StackPane HBox.hgrow="ALWAYS">
+
+            <!-- Formulaire nouvelle réclamation -->
+            <ScrollPane fx:id="formPane" fitToWidth="true"
+                        style="-fx-background-color: #F5F7FF; -fx-background: #F5F7FF;
+                               -fx-border-color: transparent;">
+                <VBox spacing="16" maxWidth="580"
+                      style="-fx-padding: 28 40 28 40;">
+
+                    <Label text="📝  Nouvelle Réclamation"
+                           style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2D1B69;"/>
+                    <Separator/>
+
+                    <!-- Événement (optionnel) -->
+                    <VBox spacing="4">
+                        <Label text="Événement concerné (optionnel)" styleClass="field-label"/>
+                        <ComboBox fx:id="eventCombo" styleClass="field-combo"
+                                  maxWidth="Infinity" prefHeight="40"
+                                  promptText="Choisissez l'événement..."/>
+                    </VBox>
+
+                    <!-- Sujet -->
+                    <VBox spacing="4">
+                        <Label text="Sujet *" styleClass="field-label"/>
+                        <TextField fx:id="sujetField"
+                                   promptText="Résumez votre réclamation..."
+                                   styleClass="field-input" prefHeight="40"/>
+                        <Label fx:id="errorSujet" text="" styleClass="field-error"
+                               visible="false" managed="false"/>
+                    </VBox>
+
+                    <!-- Message -->
+                    <VBox spacing="4">
+                        <Label text="Description *" styleClass="field-label"/>
+                        <TextArea fx:id="messageArea"
+                                  promptText="Décrivez votre problème en détail..."
+                                  styleClass="field-input" wrapText="true" prefHeight="140"/>
+                        <Label fx:id="errorMessage" text="" styleClass="field-error"
+                               visible="false" managed="false"/>
+                    </VBox>
+
+                    <!-- Feedback -->
+                    <Label fx:id="feedbackLabel" text="" wrapText="true"
+                           visible="false" managed="false"
+                           style="-fx-font-size: 12px; -fx-font-weight: bold;
+                                  -fx-padding: 8 12; -fx-background-radius: 6;
+                                  -fx-border-radius: 6; -fx-border-width: 1;"/>
+
+                    <HBox spacing="10" alignment="CENTER_RIGHT">
+                        <Button text="✕  Annuler" onAction="#handleAnnulerForm"
+                                styleClass="btn-secondary" prefHeight="38" prefWidth="100"/>
+                        <Button text="📤  Soumettre" onAction="#handleSoumettre"
+                                styleClass="btn-primary" prefHeight="38" prefWidth="180"/>
+                    </HBox>
+                </VBox>
+            </ScrollPane>
+
+            <!-- Détail + réponses -->
+            <ScrollPane fx:id="detailPane" fitToWidth="true"
+                        visible="false" managed="false"
+                        style="-fx-background-color: #F5F7FF; -fx-background: #F5F7FF;
+                               -fx-border-color: transparent;">
+                <VBox spacing="14" maxWidth="650"
+                      style="-fx-padding: 28 40 28 40;">
+
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Button text="←" onAction="#handleRetourListe"
+                                style="-fx-background-color: transparent; -fx-font-size: 16px;
+                                       -fx-cursor: hand; -fx-text-fill: #5B35A5;"/>
+                        <Label fx:id="detailSujetLabel" text="" wrapText="true"
+                               style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #2D1B69;"
+                               maxWidth="440"/>
+                    </HBox>
+
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label fx:id="detailStatutLabel" text=""
+                               style="-fx-padding: 3 12; -fx-background-radius: 10;
+                                      -fx-font-weight: bold; -fx-font-size: 11px;"/>
+                        <Label fx:id="detailDateLabel" text=""
+                               style="-fx-text-fill: #718096; -fx-font-size: 11px;"/>
+                    </HBox>
+
+                    <VBox styleClass="form-panel" spacing="6">
+                        <padding><Insets top="14" right="16" bottom="14" left="16"/></padding>
+                        <Label text="Votre message :"
+                               style="-fx-font-weight: bold; -fx-text-fill: #5B35A5; -fx-font-size: 12px;"/>
+                        <Label fx:id="detailMessageLabel" text="" wrapText="true"
+                               style="-fx-text-fill: #2D3748; -fx-font-size: 13px;"/>
+                    </VBox>
+
+                    <!-- Bouton supprimer (visible uniquement si pas de réponse) -->
+                    <HBox alignment="CENTER_RIGHT">
+                        <Button fx:id="deleteBtn" text="🗑  Supprimer cette réclamation"
+                                onAction="#handleDelete"
+                                style="-fx-background-color: #FFF5F5; -fx-text-fill: #E53E3E;
+                                       -fx-border-color: #FC8181; -fx-border-radius: 8;
+                                       -fx-background-radius: 8; -fx-border-width: 1;
+                                       -fx-font-size: 11px; -fx-padding: 5 14; -fx-cursor: hand;"
+                                prefHeight="34" visible="false" managed="false"/>
+                    </HBox>
+
+                    <Separator/>
+
+                    <!-- Évaluation de la réponse -->
+                    <VBox fx:id="noteSection" spacing="8" visible="false" managed="false"
+                          style="-fx-background-color: #FFFBEB; -fx-background-radius: 10;
+                                 -fx-border-color: #FBD38D; -fx-border-radius: 10; -fx-border-width: 1;
+                                 -fx-padding: 12 16;">
+                        <Label fx:id="noteTitre" text="⭐  Évaluez la prise en charge"
+                               style="-fx-font-weight: bold; -fx-text-fill: #D97706; -fx-font-size: 12px;"/>
+                        <HBox fx:id="starsContainer" spacing="4"/>
+                        <Label fx:id="noteMessage" text="" wrapText="true"
+                               style="-fx-text-fill: #718096; -fx-font-size: 11px; -fx-font-style: italic;"
+                               visible="false" managed="false"/>
+                    </VBox>
+
+                    <Separator/>
+
+                    <Label text="💬  Réponses de l'administration"
+                           style="-fx-font-weight: bold; -fx-text-fill: #2D1B69; -fx-font-size: 13px;"/>
+                    <VBox fx:id="reponsesContainer" spacing="10"/>
+
+                </VBox>
+            </ScrollPane>
+
+            <!-- État vide -->
+            <VBox fx:id="emptyPane" alignment="CENTER" spacing="14"
+                  visible="false" managed="false">
+                <Label text="📣" style="-fx-font-size: 48px;"/>
+                <Label text="Aucune réclamation"
+                       style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2D1B69;"/>
+                <Label text="Cliquez sur '+ Nouvelle' pour soumettre votre première réclamation"
+                       style="-fx-text-fill: #718096; -fx-font-size: 13px;"/>
+            </VBox>
+
+        </StackPane>
+    </HBox>
+
+</VBox>
