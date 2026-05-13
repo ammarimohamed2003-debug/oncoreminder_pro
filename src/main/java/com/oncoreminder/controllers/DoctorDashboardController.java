@@ -35,8 +35,12 @@ public class DoctorDashboardController {
     @FXML private VBox     mainContent;
     @FXML private VBox     eventsPane;
     @FXML private VBox     reservationsPane;
+    @FXML private VBox     rdvModulePane;
+    @FXML private VBox     ordoModulePane;
     @FXML private Button   btnMonEspace;
     @FXML private Button   btnEvenements;
+    @FXML private Button   btnRdvModule;
+    @FXML private Button   btnOrdoModule;
     @FXML private Label    doctorSidebarLabel;
 
     // ── Sous-contrôleurs (fx:include) ─────────────────────────────────
@@ -514,6 +518,8 @@ public class DoctorDashboardController {
     @FXML void handleArticles(ActionEvent e)   { App.navigate("ArticleList"); }
     @FXML void handleMonEspace(ActionEvent e)  { showPane(0); }
     @FXML void handleRendezVous(ActionEvent e) { showPane(1); }
+    @FXML void handleRdvModule(ActionEvent e)  { showPane(3); }
+    @FXML void handleOrdoModule(ActionEvent e) { showPane(4); }
     @FXML void handleLogout(ActionEvent e)     { UserSession.getInstance().logout(); App.navigate("Login"); }
 
     private static final String BTN_ACTIVE = "sidebar-nav-btn-doctor-active";
@@ -523,9 +529,14 @@ public class DoctorDashboardController {
         mainContent.setVisible(which == 0);      mainContent.setManaged(which == 0);
         eventsPane.setVisible(which == 1);       eventsPane.setManaged(which == 1);
         reservationsPane.setVisible(which == 2); reservationsPane.setManaged(which == 2);
+        rdvModulePane.setVisible(which == 3);    rdvModulePane.setManaged(which == 3);
+        ordoModulePane.setVisible(which == 4);   ordoModulePane.setManaged(which == 4);
+
         btnMonEspace.getStyleClass().setAll(which == 0 ? BTN_ACTIVE : BTN_NORMAL);
         // Événements reste actif aussi quand réservations est affiché (sous-section)
-        btnEvenements.getStyleClass().setAll(which >= 1 ? BTN_ACTIVE : BTN_NORMAL);
+        btnEvenements.getStyleClass().setAll(which == 1 || which == 2 ? BTN_ACTIVE : BTN_NORMAL);
+        btnRdvModule.getStyleClass().setAll(which == 3 ? BTN_ACTIVE : BTN_NORMAL);
+        btnOrdoModule.getStyleClass().setAll(which == 4 ? BTN_ACTIVE : BTN_NORMAL);
     }
 
     // ── Modes panneau patient ─────────────────────────────────────────

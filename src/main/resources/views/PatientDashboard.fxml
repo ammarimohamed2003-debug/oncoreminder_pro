@@ -73,6 +73,10 @@
                         maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
                 <Button fx:id="btnReclamations" text="📣  Réclamations" onAction="#handleReclamations"
                         maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
+                <Button fx:id="btnRdvModule" text="🏥  Mes Rendez-vous" onAction="#handleRdvModule"
+                        maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
+                <Button fx:id="btnOrdoModule" text="📝  Mes Ordonnances" onAction="#handleOrdoModule"
+                        maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
             </VBox>
 
             <Region VBox.vgrow="ALWAYS"/>
@@ -430,6 +434,14 @@
         <!-- Zone réclamations -->
         <VBox fx:id="patientReclamationsPane" visible="false" managed="false">
             <fx:include fx:id="patientReclamationContent" source="ReclamationPatient.fxml" VBox.vgrow="ALWAYS"/>
+        </VBox>
+
+        <VBox fx:id="rdvModulePane" visible="false" managed="false">
+            <fx:include source="../com/onco/rendez-vous-view.fxml" VBox.vgrow="ALWAYS"/>
+        </VBox>
+
+        <VBox fx:id="ordoModulePane" visible="false" managed="false">
+            <fx:include source="../com/onco/ordonnance-view.fxml" VBox.vgrow="ALWAYS"/>
         </VBox>
 
         </StackPane>

@@ -33,9 +33,13 @@ public class PatientDashboardController {
     @FXML private VBox    patientEventsPane;
     @FXML private VBox    patientReservationsPane;
     @FXML private VBox    patientReclamationsPane;
+    @FXML private VBox    rdvModulePane;
+    @FXML private VBox    ordoModulePane;
     @FXML private Button  btnMaSante;
     @FXML private Button  btnEvenements;
     @FXML private Button  btnReclamations;
+    @FXML private Button  btnRdvModule;
+    @FXML private Button  btnOrdoModule;
     @FXML private Label   patientNameLabel;
     @FXML private Label   medecinSidebarLabel;
 
@@ -345,6 +349,8 @@ public class PatientDashboardController {
     @FXML void handleMaSante(ActionEvent event)      { showPane(0); }
     @FXML void handleRendezVous(ActionEvent event)   { showPane(1); }
     @FXML void handleReclamations(ActionEvent event) { showPane(3); }
+    @FXML void handleRdvModule(ActionEvent event)    { showPane(4); }
+    @FXML void handleOrdoModule(ActionEvent event)   { showPane(5); }
 
     private static final String PAT_ACTIVE = "sidebar-nav-btn-active";
     private static final String PAT_NORMAL = "sidebar-nav-btn";
@@ -354,10 +360,17 @@ public class PatientDashboardController {
         patientEventsPane.setVisible(which == 1);        patientEventsPane.setManaged(which == 1);
         patientReservationsPane.setVisible(which == 2);  patientReservationsPane.setManaged(which == 2);
         patientReclamationsPane.setVisible(which == 3);  patientReclamationsPane.setManaged(which == 3);
+        rdvModulePane.setVisible(which == 4);            rdvModulePane.setManaged(which == 4);
+        ordoModulePane.setVisible(which == 5);           ordoModulePane.setManaged(which == 5);
+
         btnMaSante.getStyleClass().setAll(which == 0 ? PAT_ACTIVE : PAT_NORMAL);
         btnEvenements.getStyleClass().setAll(which == 1 || which == 2 ? PAT_ACTIVE : PAT_NORMAL);
         if (btnReclamations != null)
             btnReclamations.getStyleClass().setAll(which == 3 ? PAT_ACTIVE : PAT_NORMAL);
+        if (btnRdvModule != null)
+            btnRdvModule.getStyleClass().setAll(which == 4 ? PAT_ACTIVE : PAT_NORMAL);
+        if (btnOrdoModule != null)
+            btnOrdoModule.getStyleClass().setAll(which == 5 ? PAT_ACTIVE : PAT_NORMAL);
     }
 
     @FXML void handleLogout(ActionEvent event) {
