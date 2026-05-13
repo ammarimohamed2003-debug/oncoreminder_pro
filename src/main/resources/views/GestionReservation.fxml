@@ -154,10 +154,12 @@
                            styleClass="main-table"
                            style="-fx-background-radius:0 0 12 12;">
                     <columns>
-                        <TableColumn fx:id="colId"      text="ID Résa"      prefWidth="90"/>
-                        <TableColumn fx:id="colEventId" text="ID Événement"  prefWidth="130"/>
-                        <TableColumn fx:id="colUserId"  text="ID Patient"    prefWidth="120"/>
-                        <TableColumn fx:id="colStatut"  text="Statut"        prefWidth="160"/>
+                        <TableColumn fx:id="colId"      text="ID"            prefWidth="70"/>
+                        <TableColumn fx:id="colEvent"   text="Evenement"     prefWidth="220"/>
+                        <TableColumn fx:id="colLieu"    text="Lieu"          prefWidth="160"/>
+                        <TableColumn fx:id="colDate"    text="Date event"    prefWidth="145"/>
+                        <TableColumn fx:id="colUserId"  text="ID Patient"    prefWidth="95"/>
+                        <TableColumn fx:id="colStatut"  text="Statut"        prefWidth="130"/>
                     </columns>
                     <placeholder>
                         <VBox alignment="CENTER" spacing="12" style="-fx-padding:50;">
