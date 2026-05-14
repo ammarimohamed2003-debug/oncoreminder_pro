@@ -7,6 +7,7 @@ import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
 
 /**
  * SignUpController — Inscription d'un nouvel utilisateur.
@@ -30,6 +31,9 @@ public class SignUpController {
     @FXML private TextField        confirmVisible;
     @FXML private CheckBox         showPwdCheck;
     @FXML private ComboBox<String> roleCombo;
+    @FXML private VBox             specialiteBox;
+    @FXML private ComboBox<String> specialiteCombo;
+    @FXML private Label            errorSpecialite;
     @FXML private ProgressBar      strengthBar;
     @FXML private Button           signUpButton;
 
@@ -51,6 +55,19 @@ public class SignUpController {
     public void initialize() {
         roleCombo.setItems(FXCollections.observableArrayList("PATIENT", "MEDECIN"));
         roleCombo.setValue("PATIENT");
+
+        specialiteCombo.setItems(FXCollections.observableArrayList(
+            "Médecine générale", "Oncologie", "Cardiologie", "Neurologie",
+            "Pneumologie", "Gastro-entérologie", "Hématologie", "Radiologie",
+            "Chirurgie générale", "Pédiatrie", "Gynécologie", "Dermatologie",
+            "Urologie", "Orthopédie", "ORL", "Ophtalmologie", "Endocrinologie"
+        ));
+
+        roleCombo.valueProperty().addListener((obs, o, n) -> {
+            boolean isMedecin = "MEDECIN".equals(n);
+            specialiteBox.setVisible(isMedecin);
+            specialiteBox.setManaged(isMedecin);
+        });
 
         // Synchroniser PasswordField ↔ TextField (show/hide)
         passwordField.textProperty().bindBidirectional(passwordVisible.textProperty());
@@ -166,7 +183,8 @@ public class SignUpController {
         String email    = emailField.getText().trim().toLowerCase();
         String password = passwordField.getText();
         String confirm  = confirmField.getText();
-        String role     = roleCombo.getValue();
+        String role       = roleCombo.getValue();
+        String specialite = specialiteCombo.getValue();
         boolean ok = true;
 
         // ── Validation champs obligatoires ────────────────────────────
@@ -210,10 +228,20 @@ public class SignUpController {
             ok = false;
         }
 
+        if ("MEDECIN".equals(role) && (specialite == null || specialite.isBlank())) {
+            errorSpecialite.setText("La spécialité est obligatoire pour un médecin.");
+            errorSpecialite.setStyle("-fx-text-fill: #E53E3E; -fx-font-size: 11px;");
+            errorSpecialite.setVisible(true);
+            errorSpecialite.setManaged(true);
+            ok = false;
+        }
+
         if (!ok) return;
 
         // ── Enregistrement ────────────────────────────────────────────
-        serviceUtilisateur.add(new Utilisateur(nom, prenom, email, password, role));
+        Utilisateur newUser = new Utilisateur(nom, prenom, email, password, role);
+        newUser.setSpecialite("MEDECIN".equals(role) ? specialite : null);
+        serviceUtilisateur.add(newUser);
 
         // Alerte succès
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -249,5 +277,7 @@ public class SignUpController {
         clearErr(emailField,    errorEmail);
         clearErr(passwordField, errorPassword);
         clearErr(confirmField,  errorConfirm);
+        errorSpecialite.setVisible(false);
+        errorSpecialite.setManaged(false);
     }
 }

@@ -29,15 +29,15 @@ public class ServiceUtilisateur {
     // U-01 Inscription / CRUD Add
     public void add(Utilisateur user) {
         if (!updateConnection()) return;
-        String req = "INSERT INTO utilisateur (nom, prenom, email, password, role) VALUES (?, ?, ?, ?, ?)";
+        String req = "INSERT INTO utilisateur (nom, prenom, email, password, role, specialite) VALUES (?, ?, ?, ?, ?, ?)";
         try {
             PreparedStatement pst = cnx.prepareStatement(req);
             pst.setString(1, user.getNom());
             pst.setString(2, user.getPrenom());
             pst.setString(3, user.getEmail());
-            // Hash password with BCrypt
             pst.setString(4, BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
             pst.setString(5, user.getRole());
+            pst.setString(6, user.getSpecialite());
             pst.executeUpdate();
             System.out.println("Utilisateur ajouté avec succès !");
         } catch (SQLException e) {
@@ -210,6 +210,7 @@ public class ServiceUtilisateur {
         u.setGroupeSanguin(rs.getString("groupe_sanguin"));
         u.setPoids(rs.getObject("poids", Double.class));
         u.setTaille(rs.getObject("taille", Double.class));
+        try { u.setSpecialite(rs.getString("specialite")); }  catch (SQLException ignored) {}
         try { u.setTraitements(rs.getString("traitements")); } catch (SQLException ignored) {}
         try { u.setNotes(rs.getString("notes")); }           catch (SQLException ignored) {}
         return u;
@@ -218,7 +219,7 @@ public class ServiceUtilisateur {
     public List<Utilisateur> getAllMedecins() {
         List<Utilisateur> medecins = new ArrayList<>();
         if (!updateConnection()) return medecins;
-        String req = "SELECT * FROM utilisateur WHERE role = 'MEDECIN' ORDER BY nom, prenom";
+        String req = "SELECT * FROM utilisateur WHERE role = 'MEDECIN' ORDER BY specialite, nom, prenom";
         try {
             Statement st = cnx.createStatement();
             ResultSet rs = st.executeQuery(req);
@@ -227,6 +228,35 @@ public class ServiceUtilisateur {
             System.out.println(e.getMessage());
         }
         return medecins;
+    }
+
+    public List<Utilisateur> getMedecinsBySpecialite(String specialite) {
+        List<Utilisateur> medecins = new ArrayList<>();
+        if (!updateConnection()) return medecins;
+        String req = "SELECT * FROM utilisateur WHERE role = 'MEDECIN' AND specialite = ? ORDER BY nom, prenom";
+        try {
+            PreparedStatement pst = cnx.prepareStatement(req);
+            pst.setString(1, specialite);
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()) medecins.add(mapResultSetToUser(rs));
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return medecins;
+    }
+
+    public List<String> getAllSpecialites() {
+        List<String> specialites = new ArrayList<>();
+        if (!updateConnection()) return specialites;
+        String req = "SELECT DISTINCT specialite FROM utilisateur WHERE role = 'MEDECIN' AND specialite IS NOT NULL ORDER BY specialite";
+        try {
+            Statement st = cnx.createStatement();
+            ResultSet rs = st.executeQuery(req);
+            while (rs.next()) specialites.add(rs.getString("specialite"));
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return specialites;
     }
 
     public Utilisateur getById(int id) {

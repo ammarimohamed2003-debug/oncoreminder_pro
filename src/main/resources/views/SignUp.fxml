@@ -191,6 +191,15 @@
                           maxWidth="Infinity" prefHeight="40"/>
             </VBox>
 
+            <!-- Spécialité (médecin seulement) -->
+            <VBox fx:id="specialiteBox" spacing="4" visible="false" managed="false">
+                <Label text="Spécialité *" styleClass="field-label"/>
+                <ComboBox fx:id="specialiteCombo" styleClass="field-combo"
+                          maxWidth="Infinity" prefHeight="40" promptText="Choisir une spécialité..."/>
+                <Label fx:id="errorSpecialite" text="" styleClass="field-error"
+                       visible="false" managed="false"/>
+            </VBox>
+
             <!-- Bouton créer compte -->
             <Button fx:id="signUpButton" text="Créer mon compte" onAction="#handleSignUp"
                     styleClass="btn-primary" maxWidth="Infinity" prefHeight="42"/>

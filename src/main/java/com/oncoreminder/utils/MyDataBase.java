@@ -45,6 +45,7 @@ public class MyDataBase {
             "  `email` varchar(255) NOT NULL," +
             "  `password` varchar(255) NOT NULL," +
             "  `role` varchar(50) NOT NULL DEFAULT 'PATIENT'," +
+            "  `specialite` varchar(100) DEFAULT NULL," +
             "  `antecedents` text DEFAULT NULL," +
             "  `allergies` text DEFAULT NULL," +
             "  `groupe_sanguin` varchar(10) DEFAULT NULL," +
@@ -76,6 +77,7 @@ public class MyDataBase {
             // Ensure missing columns are added if the table already existed
             String[] alterQueries = {
                 "ALTER TABLE `utilisateur` ADD COLUMN `role` varchar(50) NOT NULL DEFAULT 'PATIENT'",
+                "ALTER TABLE `utilisateur` ADD COLUMN `specialite` varchar(100) DEFAULT NULL",
                 "ALTER TABLE `utilisateur` ADD COLUMN `antecedents` text DEFAULT NULL",
                 "ALTER TABLE `utilisateur` ADD COLUMN `allergies` text DEFAULT NULL",
                 "ALTER TABLE `utilisateur` ADD COLUMN `groupe_sanguin` varchar(10) DEFAULT NULL",

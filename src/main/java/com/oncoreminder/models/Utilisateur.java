@@ -7,6 +7,7 @@ public class Utilisateur {
     private String email;
     private String password;
     private String role; // ADMIN, MEDECIN, PATIENT
+    private String specialite;
 
     // ── Dossier médical ─────────────────────────────────────────────
     private String antecedents;
@@ -56,6 +57,9 @@ public class Utilisateur {
 
     public String getRole()       { return role; }
     public void   setRole(String role) { this.role = role; }
+
+    public String getSpecialite() { return specialite; }
+    public void   setSpecialite(String specialite) { this.specialite = specialite; }
 
     public String getAntecedents() { return antecedents; }
     public void   setAntecedents(String antecedents) { this.antecedents = antecedents; }

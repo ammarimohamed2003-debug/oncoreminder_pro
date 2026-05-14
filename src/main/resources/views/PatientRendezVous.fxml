@@ -3,13 +3,12 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.shape.*?>
 
 <BorderPane stylesheets="@../css/style.css"
             xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.oncoreminder.controllers.PatientRendezVousController">
 
-    <!-- ══ SIDEBAR PATIENT (partagée) ══ -->
+    <!-- ══ SIDEBAR PATIENT ══ -->
     <left>
         <fx:include fx:id="patientSidebar" source="PatientSidebar.fxml"/>
     </left>
@@ -19,52 +18,63 @@
         <HBox spacing="0" style="-fx-background-color:#F5F7FF;">
 
             <!-- ══ Formulaire gauche ══ -->
-            <VBox prefWidth="340" spacing="12"
+            <VBox prefWidth="330" spacing="12"
                   style="-fx-background-color:white;-fx-border-color:#E2E8F0;-fx-border-width:0 1 0 0;-fx-padding:20 18 20 18;">
 
                 <Label fx:id="formTitleLabel" text="📅 Demander un rendez-vous"
-                       style="-fx-font-size:15px;-fx-font-weight:bold;-fx-text-fill:#4A2D8F;-fx-padding:0 0 8 0;-fx-border-color:#EEF4FB;-fx-border-width:0 0 2 0;"/>
+                       wrapText="true"
+                       style="-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:#4A2D8F;-fx-padding:0 0 8 0;-fx-border-color:#EEF4FB;-fx-border-width:0 0 2 0;"/>
+
+                <!-- Spécialité -->
+                <VBox spacing="4">
+                    <Label text="Spécialité *" style="-fx-font-size:11px;-fx-font-weight:bold;-fx-text-fill:#5B35A5;"/>
+                    <ComboBox fx:id="specialiteComboBox" maxWidth="1.7976931348623157E308"
+                              promptText="Choisir une spécialité..."
+                              style="-fx-background-color:#F4F9FF;-fx-border-color:#C8DCF0;-fx-border-radius:8;-fx-background-radius:8;-fx-font-size:12px;-fx-border-width:1.5;"/>
+                </VBox>
 
                 <!-- Médecin -->
                 <VBox spacing="4">
-                    <Label text="Médecin *" style="-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:#5B35A5;"/>
+                    <Label text="Médecin *" style="-fx-font-size:11px;-fx-font-weight:bold;-fx-text-fill:#5B35A5;"/>
                     <ComboBox fx:id="medecinComboBox" maxWidth="1.7976931348623157E308"
+                              promptText="Choisissez d'abord une spécialité"
                               style="-fx-background-color:#F4F9FF;-fx-border-color:#C8DCF0;-fx-border-radius:8;-fx-background-radius:8;-fx-font-size:12px;-fx-border-width:1.5;"/>
+                    <Label fx:id="medecinCountLabel" text=""
+                           style="-fx-font-size:10px;-fx-text-fill:#9CA3AF;"/>
                 </VBox>
 
                 <!-- Date -->
                 <VBox spacing="4">
-                    <Label text="Date souhaitée *" style="-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:#5B35A5;"/>
+                    <Label text="Date souhaitée *" style="-fx-font-size:11px;-fx-font-weight:bold;-fx-text-fill:#5B35A5;"/>
                     <DatePicker fx:id="datePicker" maxWidth="1.7976931348623157E308"
                                 style="-fx-background-color:#F4F9FF;-fx-border-color:#C8DCF0;-fx-border-radius:8;-fx-background-radius:8;-fx-border-width:1.5;"/>
                 </VBox>
 
                 <!-- Heure -->
                 <VBox spacing="4">
-                    <Label text="Heure souhaitée *" style="-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:#5B35A5;"/>
+                    <Label text="Heure *" style="-fx-font-size:11px;-fx-font-weight:bold;-fx-text-fill:#5B35A5;"/>
                     <TextField fx:id="timeField" promptText="Ex: 10:30"
-                               style="-fx-background-color:#F4F9FF;-fx-border-color:#C8DCF0;-fx-border-radius:8;-fx-background-radius:8;-fx-font-size:13px;-fx-padding:9 12;-fx-border-width:1.5;"/>
+                               style="-fx-background-color:#F4F9FF;-fx-border-color:#C8DCF0;-fx-border-radius:8;-fx-background-radius:8;-fx-font-size:13px;-fx-padding:8 12;-fx-border-width:1.5;"/>
                 </VBox>
 
                 <!-- Lieu -->
                 <VBox spacing="4">
-                    <Label text="Lieu (optionnel)" style="-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:#5B35A5;"/>
+                    <Label text="Lieu (optionnel)" style="-fx-font-size:11px;-fx-font-weight:bold;-fx-text-fill:#5B35A5;"/>
                     <TextField fx:id="lieuField" promptText="Ex: Hôpital Charles Nicolle"
-                               style="-fx-background-color:#F4F9FF;-fx-border-color:#C8DCF0;-fx-border-radius:8;-fx-background-radius:8;-fx-font-size:13px;-fx-padding:9 12;-fx-border-width:1.5;"/>
+                               style="-fx-background-color:#F4F9FF;-fx-border-color:#C8DCF0;-fx-border-radius:8;-fx-background-radius:8;-fx-font-size:13px;-fx-padding:8 12;-fx-border-width:1.5;"/>
                 </VBox>
 
                 <!-- Motif -->
                 <VBox spacing="4" VBox.vgrow="ALWAYS">
-                    <Label text="Motif / Notes (optionnel)" style="-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:#5B35A5;"/>
-                    <TextArea fx:id="notesArea" prefHeight="90" wrapText="true"
+                    <Label text="Motif / Notes (optionnel)" style="-fx-font-size:11px;-fx-font-weight:bold;-fx-text-fill:#5B35A5;"/>
+                    <TextArea fx:id="notesArea" prefHeight="80" wrapText="true"
                               promptText="Décrivez vos symptômes ou la raison de la consultation..."
-                              style="-fx-background-color:#F4F9FF;-fx-border-color:#C8DCF0;-fx-border-radius:8;-fx-background-radius:8;-fx-font-size:13px;-fx-border-width:1.5;"/>
+                              style="-fx-background-color:#F4F9FF;-fx-border-color:#C8DCF0;-fx-border-radius:8;-fx-background-radius:8;-fx-font-size:12px;-fx-border-width:1.5;"/>
                 </VBox>
 
                 <Label fx:id="formMessageLabel" wrapText="true"
                        style="-fx-font-size:12px;-fx-text-fill:#059669;-fx-font-weight:bold;"/>
 
-                <!-- Boutons -->
                 <Button fx:id="submitBtn" text="📅 Envoyer la demande" onAction="#onSubmit"
                         maxWidth="1.7976931348623157E308"
                         style="-fx-background-color:#2BBCB0;-fx-text-fill:white;-fx-background-radius:10;-fx-font-weight:bold;-fx-font-size:13px;-fx-padding:11 0;-fx-cursor:hand;"/>
@@ -76,73 +86,75 @@
             <!-- ══ Panneau droit ══ -->
             <VBox HBox.hgrow="ALWAYS" spacing="0">
 
-                <!-- Top bar RDV -->
-                <HBox alignment="CENTER_LEFT" spacing="14" styleClass="topbar" style="-fx-padding:12 18 12 18;">
-                    <Label text="Mes Rendez-vous" style="-fx-font-size:15px;-fx-font-weight:bold;-fx-text-fill:#4A2D8F;"/>
+                <!-- Top bar stats -->
+                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="topbar"
+                      style="-fx-padding:12 16 12 16;">
+                    <Label text="Mes Rendez-vous &amp; Ordonnances"
+                           style="-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:#4A2D8F;"/>
                     <Region HBox.hgrow="ALWAYS"/>
-                    <VBox alignment="CENTER" style="-fx-background-color:#F0F4FF;-fx-background-radius:18;-fx-border-color:#D0D8F0;-fx-border-radius:18;-fx-border-width:1.5;-fx-padding:3 12;">
+
+                    <!-- Stat: Total -->
+                    <VBox alignment="CENTER"
+                          style="-fx-background-color:#F0F4FF;-fx-background-radius:16;-fx-border-color:#D0D8F0;-fx-border-radius:16;-fx-border-width:1.5;-fx-padding:3 10;">
                         <Label text="Total" style="-fx-font-size:9px;-fx-text-fill:#4A2D8F;-fx-font-weight:bold;"/>
-                        <Label fx:id="totalLabel" text="0" style="-fx-font-size:16px;-fx-font-weight:bold;-fx-text-fill:#2BBCB0;"/>
+                        <Label fx:id="totalLabel" text="0" style="-fx-font-size:15px;-fx-font-weight:bold;-fx-text-fill:#2BBCB0;"/>
                     </VBox>
-                    <VBox alignment="CENTER" style="-fx-background-color:#FFF8E7;-fx-background-radius:18;-fx-border-color:#F6E6A0;-fx-border-radius:18;-fx-border-width:1.5;-fx-padding:3 12;">
+                    <!-- Stat: En attente -->
+                    <VBox alignment="CENTER"
+                          style="-fx-background-color:#FFF8E7;-fx-background-radius:16;-fx-border-color:#F6E6A0;-fx-border-radius:16;-fx-border-width:1.5;-fx-padding:3 10;">
                         <Label text="En attente" style="-fx-font-size:9px;-fx-text-fill:#D97706;-fx-font-weight:bold;"/>
-                        <Label fx:id="attenteLabel" text="0" style="-fx-font-size:16px;-fx-font-weight:bold;-fx-text-fill:#D97706;"/>
+                        <Label fx:id="attenteLabel" text="0" style="-fx-font-size:15px;-fx-font-weight:bold;-fx-text-fill:#D97706;"/>
                     </VBox>
-                    <VBox alignment="CENTER" style="-fx-background-color:#ECFDF5;-fx-background-radius:18;-fx-border-color:#A7F3D0;-fx-border-radius:18;-fx-border-width:1.5;-fx-padding:3 12;">
+                    <!-- Stat: Acceptés -->
+                    <VBox alignment="CENTER"
+                          style="-fx-background-color:#ECFDF5;-fx-background-radius:16;-fx-border-color:#A7F3D0;-fx-border-radius:16;-fx-border-width:1.5;-fx-padding:3 10;">
                         <Label text="Acceptés" style="-fx-font-size:9px;-fx-text-fill:#059669;-fx-font-weight:bold;"/>
-                        <Label fx:id="accepteLabel" text="0" style="-fx-font-size:16px;-fx-font-weight:bold;-fx-text-fill:#059669;"/>
+                        <Label fx:id="accepteLabel" text="0" style="-fx-font-size:15px;-fx-font-weight:bold;-fx-text-fill:#059669;"/>
                     </VBox>
-                    <Button text="↻" onAction="#onRefresh"
-                            style="-fx-background-color:transparent;-fx-border-color:#C8DCF0;-fx-border-radius:8;-fx-padding:5 10;-fx-cursor:hand;"/>
+
+                    <Button text="↻ Actualiser" onAction="#onRefresh"
+                            style="-fx-background-color:transparent;-fx-border-color:#C8DCF0;-fx-border-radius:8;-fx-padding:5 10;-fx-cursor:hand;-fx-font-size:11px;"/>
                 </HBox>
 
-                <!-- Table RDV -->
-                <VBox VBox.vgrow="ALWAYS" style="-fx-padding:10 16 0 16;">
-                    <TableView fx:id="table" VBox.vgrow="ALWAYS" styleClass="main-table" prefHeight="260">
-                        <columns>
-                            <TableColumn fx:id="colMedecin"  prefWidth="160" text="Médecin"/>
-                            <TableColumn fx:id="colDate"     prefWidth="140" text="Date / Heure"/>
-                            <TableColumn fx:id="colLieu"     prefWidth="130" text="Lieu"/>
-                            <TableColumn fx:id="colNotes"    prefWidth="160" text="Motif"/>
-                            <TableColumn fx:id="colStatut"   prefWidth="120" text="Statut"/>
-                            <TableColumn fx:id="colActions"  prefWidth="90"  text="Actions"/>
-                        </columns>
-                        <placeholder><Label text="Aucun rendez-vous. Faites votre première demande !"
-                                            style="-fx-text-fill:#B0C4D8;-fx-font-style:italic;"/></placeholder>
-                    </TableView>
-                </VBox>
+                <!-- Scrollable cards area -->
+                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                            style="-fx-background-color:#F5F7FF;-fx-background:transparent;-fx-border-color:transparent;-fx-padding:0;">
+                    <VBox spacing="0" style="-fx-padding:14 16 20 16;-fx-background-color:#F5F7FF;">
 
-                <!-- Status RDV -->
-                <HBox alignment="CENTER_LEFT" style="-fx-background-color:white;-fx-border-color:#C8DCF0;-fx-border-width:1 0 0 0;-fx-padding:6 16;">
-                    <Label fx:id="statusLabel" text="Chargement..." style="-fx-text-fill:#6B7280;-fx-font-size:12px;"/>
-                </HBox>
+                        <!-- ── Section Rendez-vous ── -->
+                        <HBox alignment="CENTER_LEFT" spacing="8"
+                              style="-fx-padding:0 0 10 0;-fx-border-color:#E2E8F0;-fx-border-width:0 0 2 0;-fx-margin-bottom:10;">
+                            <Label text="📅" style="-fx-font-size:15px;"/>
+                            <Label text="Mes Rendez-vous"
+                                   style="-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:#4A2D8F;"/>
+                            <Label fx:id="statusLabel" text=""
+                                   style="-fx-font-size:11px;-fx-text-fill:#9CA3AF;-fx-padding:0 0 0 6;"/>
+                        </HBox>
 
-                <!-- Divider ordonnances -->
-                <HBox alignment="CENTER_LEFT" spacing="10"
-                      style="-fx-background-color:#F0EDF8;-fx-border-color:#C8DCF0;-fx-border-width:1 0 1 0;-fx-padding:8 16;">
-                    <Label text="📄" style="-fx-font-size:14px;"/>
-                    <Label text="Mes Ordonnances" style="-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:#4A2D8F;"/>
-                </HBox>
+                        <VBox fx:id="rdvCardsBox" spacing="10" style="-fx-padding:0 0 20 0;">
+                            <!-- RDV cards injected here -->
+                            <Label fx:id="rdvEmptyLabel" text="Aucun rendez-vous. Faites votre première demande !"
+                                   style="-fx-text-fill:#B0C4D8;-fx-font-style:italic;-fx-font-size:13px;-fx-padding:10 0;"/>
+                        </VBox>
 
-                <!-- Table Ordonnances -->
-                <VBox VBox.vgrow="ALWAYS" style="-fx-padding:6 16 0 16;">
-                    <TableView fx:id="ordTable" VBox.vgrow="ALWAYS" styleClass="main-table" prefHeight="200">
-                        <columns>
-                            <TableColumn fx:id="ordColDate"    prefWidth="110" text="Date"/>
-                            <TableColumn fx:id="ordColMeds"    prefWidth="220" text="Médicaments"/>
-                            <TableColumn fx:id="ordColPoso"    prefWidth="180" text="Posologie"/>
-                            <TableColumn fx:id="ordColDuree"   prefWidth="80"  text="Durée (j)"/>
-                            <TableColumn fx:id="ordColActions" prefWidth="90"  text="Export"/>
-                        </columns>
-                        <placeholder><Label text="Aucune ordonnance disponible."
-                                            style="-fx-text-fill:#B0C4D8;-fx-font-style:italic;"/></placeholder>
-                    </TableView>
-                </VBox>
+                        <!-- ── Section Ordonnances ── -->
+                        <HBox alignment="CENTER_LEFT" spacing="8"
+                              style="-fx-padding:6 0 10 0;-fx-border-color:#E2E8F0;-fx-border-width:2 0 2 0;">
+                            <Label text="💊" style="-fx-font-size:15px;"/>
+                            <Label text="Mes Ordonnances"
+                                   style="-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:#4A2D8F;"/>
+                            <Label fx:id="ordStatusLabel" text=""
+                                   style="-fx-font-size:11px;-fx-text-fill:#9CA3AF;-fx-padding:0 0 0 6;"/>
+                        </HBox>
 
-                <!-- Status ordonnances -->
-                <HBox alignment="CENTER_LEFT" style="-fx-background-color:white;-fx-border-color:#C8DCF0;-fx-border-width:1 0 0 0;-fx-padding:6 16;">
-                    <Label fx:id="ordStatusLabel" text="" style="-fx-text-fill:#6B7280;-fx-font-size:12px;"/>
-                </HBox>
+                        <VBox fx:id="ordCardsBox" spacing="10" style="-fx-padding:10 0 0 0;">
+                            <!-- Ordonnance cards injected here -->
+                            <Label fx:id="ordEmptyLabel" text="Aucune ordonnance disponible."
+                                   style="-fx-text-fill:#B0C4D8;-fx-font-style:italic;-fx-font-size:13px;-fx-padding:10 0;"/>
+                        </VBox>
+
+                    </VBox>
+                </ScrollPane>
 
             </VBox>
         </HBox>
