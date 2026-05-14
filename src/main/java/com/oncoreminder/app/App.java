@@ -1,5 +1,7 @@
 package com.oncoreminder.app;
 
+import com.oncoreminder.utils.ChatbotFab;
+import com.oncoreminder.utils.UserSession;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
@@ -44,7 +46,9 @@ public class App extends Application {
                 return;
             }
             Parent root = FXMLLoader.load(resource);
-            Scene scene = new Scene(root, W, H);
+            boolean loggedIn = UserSession.getInstance().getCurrentUser() != null;
+            Parent displayRoot = loggedIn ? ChatbotFab.wrapWithChatbot(root) : root;
+            Scene scene = new Scene(displayRoot, W, H);
             java.net.URL css = App.class.getResource("/css/style.css");
             if (css != null) scene.getStylesheets().add(css.toExternalForm());
             primaryStage.setScene(scene);
