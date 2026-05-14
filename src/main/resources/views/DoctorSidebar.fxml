@@ -72,6 +72,8 @@
                 maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
         <Button fx:id="btnRendezVous" text="🗓  Rendez-vous" onAction="#handleRendezVous"
                 maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
+        <Button fx:id="btnPatients" text="👥  Mes Patients" onAction="#handlePatients"
+                maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
         <Button fx:id="btnOrdonnances" text="📋  Ordonnances" onAction="#handleOrdonnances"
                 maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
     </VBox>

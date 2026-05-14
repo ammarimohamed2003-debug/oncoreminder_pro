@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.oncoreminder.controllers.MesPatientsController">
+
+    <left>
+        <fx:include source="DoctorSidebar.fxml" fx:id="doctorSidebar"/>
+    </left>
+
+    <center>
+        <VBox style="-fx-background-color: #F0F4FF;">
+
+            <!-- Top bar -->
+            <HBox alignment="CENTER_LEFT" spacing="14"
+                  style="-fx-background-color: white;
+                         -fx-padding: 14 24 14 24;
+                         -fx-border-color: transparent transparent #E2E8F0 transparent;
+                         -fx-border-width: 0 0 1 0;
+                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 4, 0, 0, 2);">
+                <Label text="👥  Mes Patients"
+                       style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1E293B;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="searchField"
+                           promptText="🔍  Rechercher un patient..."
+                           prefWidth="250"
+                           style="-fx-background-radius: 20; -fx-border-radius: 20;
+                                  -fx-border-color: #E2E8F0; -fx-border-width: 1;
+                                  -fx-padding: 7 14; -fx-font-size: 13px;
+                                  -fx-background-color: #F8FAFC;"/>
+            </HBox>
+
+            <!-- Stats chips -->
+            <HBox spacing="10" style="-fx-padding: 14 24 6 24;">
+                <Label fx:id="totalPatientsLabel" text="0 patient(s)"
+                       style="-fx-background-color: #EEF2FF; -fx-text-fill: #4F46E5;
+                              -fx-background-radius: 20; -fx-padding: 5 14;
+                              -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                <Label fx:id="totalRdvsLabel" text="0 RDV accepté(s)"
+                       style="-fx-background-color: #F0FDF4; -fx-text-fill: #059669;
+                              -fx-background-radius: 20; -fx-padding: 5 14;
+                              -fx-font-size: 12px; -fx-font-weight: bold;"/>
+            </HBox>
+
+            <!-- Content: list panel + detail panel -->
+            <HBox VBox.vgrow="ALWAYS" spacing="16"
+                  style="-fx-padding: 10 20 20 24;">
+
+                <!-- Left: patient list -->
+                <VBox prefWidth="300" minWidth="260" maxWidth="340"
+                      style="-fx-background-color: white; -fx-background-radius: 14;
+                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 8, 0, 0, 2);">
+
+                    <!-- List header -->
+                    <HBox alignment="CENTER_LEFT"
+                          style="-fx-padding: 14 16 10 16;
+                                 -fx-border-color: transparent transparent #F1F5F9 transparent;
+                                 -fx-border-width: 0 0 1 0;">
+                        <Label text="Patients"
+                               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #475569;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="listCountLabel" text="0"
+                               style="-fx-background-color: #EEF2FF; -fx-text-fill: #4F46E5;
+                                      -fx-background-radius: 12; -fx-padding: 2 8;
+                                      -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                    </HBox>
+
+                    <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" hbarPolicy="NEVER"
+                                style="-fx-background-color: transparent; -fx-background: transparent;">
+                        <VBox fx:id="patientListContainer" spacing="2"
+                              style="-fx-padding: 6;"/>
+                    </ScrollPane>
+                </VBox>
+
+                <!-- Right: detail panel -->
+                <VBox HBox.hgrow="ALWAYS"
+                      style="-fx-background-color: white; -fx-background-radius: 14;
+                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 8, 0, 0, 2);">
+
+                    <!-- Empty state -->
+                    <VBox fx:id="emptyState" VBox.vgrow="ALWAYS" alignment="CENTER" spacing="12">
+                        <Label text="👥" style="-fx-font-size: 52px;"/>
+                        <Label text="Sélectionnez un patient"
+                               style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;"/>
+                        <Label text="Cliquez sur un nom pour afficher le dossier médical et l'historique des rendez-vous"
+                               style="-fx-font-size: 13px; -fx-text-fill: #CBD5E1;"
+                               wrapText="true" textAlignment="CENTER" maxWidth="300"/>
+                    </VBox>
+
+                    <!-- Patient detail (hidden until a patient is selected) -->
+                    <ScrollPane fx:id="detailScroll" VBox.vgrow="ALWAYS"
+                                fitToWidth="true" hbarPolicy="NEVER"
+                                style="-fx-background-color: transparent; -fx-background: transparent;"
+                                visible="false" managed="false">
+                        <VBox fx:id="detailContainer"/>
+                    </ScrollPane>
+
+                </VBox>
+            </HBox>
+        </VBox>
+    </center>
+
+</BorderPane>
