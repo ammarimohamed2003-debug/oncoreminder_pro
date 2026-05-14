@@ -29,7 +29,11 @@ import javafx.scene.layout.*;
 import javafx.scene.shape.Rectangle;
 
 import java.io.File;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PatientArticleListController {
 
@@ -39,12 +43,15 @@ public class PatientArticleListController {
     // Grid view
     @FXML private VBox      gridView;
     @FXML private TextField searchField;
+    @FXML private HBox      filterBar;
+    @FXML private Label     resultCountLabel;
     @FXML private FlowPane  articleFlowPane;
     @FXML private HBox      paginationBar;
 
     // Detail view
     @FXML private VBox      detailView;
     @FXML private Label     articleTitreLabel;
+    @FXML private Label     readTimeLabel;
     @FXML private Label     statutBadge;
     @FXML private Label     dateLabel;
     @FXML private Label     organeLabel;
@@ -55,10 +62,13 @@ public class PatientArticleListController {
     @FXML private StackPane imageContainer;
     @FXML private ImageView detailImageView;
     @FXML private Button    likeBtn;
-    @FXML private Label  likesLabel;
-    @FXML private VBox   commentsContainer;
-    @FXML private TextArea commentField;
-    @FXML private Button   emojiBtn;
+    @FXML private Label     likesLabel;
+    @FXML private Label     commentHeaderLabel;
+    @FXML private ComboBox<String> sortComboBox;
+    @FXML private VBox      commentsContainer;
+    @FXML private TextArea  commentField;
+    @FXML private Label     charCountLabel;
+    @FXML private Button    emojiBtn;
 
     // Évaluation
     @FXML private VBox  evalSection;
@@ -76,6 +86,7 @@ public class PatientArticleListController {
     private List<Article> currentArticles;
     private List<Article> displayedArticles;
     private int           currentPage    = 0;
+    private String        activeOrgane   = null;
 
     private final ServiceUtilisateur serviceUtilisateur = new ServiceUtilisateur();
 
@@ -85,6 +96,15 @@ public class PatientArticleListController {
         if (patientSidebarController != null)
             patientSidebarController.setActivePage("articles");
         searchField.textProperty().addListener((obs, o, n) -> filterBySearch(n));
+        sortComboBox.getItems().setAll("Plus récents", "Plus aimés", "Plus consultés", "Plus commentés");
+        sortComboBox.setValue("Plus récents");
+        sortComboBox.valueProperty().addListener((obs, o, n) -> loadComments());
+        commentField.textProperty().addListener((obs, o, n) -> {
+            int len = n == null ? 0 : n.length();
+            charCountLabel.setText(len + " / 500");
+            charCountLabel.setStyle("-fx-font-size:10px;-fx-text-fill:" + (len > 450 ? "#DC2626" : "#9CA3AF") + ";");
+            if (len > 500) commentField.setText(n.substring(0, 500));
+        });
         loadArticles();
     }
 
@@ -92,18 +112,56 @@ public class PatientArticleListController {
 
     private void loadArticles() {
         currentArticles = serviceArticle.getPublished();
-        renderGrid(currentArticles);
+        buildFilterBar();
+        applyFilters();
+    }
+
+    private void buildFilterBar() {
+        filterBar.getChildren().clear();
+        // "Tous" chip
+        filterBar.getChildren().add(buildFilterChip("Tous", null));
+        // Distinct organs
+        currentArticles.stream()
+            .map(Article::getOrgane)
+            .filter(o -> o != null && !o.isBlank())
+            .distinct().sorted()
+            .forEach(org -> filterBar.getChildren().add(buildFilterChip(org, org)));
+    }
+
+    private Button buildFilterChip(String label, String organe) {
+        Button chip = new Button(label);
+        boolean active = (organe == null && activeOrgane == null)
+                      || (organe != null && organe.equals(activeOrgane));
+        chip.setStyle(active
+            ? "-fx-background-color:#4A2D8F;-fx-text-fill:white;-fx-background-radius:20;-fx-font-size:11px;-fx-padding:4 14;-fx-cursor:hand;-fx-border-width:0;"
+            : "-fx-background-color:#F0EDF8;-fx-text-fill:#5B35A5;-fx-background-radius:20;-fx-font-size:11px;-fx-padding:4 14;-fx-cursor:hand;-fx-border-width:0;"
+        );
+        chip.setOnAction(e -> {
+            activeOrgane = organe;
+            currentPage = 0;
+            buildFilterBar();
+            applyFilters();
+        });
+        return chip;
+    }
+
+    private void applyFilters() {
+        String keyword = searchField.getText();
+        List<Article> base = (keyword == null || keyword.isBlank())
+            ? currentArticles
+            : currentArticles.stream()
+                .filter(a -> a.getTitre().toLowerCase().contains(keyword.toLowerCase())
+                          || (a.getContenu() != null && a.getContenu().toLowerCase().contains(keyword.toLowerCase()))
+                          || (a.getTags() != null && a.getTags().toLowerCase().contains(keyword.toLowerCase())))
+                .collect(Collectors.toList());
+        if (activeOrgane != null)
+            base = base.stream().filter(a -> activeOrgane.equals(a.getOrgane())).collect(Collectors.toList());
+        renderGrid(base);
     }
 
     private void filterBySearch(String keyword) {
         currentPage = 0;
-        if (keyword == null || keyword.trim().isEmpty()) {
-            renderGrid(currentArticles);
-            return;
-        }
-        List<Article> filtered = serviceArticle.search(keyword.trim());
-        filtered.removeIf(a -> !"PUBLIE".equals(a.getStatut()));
-        renderGrid(filtered);
+        applyFilters();
     }
 
     // ─── Grille de cards ─────────────────────────────────────────────
@@ -121,11 +179,21 @@ public class PatientArticleListController {
         int to   = Math.min(from + PAGE_SIZE, total);
 
         if (total == 0) {
-            Label empty = new Label("Aucun article disponible.");
-            empty.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 14px; -fx-padding: 20;");
-            articleFlowPane.getChildren().add(empty);
+            VBox emptyState = new VBox(10);
+            emptyState.setAlignment(Pos.CENTER);
+            emptyState.setPadding(new Insets(40));
+            Label emptyIcon = new Label("🔍");
+            emptyIcon.setStyle("-fx-font-size:40px;");
+            Label emptyText = new Label("Aucun article trouvé");
+            emptyText.setStyle("-fx-text-fill:#94A3B8;-fx-font-size:15px;-fx-font-weight:bold;");
+            Label emptySub = new Label("Essayez un autre filtre ou mot-clé");
+            emptySub.setStyle("-fx-text-fill:#B0C4D8;-fx-font-size:12px;");
+            emptyState.getChildren().addAll(emptyIcon, emptyText, emptySub);
+            articleFlowPane.getChildren().add(emptyState);
+            resultCountLabel.setText("");
         } else {
             for (Article a : articles.subList(from, to)) articleFlowPane.getChildren().add(buildCard(a));
+            resultCountLabel.setText(total + " article" + (total > 1 ? "s" : "") + " trouvé" + (total > 1 ? "s" : ""));
         }
         updatePaginationBar(total);
     }
@@ -184,6 +252,23 @@ public class PatientArticleListController {
         return btn;
     }
 
+    private String formatRelativeDate(LocalDate date) {
+        if (date == null) return "";
+        long days = ChronoUnit.DAYS.between(date, LocalDate.now());
+        if (days == 0)   return "Aujourd'hui";
+        if (days == 1)   return "Hier";
+        if (days < 7)    return "Il y a " + days + " j";
+        if (days < 30)   return "Il y a " + (days / 7) + " sem.";
+        if (days < 365)  return "Il y a " + (days / 30) + " mois";
+        return "Il y a " + (days / 365) + " an(s)";
+    }
+
+    private String organeAccentColor(String organe) {
+        String[] colors = {"#5B35A5","#2BBCB0","#F97316","#0EA5E9","#10B981","#8B5CF6","#EC4899"};
+        if (organe == null || organe.isEmpty()) return "#5B35A5";
+        return colors[Math.abs(organe.hashCode()) % colors.length];
+    }
+
     private static final int CARD_W = 340;
 
     private VBox buildCard(Article article) {
@@ -222,19 +307,39 @@ public class PatientArticleListController {
         inner.setPadding(new Insets(12, 16, 14, 16));
         card.getChildren().add(inner);
 
-        // Organe + médecin badges
+        // "Nouveau" badge + organe row
+        HBox topRow = new HBox(6);
+        topRow.setAlignment(Pos.CENTER_LEFT);
+        LocalDate pub = article.getDatePublication();
+        if (pub != null && ChronoUnit.DAYS.between(pub, LocalDate.now()) < 7) {
+            Label newBadge = new Label("✨ Nouveau");
+            newBadge.setStyle(
+                "-fx-background-color: #DCFCE7; -fx-text-fill: #059669;" +
+                "-fx-font-size: 9px; -fx-font-weight: bold;" +
+                "-fx-padding: 2 7; -fx-background-radius: 8;"
+            );
+            topRow.getChildren().add(newBadge);
+        }
+        Region topSpacer = new Region(); HBox.setHgrow(topSpacer, Priority.ALWAYS);
+        topRow.getChildren().add(topSpacer);
+        inner.getChildren().add(topRow);
+
+        // Organe (with color dot) + médecin badges
         HBox badgeRow = new HBox(6);
         badgeRow.setAlignment(Pos.CENTER_LEFT);
         if (article.getOrgane() != null && !article.getOrgane().isEmpty()) {
-            Label organeBadge = new Label("🏥 " + article.getOrgane());
+            String accentColor = organeAccentColor(article.getOrgane());
+            Label dot = new Label("●");
+            dot.setStyle("-fx-text-fill: " + accentColor + "; -fx-font-size: 9px;");
+            Label organeBadge = new Label(article.getOrgane());
             organeBadge.setStyle(
                 "-fx-background-color: #EEF2FF; -fx-text-fill: #5B35A5;" +
                 "-fx-padding: 2 8; -fx-background-radius: 20; -fx-font-size: 10px; -fx-font-weight: bold;"
             );
-            badgeRow.getChildren().add(organeBadge);
+            badgeRow.getChildren().addAll(dot, organeBadge);
         }
         if (article.getMedecinNom() != null && !article.getMedecinNom().isBlank()) {
-            Label drBadge = new Label("🩺 Dr. " + article.getMedecinNom());
+            Label drBadge = new Label("Dr. " + article.getMedecinNom());
             drBadge.setStyle(
                 "-fx-background-color: rgba(43,188,176,0.12); -fx-text-fill: #2BBCB0;" +
                 "-fx-padding: 2 8; -fx-background-radius: 20; -fx-font-size: 10px; -fx-font-weight: bold;"
@@ -278,38 +383,54 @@ public class PatientArticleListController {
             inner.getChildren().add(tagsRow);
         }
 
+        // Temps de lecture estimé
+        if (article.getContenu() != null) {
+            int words = article.getContenu().split("\\s+").length;
+            int minutes = Math.max(1, words / 200);
+            Label readTime = new Label("⏱ " + minutes + " min de lecture");
+            readTime.setStyle("-fx-font-size:10px;-fx-text-fill:#94A3B8;-fx-background-color:#F8F6FF;-fx-background-radius:8;-fx-padding:2 7;");
+            inner.getChildren().add(readTime);
+        }
+
         // Séparateur visuel
         Separator sep = new Separator();
         sep.setStyle("-fx-background-color: #E9E3FF;");
         inner.getChildren().add(sep);
 
-        // Footer : date + likes + vues + commentaires
-        HBox footer = new HBox(10);
+        // Footer : date + stats
+        HBox footer = new HBox(8);
         footer.setAlignment(Pos.CENTER_LEFT);
         if (article.getDatePublication() != null) {
-            Label date = new Label("📅 " + article.getDatePublication());
+            Label date = new Label("📅 " + formatRelativeDate(article.getDatePublication()));
             date.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 10px;");
             footer.getChildren().add(date);
         }
         Region sp = new Region(); HBox.setHgrow(sp, Priority.ALWAYS);
         footer.getChildren().add(sp);
+
         Label likes = new Label("❤ " + article.getLikes());
         likes.setStyle("-fx-text-fill: #F87171; -fx-font-size: 11px; -fx-font-weight: bold;");
         footer.getChildren().add(likes);
+
         if (article.getViews() > 0) {
             Label views = new Label("👁 " + article.getViews());
             views.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 11px;");
             footer.getChildren().add(views);
         }
+
         int nbComments = serviceCommentaire.countByArticle(article.getId());
-        Label comments = new Label("💬 " + nbComments);
-        comments.setStyle("-fx-text-fill: #5B35A5; -fx-font-size: 11px;");
-        footer.getChildren().add(comments);
+        if (nbComments > 0) {
+            Label comments = new Label("💬 " + nbComments);
+            comments.setStyle("-fx-text-fill: #5B35A5; -fx-font-size: 11px;");
+            footer.getChildren().add(comments);
+        }
+
         int evalCount = serviceEval.getCount(article.getId());
         if (evalCount > 0) {
-            int pct = (int) Math.round(serviceEval.getAverage(article.getId()) / 5.0 * 100);
-            Label evalLbl = new Label("⭐ " + pct + "% (" + evalCount + ")");
-            evalLbl.setStyle("-fx-text-fill: #D97706; -fx-font-size: 11px; -fx-font-weight: bold;");
+            double avg = serviceEval.getAverage(article.getId());
+            String stars = "★".repeat((int) Math.round(avg)) + "☆".repeat(5 - (int) Math.round(avg));
+            Label evalLbl = new Label(stars + " (" + evalCount + ")");
+            evalLbl.setStyle("-fx-text-fill: #D97706; -fx-font-size: 11px;");
             footer.getChildren().add(evalLbl);
         }
         inner.getChildren().add(footer);
@@ -348,7 +469,13 @@ public class PatientArticleListController {
 
         articleTitreLabel.setText(article.getTitre());
         statutBadge.setText("Publié");
-        dateLabel.setText(article.getDatePublication() != null ? "📅 " + article.getDatePublication() : "");
+        if (article.getContenu() != null) {
+            int mins = Math.max(1, article.getContenu().split("\\s+").length / 200);
+            readTimeLabel.setText("⏱ " + mins + " min");
+        } else { readTimeLabel.setText(""); }
+        dateLabel.setText(article.getDatePublication() != null
+            ? "📅 " + formatRelativeDate(article.getDatePublication()) + "  (" + article.getDatePublication() + ")"
+            : "");
         organeLabel.setText(article.getOrgane() != null ? "🏥 " + article.getOrgane() : "");
         viewsLabel.setText("👁 " + article.getViews() + " vues");
 
@@ -493,9 +620,26 @@ public class PatientArticleListController {
         commentsContainer.getChildren().clear();
         if (selectedArticle == null) return;
         List<Commentaire> comments = serviceCommentaire.getByArticle(selectedArticle.getId());
+
+        // Tri
+        String sort = sortComboBox.getValue();
+        if ("Plus aimés".equals(sort))
+            comments = comments.stream().sorted(Comparator.comparingInt(Commentaire::getLikes).reversed()).collect(Collectors.toList());
+        else if ("Plus anciens".equals(sort))
+            comments = comments.stream().sorted(Comparator.comparing(Commentaire::getDateCommentaire, Comparator.nullsLast(Comparator.naturalOrder()))).collect(Collectors.toList());
+
+        commentHeaderLabel.setText("💬 Commentaires" + (comments.isEmpty() ? "" : " (" + comments.size() + ")"));
+
         if (comments.isEmpty()) {
-            Label empty = new Label("Aucun commentaire pour l'instant.");
-            empty.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 12px;");
+            VBox empty = new VBox(8);
+            empty.setAlignment(Pos.CENTER);
+            empty.setPadding(new Insets(20));
+            Label icon = new Label("💬"); icon.setStyle("-fx-font-size:28px;");
+            Label msg = new Label("Aucun commentaire pour l'instant.");
+            msg.setStyle("-fx-text-fill:#B0C4D8;-fx-font-size:12px;");
+            Label sub = new Label("Soyez le premier à réagir !");
+            sub.setStyle("-fx-text-fill:#CBD5E0;-fx-font-size:11px;");
+            empty.getChildren().addAll(icon, msg, sub);
             commentsContainer.getChildren().add(empty);
             return;
         }
@@ -503,18 +647,36 @@ public class PatientArticleListController {
     }
 
     private VBox createCommentCard(Commentaire c) {
-        VBox card = new VBox(5);
-        card.setStyle("-fx-background-color: #F4F9FF; -fx-background-radius: 8; -fx-border-color: #C8DCF0; -fx-border-radius: 8; -fx-border-width: 1;");
-        card.setPadding(new Insets(10));
+        VBox card = new VBox(8);
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #EDE9F8; -fx-border-radius: 10; -fx-border-width: 1; -fx-effect: dropshadow(gaussian,rgba(90,53,165,0.05),4,0,0,1);");
+        card.setPadding(new Insets(12));
 
+        // Header: avatar + nom + date
         HBox header = new HBox(10);
         header.setAlignment(Pos.CENTER_LEFT);
-        Label auteur = new Label("👤 " + c.getAuteur());
-        auteur.setStyle("-fx-font-weight: bold; -fx-text-fill: #5B35A5; -fx-font-size: 12px;");
-        Region spacer = new Region(); HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        // Avatar avec initiale
+        String auteurStr = c.getAuteur() != null ? c.getAuteur() : "?";
+        String initiale = auteurStr.isEmpty() ? "?" : String.valueOf(auteurStr.charAt(0)).toUpperCase();
+        String[] avatarColors = {"#4A2D8F","#2BBCB0","#D97706","#059669","#DC2626","#5B35A5"};
+        String avatarColor = avatarColors[Math.abs(auteurStr.hashCode()) % avatarColors.length];
+        Label avatar = new Label(initiale);
+        avatar.setStyle(
+            "-fx-background-color:" + avatarColor + ";" +
+            "-fx-text-fill:white;-fx-font-size:12px;-fx-font-weight:bold;" +
+            "-fx-min-width:32;-fx-min-height:32;-fx-max-width:32;-fx-max-height:32;" +
+            "-fx-background-radius:20;-fx-alignment:center;"
+        );
+
+        VBox authorInfo = new VBox(1);
+        Label auteurLbl = new Label(auteurStr);
+        auteurLbl.setStyle("-fx-font-weight:bold;-fx-text-fill:#1E293B;-fx-font-size:12px;");
         Label date = new Label(c.getFormattedDate());
-        date.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 11px;");
-        header.getChildren().addAll(auteur, spacer, date);
+        date.setStyle("-fx-text-fill:#94A3B8;-fx-font-size:10px;");
+        authorInfo.getChildren().addAll(auteurLbl, date);
+
+        Region spacer = new Region(); HBox.setHgrow(spacer, Priority.ALWAYS);
+        header.getChildren().addAll(avatar, authorInfo, spacer);
 
         Label contenu = new Label(c.getContenu());
         contenu.setWrapText(true);
@@ -603,19 +765,23 @@ public class PatientArticleListController {
     }
 
     private VBox createReplyCard(Commentaire r, TextArea parentReplyField, VBox parentReplyInputBox) {
-        VBox card = new VBox(4);
-        card.setStyle("-fx-background-color: #EEF4FF; -fx-background-radius: 6; " +
-            "-fx-border-color: #B8D4F0; -fx-border-radius: 6; -fx-border-width: 1;");
-        card.setPadding(new Insets(7, 10, 7, 10));
+        VBox card = new VBox(5);
+        card.setStyle("-fx-background-color:#F8F6FF;-fx-background-radius:8;-fx-border-color:#DDD6F5;-fx-border-radius:8;-fx-border-width:1;");
+        card.setPadding(new Insets(8, 10, 8, 10));
 
         HBox header = new HBox(8);
         header.setAlignment(Pos.CENTER_LEFT);
-        Label auteur = new Label("↳ " + r.getAuteur());
-        auteur.setStyle("-fx-font-weight: bold; -fx-text-fill: #2BBCB0; -fx-font-size: 11px;");
+        String repAuteur = r.getAuteur() != null ? r.getAuteur() : "?";
+        String repInit = repAuteur.isEmpty() ? "?" : String.valueOf(repAuteur.charAt(0)).toUpperCase();
+        Label repAvatar = new Label(repInit);
+        repAvatar.setStyle("-fx-background-color:#2BBCB0;-fx-text-fill:white;-fx-font-size:10px;-fx-font-weight:bold;" +
+            "-fx-min-width:24;-fx-min-height:24;-fx-max-width:24;-fx-max-height:24;-fx-background-radius:20;-fx-alignment:center;");
+        Label auteur = new Label(repAuteur);
+        auteur.setStyle("-fx-font-weight:bold;-fx-text-fill:#2BBCB0;-fx-font-size:11px;");
         Region sp = new Region(); HBox.setHgrow(sp, Priority.ALWAYS);
         Label date = new Label(r.getFormattedDate());
-        date.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 10px;");
-        header.getChildren().addAll(auteur, sp, date);
+        date.setStyle("-fx-text-fill:#B0C4D8;-fx-font-size:10px;");
+        header.getChildren().addAll(repAvatar, auteur, sp, date);
 
         Label contenu = new Label(r.getContenu());
         contenu.setWrapText(true);
@@ -778,9 +944,15 @@ public class PatientArticleListController {
     @FXML void handleAddComment(ActionEvent event) {
         String text = commentField.getText().trim();
         if (text.isEmpty() || selectedArticle == null) return;
+        if (text.length() > 500) {
+            charCountLabel.setText("Max 500 caractères");
+            charCountLabel.setStyle("-fx-font-size:10px;-fx-text-fill:#DC2626;");
+            return;
+        }
         Utilisateur user = UserSession.getInstance().getCurrentUser();
         serviceCommentaire.add(new Commentaire(selectedArticle.getId(), text, user.getPrenom() + " " + user.getNom()));
         commentField.clear();
+        charCountLabel.setText("0 / 500");
         loadComments();
     }
 

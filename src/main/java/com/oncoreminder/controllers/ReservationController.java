@@ -86,11 +86,15 @@ public class ReservationController {
 
     @FXML
     void annulerReservation(ActionEvent e) {
-        if (reservationSelectionnee == null) {
-            lbMessage.setText("Selectionnez une reservation.");
+        Reservation sel = tableReservation.getSelectionModel().getSelectedItem();
+        if (sel == null) sel = reservationSelectionnee;
+        if (sel == null) {
+            lbMessage.setText("Selectionnez une reservation a annuler.");
             return;
         }
-        serviceReservation.delete(reservationSelectionnee);
+        serviceReservation.delete(sel);
+        reservationSelectionnee = null;
+        tableReservation.getSelectionModel().clearSelection();
         lbMessage.setText("Reservation annulee.");
         chargerEventsDisponibles();
         chargerReservations();
@@ -130,7 +134,7 @@ public class ReservationController {
         });
 
         tableReservation.getSelectionModel().selectedItemProperty().addListener((obs, old, sel) -> {
-            if (sel != null) reservationSelectionnee = sel;
+            reservationSelectionnee = sel;
         });
     }
 
@@ -146,7 +150,11 @@ public class ReservationController {
         List<Event> disponibles = eventsParId.values().stream()
                 .filter(ev -> ev.getPlacesRestantes() > 0)
                 .filter(ev -> ev.getDateEvent() == null || !ev.getDateEvent().isBefore(LocalDateTime.now()))
-                .sorted((a, b) -> a.getDateEvent().compareTo(b.getDateEvent()))
+                .sorted((a, b) -> {
+                    if (a.getDateEvent() == null) return 1;
+                    if (b.getDateEvent() == null) return -1;
+                    return a.getDateEvent().compareTo(b.getDateEvent());
+                })
                 .toList();
         cbEvent.setItems(FXCollections.observableArrayList(disponibles));
         cbEvent.setValue(null);

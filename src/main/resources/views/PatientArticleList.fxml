@@ -29,16 +29,34 @@
                     <Label text="📰 Articles Médicaux" styleClass="brand-title"/>
                     <Region HBox.hgrow="ALWAYS"/>
                     <TextField fx:id="searchField" promptText="🔍 Rechercher un article..."
-                               styleClass="field-input" prefWidth="280"/>
+                               styleClass="field-input" prefWidth="260"/>
+                </HBox>
+
+                <!-- Barre de filtres par organe -->
+                <HBox alignment="CENTER_LEFT" spacing="0"
+                      style="-fx-background-color:white;-fx-border-color:#EDE9F8;-fx-border-width:0 0 1 0;-fx-padding:0 20;">
+                    <Label text="Filtrer : " style="-fx-font-size:11px;-fx-text-fill:#94A3B8;-fx-padding:0 8 0 0;"/>
+                    <ScrollPane hbarPolicy="AS_NEEDED" vbarPolicy="NEVER" fitToHeight="true" prefHeight="42"
+                                style="-fx-background-color:transparent;-fx-background:transparent;-fx-border-color:transparent;">
+                        <HBox fx:id="filterBar" spacing="6" alignment="CENTER_LEFT"
+                              style="-fx-padding:8 0 8 0;"/>
+                    </ScrollPane>
                 </HBox>
 
                 <!-- Grille scrollable -->
                 <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" hbarPolicy="NEVER"
                             style="-fx-background-color: #F7F4FE; -fx-background: #F7F4FE;">
-                    <FlowPane fx:id="articleFlowPane" hgap="20" vgap="20" alignment="TOP_LEFT"
-                              style="-fx-background-color: transparent;">
-                        <padding><Insets bottom="24" left="24" right="24" top="24"/></padding>
-                    </FlowPane>
+                    <VBox style="-fx-background-color:#F7F4FE;">
+                        <!-- Compteur résultats -->
+                        <HBox style="-fx-padding:14 24 4 24;">
+                            <Label fx:id="resultCountLabel" text=""
+                                   style="-fx-font-size:11px;-fx-text-fill:#94A3B8;"/>
+                        </HBox>
+                        <FlowPane fx:id="articleFlowPane" hgap="20" vgap="20" alignment="TOP_LEFT"
+                                  style="-fx-background-color: transparent;">
+                            <padding><Insets bottom="24" left="24" right="24" top="8"/></padding>
+                        </FlowPane>
+                    </VBox>
                 </ScrollPane>
 
                 <!-- Barre de pagination -->
@@ -53,14 +71,16 @@
             <!-- ══ VUE DÉTAIL ══ -->
             <VBox fx:id="detailView" spacing="0" visible="false" managed="false">
 
-                <!-- Topbar: retour + titre + badge -->
+                <!-- Topbar: retour + titre + badges -->
                 <HBox spacing="14" styleClass="topbar" alignment="CENTER_LEFT">
                     <padding><Insets bottom="12" left="20" right="20" top="12"/></padding>
                     <Button text="← Retour" onAction="#handleBack"
-                            styleClass="btn-outline" prefHeight="36" minWidth="100"
-                            style="-fx-padding: 0 16;"/>
+                            styleClass="btn-outline" prefHeight="36" minWidth="90"
+                            style="-fx-padding: 0 14;"/>
                     <Label fx:id="articleTitreLabel" text="" styleClass="brand-subtitle"
                            wrapText="false" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                    <Label fx:id="readTimeLabel" text=""
+                           style="-fx-font-size:11px;-fx-text-fill:#6B7280;-fx-background-color:#F1F5F9;-fx-background-radius:10;-fx-padding:3 10;"/>
                     <Label fx:id="statutBadge" text="Publié" styleClass="stat-badge-success"/>
                 </HBox>
 
@@ -161,25 +181,39 @@
                                          -fx-border-radius: 14;
                                          -fx-border-width: 1;
                                          -fx-padding: 22;">
-                                <Label text="💬 Commentaires"
-                                       style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #3A1D7A;"/>
+
+                                <!-- Header commentaires + tri -->
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <Label fx:id="commentHeaderLabel" text="💬 Commentaires"
+                                           style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #3A1D7A;"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <ComboBox fx:id="sortComboBox" prefWidth="140"
+                                              style="-fx-font-size:11px;-fx-background-color:#F8F6FF;-fx-border-color:#EDE9F8;-fx-border-radius:8;-fx-background-radius:8;-fx-border-width:1;"/>
+                                </HBox>
                                 <Separator style="-fx-background-color: #EDE9F8;"/>
-                                <VBox fx:id="commentsContainer" spacing="10" minHeight="40"/>
-                                <VBox spacing="6">
-                                    <HBox alignment="CENTER_RIGHT">
-                                        <Button fx:id="emojiBtn" text="😊  Émojis" onAction="#handleEmojiPicker"
-                                                style="-fx-background-color: #F3F0FF; -fx-text-fill: #5B35A5;
-                                                       -fx-background-radius: 8; -fx-border-width: 0;
-                                                       -fx-font-family: 'Segoe UI Emoji';
-                                                       -fx-padding: 5 12; -fx-font-size: 12px; -fx-cursor: hand;"/>
+
+                                <VBox fx:id="commentsContainer" spacing="12" minHeight="40"/>
+
+                                <!-- Zone de saisie commentaire -->
+                                <VBox spacing="8"
+                                      style="-fx-background-color:#F8F6FF;-fx-background-radius:12;-fx-border-color:#EDE9F8;-fx-border-radius:12;-fx-border-width:1;-fx-padding:12;">
+                                    <HBox alignment="CENTER_LEFT" spacing="8">
+                                        <Label text="✏️" style="-fx-font-size:13px;"/>
+                                        <Label text="Laisser un commentaire"
+                                               style="-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:#4A2D8F;"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Button fx:id="emojiBtn" text="😊" onAction="#handleEmojiPicker"
+                                                style="-fx-background-color:#EDE9F8;-fx-text-fill:#5B35A5;-fx-background-radius:8;-fx-border-width:0;-fx-padding:4 10;-fx-font-size:14px;-fx-cursor:hand;"/>
                                     </HBox>
-                                    <HBox spacing="12" alignment="CENTER">
-                                        <TextArea fx:id="commentField" promptText="Votre commentaire..."
-                                                  styleClass="field-input" HBox.hgrow="ALWAYS"
-                                                  prefHeight="72" wrapText="true"/>
+                                    <TextArea fx:id="commentField" promptText="Partagez votre avis ou posez une question..."
+                                              styleClass="field-input"
+                                              prefHeight="80" wrapText="true"/>
+                                    <HBox alignment="CENTER_RIGHT" spacing="10">
+                                        <Label fx:id="charCountLabel" text="0 / 500"
+                                               style="-fx-font-size:10px;-fx-text-fill:#9CA3AF;"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
                                         <Button text="Envoyer →" onAction="#handleAddComment"
-                                                styleClass="btn-primary" minWidth="120" prefHeight="72"
-                                                style="-fx-padding: 0 18; -fx-font-size: 13px;"/>
+                                                style="-fx-background-color:#4A2D8F;-fx-text-fill:white;-fx-background-radius:8;-fx-font-weight:bold;-fx-padding:8 20;-fx-cursor:hand;-fx-font-size:12px;"/>
                                     </HBox>
                                 </VBox>
                             </VBox>

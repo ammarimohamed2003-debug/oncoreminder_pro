@@ -18,7 +18,10 @@ import javafx.scene.shape.Circle;
 import javafx.util.Duration;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,6 +46,28 @@ public class AdminDashboardController {
     @FXML private TextField searchField;
     @FXML private Label     totalUsersLabel;
     @FXML private Label     adminNameLabel;
+
+    // ── Nouveaux labels sidebar / topbar ─────────────────────────────
+    @FXML private Label adminInitialeLabel;
+    @FXML private Label medecinCountLabel;
+    @FXML private Label patientCountLabel;
+    @FXML private Label dateTimeLabel;
+    @FXML private Label userCountLabel;
+    @FXML private Label logCountLabel;
+
+    // ── Navigation sidebar ───────────────────────────────────────────
+    @FXML private TabPane adminTabPane;
+    @FXML private Button  btnNavDashboard;
+    @FXML private Button  btnNavUsers;
+    @FXML private Button  btnNavReclamations;
+    @FXML private Button  btnNavLogs;
+
+    // ── Filtre rôle ──────────────────────────────────────────────────
+    @FXML private Button btnRoleTous;
+    @FXML private Button btnRoleAdmin;
+    @FXML private Button btnRoleMedecin;
+    @FXML private Button btnRolePatient;
+    private String currentRoleFilter = null;
 
     // ── Formulaire ───────────────────────────────────────────────────
     @FXML private Label     formModeLabel;
@@ -79,12 +104,29 @@ public class AdminDashboardController {
     private static final String EMAIL_REGEX =
         "^[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}$";
 
+    private static final String[] AVATAR_COLORS = {
+        "#5B35A5","#2BBCB0","#F97316","#0EA5E9","#10B981","#8B5CF6","#EC4899","#FB7185"
+    };
+
     // ── Initialisation ────────────────────────────────────────────────
 
     @FXML
     public void initialize() {
         Utilisateur admin = UserSession.getInstance().getCurrentUser();
-        if (admin != null) adminNameLabel.setText(admin.getNom() + " " + admin.getPrenom());
+        if (admin != null) {
+            String fullName = admin.getNom() + " " + admin.getPrenom();
+            adminNameLabel.setText(fullName);
+            if (adminInitialeLabel != null)
+                adminInitialeLabel.setText(String.valueOf(admin.getNom().charAt(0)).toUpperCase());
+        }
+
+        // Date/heure actuelle dans la topbar
+        if (dateTimeLabel != null) {
+            String now = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE d MMMM yyyy",
+                java.util.Locale.FRENCH));
+            String cap = now.substring(0, 1).toUpperCase() + now.substring(1);
+            dateTimeLabel.setText("📅 " + cap);
+        }
 
         roleCombo.setItems(FXCollections.observableArrayList("ADMIN", "MEDECIN", "PATIENT"));
 
@@ -109,6 +151,7 @@ public class AdminDashboardController {
         // Mode initial : ajout
         setAddMode();
         loadData();
+        switchTab(0, btnNavDashboard);
     }
 
     // ── Toggle show/hide mot de passe ─────────────────────────────────
@@ -132,19 +175,81 @@ public class AdminDashboardController {
 
     private void loadData() {
         allUsers = serviceUtilisateur.getAll();
-        renderUserCards(allUsers);
+        applyRoleFilter();
         renderLogs();
         totalUsersLabel.setText(String.valueOf(allUsers.size()));
+        if (medecinCountLabel != null)
+            medecinCountLabel.setText(String.valueOf(
+                allUsers.stream().filter(u -> "MEDECIN".equals(u.getRole())).count()));
+        if (patientCountLabel != null)
+            patientCountLabel.setText(String.valueOf(
+                allUsers.stream().filter(u -> "PATIENT".equals(u.getRole())).count()));
+    }
+
+    // ── Navigation sidebar ────────────────────────────────────────────
+
+    @FXML void handleNavDashboard(ActionEvent e)   { switchTab(0, btnNavDashboard); }
+    @FXML void handleNavUsers(ActionEvent e)        { switchTab(0, btnNavUsers); }
+    @FXML void handleNavReclamations(ActionEvent e) { switchTab(1, btnNavReclamations); }
+    @FXML void handleNavLogs(ActionEvent e)         { switchTab(2, btnNavLogs); }
+
+    private void switchTab(int index, Button activeBtn) {
+        if (adminTabPane != null) adminTabPane.getSelectionModel().select(index);
+        if (btnNavDashboard == null) return;
+        String active = "sidebar-nav-btn-doctor-active";
+        String normal = "sidebar-nav-btn";
+        btnNavDashboard.getStyleClass().setAll(activeBtn == btnNavDashboard ? active : normal);
+        btnNavUsers.getStyleClass().setAll(activeBtn == btnNavUsers ? active : normal);
+        btnNavReclamations.getStyleClass().setAll(activeBtn == btnNavReclamations ? active : normal);
+        btnNavLogs.getStyleClass().setAll(activeBtn == btnNavLogs ? active : normal);
+    }
+
+    // ── Filtre rôle ───────────────────────────────────────────────────
+
+    @FXML void filterRoleAll(ActionEvent e)     { currentRoleFilter = null;      updateRoleButtons(); applyRoleFilter(); }
+    @FXML void filterRoleAdmin(ActionEvent e)   { currentRoleFilter = "ADMIN";   updateRoleButtons(); applyRoleFilter(); }
+    @FXML void filterRoleMedecin(ActionEvent e) { currentRoleFilter = "MEDECIN"; updateRoleButtons(); applyRoleFilter(); }
+    @FXML void filterRolePatient(ActionEvent e) { currentRoleFilter = "PATIENT"; updateRoleButtons(); applyRoleFilter(); }
+
+    private void applyRoleFilter() {
+        String q = searchField != null ? searchField.getText() : "";
+        List<Utilisateur> filtered = allUsers.stream()
+            .filter(u -> currentRoleFilter == null || currentRoleFilter.equals(u.getRole()))
+            .filter(u -> q == null || q.isEmpty() ||
+                (u.getNom() + " " + u.getPrenom() + " " + u.getEmail()).toLowerCase().contains(q.toLowerCase()))
+            .collect(Collectors.toList());
+        renderUserCards(filtered);
+    }
+
+    private void updateRoleButtons() {
+        if (btnRoleTous == null) return;
+        String activeStyle   = "-fx-background-color: #5B35A5; -fx-text-fill: white; -fx-padding: 4 12; -fx-background-radius: 8; -fx-font-size: 10px; -fx-cursor: hand;";
+        String adminStyle    = "ADMIN".equals(currentRoleFilter)   ? activeStyle : "-fx-background-color: #EDE8FF; -fx-text-fill: #5B35A5; -fx-padding: 4 10; -fx-background-radius: 8; -fx-font-size: 10px; -fx-cursor: hand;";
+        String medecinStyle  = "MEDECIN".equals(currentRoleFilter) ? activeStyle : "-fx-background-color: #EBF8FF; -fx-text-fill: #2B6CB0; -fx-padding: 4 10; -fx-background-radius: 8; -fx-font-size: 10px; -fx-cursor: hand;";
+        String patientStyle  = "PATIENT".equals(currentRoleFilter) ? activeStyle : "-fx-background-color: #FFF8E7; -fx-text-fill: #D97706; -fx-padding: 4 10; -fx-background-radius: 8; -fx-font-size: 10px; -fx-cursor: hand;";
+        String tousStyle     = currentRoleFilter == null           ? activeStyle : "-fx-background-color: #EDE8FF; -fx-text-fill: #5B35A5; -fx-padding: 4 12; -fx-background-radius: 8; -fx-font-size: 10px; -fx-cursor: hand;";
+        btnRoleTous.setStyle(tousStyle);
+        btnRoleAdmin.setStyle(adminStyle);
+        btnRoleMedecin.setStyle(medecinStyle);
+        btnRolePatient.setStyle(patientStyle);
     }
 
     // ── Rendu des cartes utilisateur ──────────────────────────────────
 
     private void renderUserCards(List<Utilisateur> users) {
         userFlowPane.getChildren().clear();
+        if (userCountLabel != null)
+            userCountLabel.setText(users.size() + " utilisateur" + (users.size() > 1 ? "s" : ""));
         if (users.isEmpty()) {
-            Label empty = new Label("Aucun utilisateur trouvé");
-            empty.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 13px; -fx-font-style: italic;");
-            userFlowPane.getChildren().add(empty);
+            VBox emptyBox = new VBox(8);
+            emptyBox.setAlignment(Pos.CENTER);
+            emptyBox.setPadding(new Insets(30));
+            Label icon = new Label("🔍");
+            icon.setStyle("-fx-font-size: 36px;");
+            Label msg = new Label("Aucun utilisateur trouvé");
+            msg.setStyle("-fx-text-fill: #94A3B8; -fx-font-size: 13px; -fx-font-weight: bold;");
+            emptyBox.getChildren().addAll(icon, msg);
+            userFlowPane.getChildren().add(emptyBox);
             return;
         }
         for (Utilisateur user : users) {
@@ -153,41 +258,93 @@ public class AdminDashboardController {
     }
 
     private VBox createUserCard(Utilisateur user) {
-        VBox card = new VBox(8);
-        card.getStyleClass().add("stat-card");
-        card.setPrefWidth(200);
-        card.setPadding(new Insets(14));
-        card.setAlignment(Pos.CENTER);
+        VBox card = new VBox(10);
+        card.setPrefWidth(210);
+        card.setPadding(new Insets(0, 0, 14, 0));
+        card.setAlignment(Pos.TOP_CENTER);
         card.setCursor(javafx.scene.Cursor.HAND);
-
-        // Icône rôle
-        String icon = "ADMIN".equals(user.getRole()) ? "🔐"
-                    : "MEDECIN".equals(user.getRole()) ? "👨‍⚕️" : "👤";
-        Label iconLabel = new Label(icon);
-        iconLabel.setStyle("-fx-font-size: 28px;");
-
-        Label nameLabel = new Label(user.getPrenom() + " " + user.getNom());
-        nameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: #2D3748;");
-        nameLabel.setWrapText(true);
-        nameLabel.setMaxWidth(185);
-
-        Label emailLabel = new Label(user.getEmail());
-        emailLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: #718096;");
-        emailLabel.setWrapText(true);
-        emailLabel.setMaxWidth(185);
-
-        Label roleBadge = new Label(user.getRole());
-        roleBadge.getStyleClass().add(
-            "ADMIN".equals(user.getRole()) ? "stat-badge-success" : "stat-badge-info"
+        card.setStyle(
+            "-fx-background-color: white; -fx-background-radius: 14;" +
+            "-fx-border-color: #EDE9F8; -fx-border-radius: 14; -fx-border-width: 1;" +
+            "-fx-effect: dropshadow(gaussian, rgba(90,53,165,0.08), 8, 0, 0, 2);"
         );
 
-        card.getChildren().addAll(iconLabel, nameLabel, emailLabel, roleBadge);
+        // Bandeau coloré en haut selon le rôle
+        String stripeColor = "ADMIN".equals(user.getRole()) ? "#5B35A5"
+                           : "MEDECIN".equals(user.getRole()) ? "#2BBCB0" : "#F6AD55";
+        HBox stripe = new HBox();
+        stripe.setPrefHeight(5);
+        stripe.setStyle("-fx-background-color: " + stripeColor + "; -fx-background-radius: 14 14 0 0;");
+        card.getChildren().add(stripe);
+
+        VBox content = new VBox(8);
+        content.setAlignment(Pos.CENTER);
+        content.setPadding(new Insets(10, 14, 0, 14));
+        card.getChildren().add(content);
+
+        // Avatar avec initiales
+        String name = (user.getPrenom() + " " + user.getNom()).trim();
+        String initiale = name.isEmpty() ? "?" : String.valueOf(name.charAt(0)).toUpperCase();
+        String avatarColor = AVATAR_COLORS[Math.abs(name.hashCode()) % AVATAR_COLORS.length];
+
+        StackPane avatarPane = new StackPane();
+        Circle bg = new Circle(28);
+        bg.setStyle("-fx-fill: " + avatarColor + "30;");
+        Circle fg = new Circle(22);
+        fg.setStyle("-fx-fill: " + avatarColor + ";");
+        Label initialeLabel = new Label(initiale);
+        initialeLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px;");
+        avatarPane.getChildren().addAll(bg, fg, initialeLabel);
+        content.getChildren().add(avatarPane);
+
+        Label nameLabel = new Label(user.getPrenom() + " " + user.getNom());
+        nameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: #2D1B69;");
+        nameLabel.setWrapText(true);
+        nameLabel.setMaxWidth(190);
+        nameLabel.setAlignment(Pos.CENTER);
+
+        Label emailLabel = new Label(user.getEmail());
+        emailLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: #94A3B8;");
+        emailLabel.setWrapText(true);
+        emailLabel.setMaxWidth(190);
+        emailLabel.setAlignment(Pos.CENTER);
+
+        String roleText = "ADMIN".equals(user.getRole()) ? "🔐 Admin"
+                        : "MEDECIN".equals(user.getRole()) ? "🩺 Médecin" : "👤 Patient";
+        String roleBg   = "ADMIN".equals(user.getRole()) ? "#EDE8FF"
+                        : "MEDECIN".equals(user.getRole()) ? "#E6FFFA" : "#FFF8E7";
+        String roleColor = "ADMIN".equals(user.getRole()) ? "#5B35A5"
+                         : "MEDECIN".equals(user.getRole()) ? "#0D9488" : "#D97706";
+        Label roleBadge = new Label(roleText);
+        roleBadge.setStyle(
+            "-fx-background-color: " + roleBg + "; -fx-text-fill: " + roleColor + ";" +
+            "-fx-font-size: 10px; -fx-font-weight: bold; -fx-padding: 3 10;" +
+            "-fx-background-radius: 20;"
+        );
+
+        content.getChildren().addAll(nameLabel, emailLabel, roleBadge);
+
+        // Hover
+        String baseStyle =
+            "-fx-background-color: white; -fx-background-radius: 14;" +
+            "-fx-border-color: #EDE9F8; -fx-border-radius: 14; -fx-border-width: 1;" +
+            "-fx-effect: dropshadow(gaussian, rgba(90,53,165,0.08), 8, 0, 0, 2);";
+        String hoverStyle =
+            "-fx-background-color: white; -fx-background-radius: 14;" +
+            "-fx-border-color: #5B35A5; -fx-border-radius: 14; -fx-border-width: 2;" +
+            "-fx-effect: dropshadow(gaussian, rgba(90,53,165,0.20), 12, 0, 0, 4);";
+        card.setOnMouseEntered(e -> card.setStyle(hoverStyle));
 
         card.setOnMouseClicked(e -> {
-            // Désélectionner toutes les cartes
-            userFlowPane.getChildren().forEach(n -> n.setStyle(""));
-            card.setStyle("-fx-border-color: #5B35A5; -fx-border-width: 2; -fx-border-radius: 12;");
+            userFlowPane.getChildren().forEach(n -> {
+                if (n instanceof VBox c) c.setStyle(baseStyle);
+            });
+            card.setStyle(hoverStyle);
             selectUser(user);
+        });
+        card.setOnMouseExited(e -> {
+            if (selectedUser == null || selectedUser.getId() != user.getId())
+                card.setStyle(baseStyle);
         });
 
         return card;
@@ -408,8 +565,7 @@ public class AdminDashboardController {
         setAddMode();
         hideFeedback();
         clearAllErrors();
-        // Désélectionner les cartes
-        userFlowPane.getChildren().forEach(n -> n.setStyle(""));
+        applyRoleFilter();
     }
 
     @FXML
@@ -423,48 +579,88 @@ public class AdminDashboardController {
     private void renderLogs() {
         logContainer.getChildren().clear();
         List<LogConnexion> logs = serviceUtilisateur.getAllLogs();
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+        if (logCountLabel != null)
+            logCountLabel.setText(logs.size() + " entrée" + (logs.size() > 1 ? "s" : ""));
 
         if (logs.isEmpty()) {
-            Label empty = new Label("Aucune connexion enregistrée.");
-            empty.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 13px; -fx-font-style: italic; -fx-padding: 20;");
+            VBox empty = new VBox(8);
+            empty.setAlignment(Pos.CENTER);
+            empty.setPadding(new Insets(30));
+            Label icon = new Label("📋");
+            icon.setStyle("-fx-font-size: 36px;");
+            Label msg = new Label("Aucune connexion enregistrée");
+            msg.setStyle("-fx-text-fill: #94A3B8; -fx-font-size: 13px;");
+            empty.getChildren().addAll(icon, msg);
             logContainer.getChildren().add(empty);
             return;
         }
 
         for (LogConnexion log : logs) {
-            HBox row = new HBox(20);
-            row.getStyleClass().add("form-panel");
-            row.setPadding(new Insets(10, 20, 10, 20));
+            HBox row = new HBox(0);
             row.setAlignment(Pos.CENTER_LEFT);
+            row.setStyle(
+                "-fx-background-color: white; -fx-background-radius: 10;" +
+                "-fx-border-color: #EDE9F8; -fx-border-radius: 10; -fx-border-width: 1;" +
+                "-fx-effect: dropshadow(gaussian, rgba(90,53,165,0.04), 4, 0, 0, 1);"
+            );
 
-            Label iconL  = new Label("🔑");
-            iconL.setStyle("-fx-font-size: 14px;");
+            // Accent stripe gauche
+            VBox stripe = new VBox();
+            stripe.setMinWidth(4); stripe.setPrefWidth(4);
+            stripe.setStyle("-fx-background-color: #5B35A5; -fx-background-radius: 10 0 0 10;");
 
-            Label emailL = new Label(log.getUserEmail());
-            emailL.setPrefWidth(230);
-            emailL.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
+            HBox inner = new HBox(14);
+            inner.setAlignment(Pos.CENTER_LEFT);
+            inner.setPadding(new Insets(10, 16, 10, 14));
+            HBox.setHgrow(inner, Priority.ALWAYS);
 
-            Label dateL  = new Label("s'est connecté le " + log.getDateConnexion().format(fmt));
-            dateL.setStyle("-fx-text-fill: #718096; -fx-font-size: 11px;");
+            // Avatar initiale email
+            String email = log.getUserEmail();
+            String init = email.isEmpty() ? "?" : String.valueOf(email.charAt(0)).toUpperCase();
+            Label avatar = new Label(init);
+            avatar.setMinSize(32, 32); avatar.setMaxSize(32, 32);
+            avatar.setAlignment(Pos.CENTER);
+            avatar.setStyle(
+                "-fx-background-color: #EDE8FF; -fx-text-fill: #5B35A5;" +
+                "-fx-font-weight: bold; -fx-font-size: 13px; -fx-background-radius: 20;"
+            );
 
-            row.getChildren().addAll(iconL, emailL, dateL);
+            VBox meta = new VBox(2);
+            HBox.setHgrow(meta, Priority.ALWAYS);
+            Label emailL = new Label(email);
+            emailL.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #2D1B69;");
+
+            LocalDateTime dt = log.getDateConnexion();
+            String relativeTime = formatRelativeDateTime(dt);
+            Label dateL = new Label("🔑 Connexion · " + relativeTime + "  (" + dt.format(fmt) + ")");
+            dateL.setStyle("-fx-text-fill: #94A3B8; -fx-font-size: 10px;");
+
+            meta.getChildren().addAll(emailL, dateL);
+            inner.getChildren().addAll(avatar, meta);
+            row.getChildren().addAll(stripe, inner);
             logContainer.getChildren().add(row);
         }
+    }
+
+    private String formatRelativeDateTime(LocalDateTime dt) {
+        if (dt == null) return "";
+        long minutes = ChronoUnit.MINUTES.between(dt, LocalDateTime.now());
+        if (minutes < 1)   return "À l'instant";
+        if (minutes < 60)  return "Il y a " + minutes + " min";
+        long hours = minutes / 60;
+        if (hours < 24)    return "Il y a " + hours + " h";
+        long days = hours / 24;
+        if (days == 1)     return "Hier";
+        if (days < 7)      return "Il y a " + days + " j";
+        return "Il y a " + (days / 7) + " sem.";
     }
 
     // ── Filtrage utilisateurs ─────────────────────────────────────────
 
     private void filterUsers(String query) {
-        if (query == null || query.isEmpty()) {
-            renderUserCards(allUsers);
-        } else {
-            String q = query.toLowerCase();
-            List<Utilisateur> filtered = allUsers.stream()
-                .filter(u -> (u.getNom() + " " + u.getPrenom() + " " + u.getEmail()).toLowerCase().contains(q))
-                .collect(Collectors.toList());
-            renderUserCards(filtered);
-        }
+        applyRoleFilter();
     }
 
     // ── Helpers formulaire ────────────────────────────────────────────
@@ -485,7 +681,7 @@ public class AdminDashboardController {
         confirmVisible.setVisible(false); confirmVisible.setManaged(false);
 
         selectedUser = null;
-        userFlowPane.getChildren().forEach(n -> n.setStyle(""));
+        applyRoleFilter();
     }
 
     // ── Gestion des erreurs par champ ─────────────────────────────────

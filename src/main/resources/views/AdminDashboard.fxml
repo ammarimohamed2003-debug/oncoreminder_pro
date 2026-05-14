@@ -13,10 +13,12 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Rectangle?>
 <?import javafx.geometry.Insets?>
 
 <BorderPane styleClass="root-pane bg-dashboard" stylesheets="@../css/style.css"
@@ -26,73 +28,191 @@
 
     <!-- ══════════════ SIDEBAR ══════════════ -->
     <left>
-        <VBox spacing="10" styleClass="form-panel" prefWidth="220"
-              style="-fx-border-color: #D6CBFF; -fx-border-width: 0 2 0 0;">
-            <padding><Insets bottom="24" left="16" right="16" top="24"/></padding>
+        <VBox prefWidth="245"
+              style="-fx-background-color: linear-gradient(to bottom, #0D0628, #12002E, #1A0044);
+                     -fx-border-color: rgba(91,53,165,0.3); -fx-border-width: 0 1 0 0;">
 
-            <!-- Logo Admin -->
-            <VBox alignment="CENTER" spacing="10">
+            <!-- ── Logo OncoReminder PRO ── -->
+            <HBox spacing="10" alignment="CENTER_LEFT"
+                  style="-fx-padding: 18 18 15 18;
+                         -fx-border-color: transparent transparent rgba(255,255,255,0.08) transparent;
+                         -fx-border-width: 0 0 1 0;">
                 <StackPane>
-                    <Circle radius="40" fill="rgba(43,188,176,0.15)"/>
-                    <Circle radius="28" fill="rgba(43,188,176,0.25)"/>
-                    <Label text="⚕" style="-fx-font-size: 26px; -fx-text-fill: #2BBCB0;"/>
+                    <Circle radius="17" fill="rgba(43,188,176,0.15)"/>
+                    <Circle radius="17" fill="transparent" stroke="#2BBCB0" strokeWidth="1.5"/>
+                    <Rectangle width="5" height="16" fill="white" arcWidth="4" arcHeight="4"/>
+                    <Rectangle width="16" height="5" fill="white" arcWidth="4" arcHeight="4"/>
+                    <Circle radius="2.5" fill="#2BBCB0"/>
                 </StackPane>
-                <Label fx:id="adminNameLabel" text="Admin" styleClass="brand-title"/>
-                <Label text="Administrateur" styleClass="brand-subtitle"/>
+                <VBox spacing="2">
+                    <HBox spacing="0">
+                        <Label text="Onco"
+                               style="-fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                        <Label text="Reminder"
+                               style="-fx-text-fill: #2BBCB0; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                    </HBox>
+                    <Label text="PRO"
+                           style="-fx-background-color: rgba(43,188,176,0.25); -fx-text-fill: #2BBCB0;
+                                  -fx-background-radius: 4; -fx-padding: 1 6;
+                                  -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                </VBox>
+            </HBox>
+
+            <!-- ── Avatar Admin ── -->
+            <VBox alignment="CENTER" spacing="8" style="-fx-padding: 22 16 16 16;">
+                <StackPane>
+                    <Circle radius="40" fill="rgba(91,53,165,0.25)"/>
+                    <Circle radius="33" fill="#1A0044"/>
+                    <Circle radius="28" fill="#2A1060"/>
+                    <Label fx:id="adminInitialeLabel" text="A"
+                           style="-fx-text-fill: #2BBCB0; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                </StackPane>
+                <Label fx:id="adminNameLabel" text="Admin"
+                       style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;
+                              -fx-alignment: center;" wrapText="true" maxWidth="200"
+                       textAlignment="CENTER" alignment="CENTER"/>
+                <Label text="Administrateur"
+                       style="-fx-background-color: rgba(91,53,165,0.35); -fx-text-fill: #C4B5FD;
+                              -fx-background-radius: 20; -fx-padding: 3 14;
+                              -fx-font-size: 11px; -fx-font-weight: bold;"/>
             </VBox>
 
-            <Separator/>
+            <!-- Divider -->
+            <Pane prefHeight="1" style="-fx-background-color: rgba(255,255,255,0.08);">
+                <VBox.margin><Insets left="16" right="16" bottom="6"/></VBox.margin>
+            </Pane>
 
-            <Button text="🏠  Tableau de bord" styleClass="btn-primary"
-                    maxWidth="Infinity"/>
-            <Button text="👥  Utilisateurs" styleClass="btn-secondary"
-                    maxWidth="Infinity"/>
-            <Button text="📋  Logs Système" styleClass="btn-secondary"
-                    maxWidth="Infinity"/>
+            <!-- ── Navigation ── -->
+            <VBox spacing="2" style="-fx-padding: 10 10 0 10;">
+                <Label text="NAVIGATION"
+                       style="-fx-text-fill: rgba(255,255,255,0.30); -fx-font-size: 10px;
+                              -fx-font-weight: bold; -fx-padding: 0 8 5 8;"/>
+                <Button fx:id="btnNavDashboard" text="🏠  Tableau de bord"
+                        onAction="#handleNavDashboard"
+                        maxWidth="Infinity" styleClass="sidebar-nav-btn-doctor-active"/>
+                <Button fx:id="btnNavUsers" text="👥  Utilisateurs"
+                        onAction="#handleNavUsers"
+                        maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
+                <Button fx:id="btnNavReclamations" text="📣  Réclamations"
+                        onAction="#handleNavReclamations"
+                        maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
+                <Button fx:id="btnNavLogs" text="📋  Historique d'accès"
+                        onAction="#handleNavLogs"
+                        maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
+            </VBox>
 
             <Region VBox.vgrow="ALWAYS"/>
 
-            <!-- Stats mini -->
-            <VBox spacing="6" style="-fx-padding: 12 8 12 8; -fx-background-color: #F4F0FF;
-                                     -fx-background-radius: 10;">
-                <Label text="Total Utilisateurs" styleClass="stat-label"/>
-                <Label fx:id="totalUsersLabel" text="0" styleClass="stat-value"
-                       style="-fx-font-size: 28px;"/>
-                <Label text="Inscrits actifs" styleClass="stat-badge-info"/>
+            <!-- ── Stats mini ── -->
+            <VBox spacing="10" style="-fx-padding: 14;
+                                      -fx-background-color: rgba(91,53,165,0.20);
+                                      -fx-background-radius: 12;
+                                      -fx-border-color: rgba(91,53,165,0.30);
+                                      -fx-border-radius: 12; -fx-border-width: 1;">
+                <VBox.margin><Insets bottom="10" left="12" right="12"/></VBox.margin>
+                <Label text="VUE D'ENSEMBLE"
+                       style="-fx-text-fill: rgba(255,255,255,0.40); -fx-font-size: 9px;
+                              -fx-font-weight: bold;"/>
+                <HBox spacing="6">
+                    <VBox alignment="CENTER" HBox.hgrow="ALWAYS" spacing="2"
+                          style="-fx-background-color: rgba(43,188,176,0.12); -fx-background-radius: 8;
+                                 -fx-padding: 8 4;">
+                        <Label fx:id="totalUsersLabel" text="0"
+                               style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2BBCB0;"/>
+                        <Label text="Total"
+                               style="-fx-font-size: 9px; -fx-text-fill: rgba(255,255,255,0.50);"/>
+                    </VBox>
+                    <VBox alignment="CENTER" HBox.hgrow="ALWAYS" spacing="2"
+                          style="-fx-background-color: rgba(99,179,237,0.12); -fx-background-radius: 8;
+                                 -fx-padding: 8 4;">
+                        <Label fx:id="medecinCountLabel" text="0"
+                               style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #63B3ED;"/>
+                        <Label text="Médecins"
+                               style="-fx-font-size: 9px; -fx-text-fill: rgba(255,255,255,0.50);"/>
+                    </VBox>
+                    <VBox alignment="CENTER" HBox.hgrow="ALWAYS" spacing="2"
+                          style="-fx-background-color: rgba(246,173,85,0.12); -fx-background-radius: 8;
+                                 -fx-padding: 8 4;">
+                        <Label fx:id="patientCountLabel" text="0"
+                               style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #F6AD55;"/>
+                        <Label text="Patients"
+                               style="-fx-font-size: 9px; -fx-text-fill: rgba(255,255,255,0.50);"/>
+                    </VBox>
+                </HBox>
             </VBox>
 
-            <Button text="🚪  Déconnexion" onAction="#handleLogout"
-                    styleClass="btn-danger" maxWidth="Infinity"/>
+            <!-- Divider avant logout -->
+            <Pane prefHeight="1" style="-fx-background-color: rgba(255,255,255,0.08);">
+                <VBox.margin><Insets left="16" right="16" top="6"/></VBox.margin>
+            </Pane>
+
+            <!-- ── Déconnexion ── -->
+            <VBox style="-fx-padding: 8 10 18 10;">
+                <Button text="🔓  Déconnexion" onAction="#handleLogout"
+                        maxWidth="Infinity" styleClass="sidebar-logout-btn"/>
+            </VBox>
         </VBox>
     </left>
 
     <!-- ══════════════ CONTENU CENTRAL ══════════════ -->
     <center>
-        <VBox spacing="15">
-            <padding><Insets bottom="15" left="20" right="20" top="15"/></padding>
+        <VBox spacing="0">
 
-            <!-- En-tête -->
-            <HBox alignment="CENTER_LEFT" spacing="12">
-                <Label text="Administration" styleClass="section-title"
-                       style="-fx-font-size: 22px;"/>
-                <Label text="OncoReminder Pro"
-                       style="-fx-text-fill: #2BBCB0; -fx-font-size: 13px; -fx-font-weight: bold;"/>
+            <!-- Topbar -->
+            <HBox alignment="CENTER_LEFT" spacing="14" styleClass="topbar"
+                  style="-fx-padding: 12 20;">
+                <Label text="🔐" style="-fx-font-size: 18px;"/>
+                <Label text="Administration" styleClass="brand-title"/>
+                <Label text="—" style="-fx-text-fill: #D1C4E9;"/>
+                <Label text="Panneau de contrôle" styleClass="brand-subtitle"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="dateTimeLabel" text=""
+                       style="-fx-font-size: 11px; -fx-text-fill: #94A3B8;
+                              -fx-background-color: #F8F6FF; -fx-background-radius: 8;
+                              -fx-padding: 4 12;"/>
             </HBox>
 
             <!-- Onglets -->
-            <TabPane tabClosingPolicy="UNAVAILABLE" styleClass="tab-pane" VBox.vgrow="ALWAYS">
+            <TabPane fx:id="adminTabPane" tabClosingPolicy="UNAVAILABLE" styleClass="tab-pane" VBox.vgrow="ALWAYS">
                 <tabs>
 
                     <!-- ════════ ONGLET 1 — ANNUAIRE ════════ -->
                     <Tab text="👥  Annuaire Utilisateurs">
                         <HBox spacing="20">
-                            <padding><Insets bottom="10" left="0" right="0" top="12"/></padding>
+                            <padding><Insets bottom="10" left="16" right="16" top="14"/></padding>
 
                             <!-- ── Liste des utilisateurs ── -->
                             <VBox spacing="12" HBox.hgrow="ALWAYS">
-                                <TextField fx:id="searchField"
-                                           promptText="🔍  Rechercher un utilisateur..."
-                                           styleClass="field-input" prefHeight="40"/>
+                                <!-- Barre recherche + filtres rôle -->
+                                <HBox spacing="10" alignment="CENTER_LEFT">
+                                    <TextField fx:id="searchField"
+                                               promptText="🔍  Rechercher un utilisateur..."
+                                               styleClass="field-input" prefHeight="40"
+                                               HBox.hgrow="ALWAYS"/>
+                                </HBox>
+                                <!-- Chips filtre rôle -->
+                                <HBox fx:id="roleFilterBar" spacing="6" alignment="CENTER_LEFT">
+                                    <Button fx:id="btnRoleTous" text="Tous" onAction="#filterRoleAll"
+                                            style="-fx-background-color: #5B35A5; -fx-text-fill: white;
+                                                   -fx-padding: 4 12; -fx-background-radius: 8;
+                                                   -fx-font-size: 10px; -fx-cursor: hand;" prefHeight="26"/>
+                                    <Button fx:id="btnRoleAdmin" text="🔐 ADMIN" onAction="#filterRoleAdmin"
+                                            style="-fx-background-color: #EDE8FF; -fx-text-fill: #5B35A5;
+                                                   -fx-padding: 4 10; -fx-background-radius: 8;
+                                                   -fx-font-size: 10px; -fx-cursor: hand;" prefHeight="26"/>
+                                    <Button fx:id="btnRoleMedecin" text="🩺 MÉDECIN" onAction="#filterRoleMedecin"
+                                            style="-fx-background-color: #EBF8FF; -fx-text-fill: #2B6CB0;
+                                                   -fx-padding: 4 10; -fx-background-radius: 8;
+                                                   -fx-font-size: 10px; -fx-cursor: hand;" prefHeight="26"/>
+                                    <Button fx:id="btnRolePatient" text="👤 PATIENT" onAction="#filterRolePatient"
+                                            style="-fx-background-color: #FFF8E7; -fx-text-fill: #D97706;
+                                                   -fx-padding: 4 10; -fx-background-radius: 8;
+                                                   -fx-font-size: 10px; -fx-cursor: hand;" prefHeight="26"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label fx:id="userCountLabel" text=""
+                                           style="-fx-font-size: 11px; -fx-text-fill: #94A3B8;"/>
+                                </HBox>
+
                                 <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
                                             style="-fx-background-color: transparent;
                                                    -fx-background: transparent;
@@ -159,19 +279,16 @@
 
                                         <Separator/>
 
-                                        <!-- Hint mot de passe (modification) -->
+                                        <!-- Hint mot de passe -->
                                         <Label fx:id="passwordHintLabel"
                                                text="ℹ️  Laissez vide pour conserver le mot de passe actuel."
                                                wrapText="true" visible="false" managed="false"
                                                style="-fx-text-fill: #888; -fx-font-size: 11px;
-                                                      -fx-font-style: italic; -fx-padding: 0;"/>
+                                                      -fx-font-style: italic;"/>
 
                                         <!-- Mot de passe -->
                                         <VBox spacing="3">
-                                            <HBox alignment="CENTER_LEFT" spacing="6">
-                                                <Label fx:id="pwdLabel" text="Mot de passe *"
-                                                       styleClass="field-label"/>
-                                            </HBox>
+                                            <Label fx:id="pwdLabel" text="Mot de passe *" styleClass="field-label"/>
                                             <StackPane>
                                                 <PasswordField fx:id="passwordField"
                                                                promptText="Minimum 8 caractères"
@@ -185,7 +302,7 @@
                                                    visible="false" managed="false"/>
                                         </VBox>
 
-                                        <!-- Confirmation mot de passe -->
+                                        <!-- Confirmation -->
                                         <VBox spacing="3">
                                             <Label fx:id="confirmLabel" text="Confirmer le mot de passe *"
                                                    styleClass="field-label"/>
@@ -209,14 +326,14 @@
                                                    style="-fx-text-fill: #666; -fx-font-size: 11px;"/>
                                         </HBox>
 
-                                        <!-- Feedback message -->
+                                        <!-- Feedback -->
                                         <Label fx:id="feedbackLabel" text="" wrapText="true"
                                                visible="false" managed="false"
                                                style="-fx-font-size: 12px; -fx-font-weight: bold;
-                                                      -fx-padding: 8 12 8 12; -fx-background-radius: 6;
+                                                      -fx-padding: 8 12; -fx-background-radius: 6;
                                                       -fx-border-radius: 6; -fx-border-width: 1;"/>
 
-                                        <!-- Boutons -->
+                                        <!-- Boutons primaires -->
                                         <HBox spacing="8">
                                             <Button text="➕  Ajouter" onAction="#handleAddUser"
                                                     styleClass="btn-primary"
@@ -225,6 +342,7 @@
                                                     styleClass="btn-warning"
                                                     HBox.hgrow="ALWAYS" maxWidth="Infinity" prefHeight="38"/>
                                         </HBox>
+                                        <!-- Boutons secondaires -->
                                         <HBox spacing="8">
                                             <Button text="🗑  Supprimer" onAction="#handleDeleteUser"
                                                     styleClass="btn-danger"
@@ -247,14 +365,23 @@
 
                     <!-- ════════ ONGLET 3 — LOGS ════════ -->
                     <Tab text="📋  Historique d'accès">
-                        <VBox spacing="15">
-                            <padding><Insets bottom="10" left="0" right="0" top="12"/></padding>
+                        <VBox spacing="0">
+                            <padding><Insets bottom="10" left="16" right="16" top="14"/></padding>
+                            <!-- Header logs -->
+                            <HBox alignment="CENTER_LEFT" spacing="10"
+                                  style="-fx-padding: 0 0 12 0;">
+                                <Label text="📋 Activité récente"
+                                       style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #3A1D7A;"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Label fx:id="logCountLabel" text=""
+                                       style="-fx-font-size: 11px; -fx-text-fill: #94A3B8;"/>
+                            </HBox>
                             <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
                                         style="-fx-background-color: transparent;
                                                -fx-background: transparent;
                                                -fx-border-color: transparent;">
                                 <VBox fx:id="logContainer" spacing="8">
-                                    <padding><Insets bottom="10" left="5" right="5" top="5"/></padding>
+                                    <padding><Insets bottom="16" top="4"/></padding>
                                 </VBox>
                             </ScrollPane>
                         </VBox>

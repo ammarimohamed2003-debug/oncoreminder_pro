@@ -24,6 +24,9 @@ import javafx.scene.layout.*;
 import javafx.scene.shape.Rectangle;
 
 import java.io.File;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -75,11 +78,28 @@ public class ArticleListController {
     @FXML private Label evalMessage;
     @FXML private VBox  evalListBox;
 
+    // UX améliorée
+    @FXML private Label              resultCountLabel;
+    @FXML private Label              readTimeLabel;
+    @FXML private Label              commentHeaderLabel;
+    @FXML private ComboBox<String>   sortComboBox;
+    @FXML private Label              charCountLabel;
+
+    // Stats bar (médecin)
+    @FXML private HBox  statsBar;
+    @FXML private Label statsTotal;
+    @FXML private Label statsPublie;
+    @FXML private Label statsBrouillon;
+    @FXML private Label statsArchive;
+
     private final ServiceArticle           serviceArticle     = new ServiceArticle();
     private final ServiceArticleEvaluation serviceEval        = new ServiceArticleEvaluation();
     private final ServiceCommentaire       serviceCommentaire = new ServiceCommentaire();
 
     private static final int PAGE_SIZE = 5;
+    private static final String[] AVATAR_COLORS = {
+        "#5B35A5","#2BBCB0","#FC8181","#F6AD55","#68D391","#63B3ED","#E879F9","#FB7185"
+    };
 
     private Article       selectedArticle;
     private boolean       showingAll = true;
@@ -101,8 +121,28 @@ public class ArticleListController {
         filterBar.setManaged(isMedecin);
         statutFilterBar.setVisible(isMedecin);
         statutFilterBar.setManaged(isMedecin);
+        if (statsBar != null) {
+            statsBar.setVisible(isMedecin);
+            statsBar.setManaged(isMedecin);
+        }
 
         searchField.textProperty().addListener((obs, o, n) -> filterBySearch(n));
+
+        if (sortComboBox != null) {
+            sortComboBox.getItems().addAll("Plus récents", "Plus anciens", "Plus aimés");
+            sortComboBox.setValue("Plus récents");
+            sortComboBox.valueProperty().addListener((obs, o, n) -> loadComments());
+        }
+
+        if (commentField != null && charCountLabel != null) {
+            commentField.textProperty().addListener((obs, o, n) -> {
+                int len = n == null ? 0 : n.length();
+                charCountLabel.setText(len + " / 500");
+                charCountLabel.setStyle(len > 450
+                    ? "-fx-font-size:10px;-fx-text-fill:#E53E3E;"
+                    : "-fx-font-size:10px;-fx-text-fill:#9CA3AF;");
+            });
+        }
 
         loadArticles();
     }
@@ -119,6 +159,7 @@ public class ArticleListController {
         }
         currentArticles = all;
         renderGrid(currentArticles);
+        updateStats(all);
     }
 
     private void filterBySearch(String keyword) {
@@ -147,10 +188,22 @@ public class ArticleListController {
         int from = currentPage * PAGE_SIZE;
         int to   = Math.min(from + PAGE_SIZE, total);
 
+        if (resultCountLabel != null) {
+            resultCountLabel.setText(total == 0 ? "" : total + " article" + (total > 1 ? "s" : "") + " trouvé" + (total > 1 ? "s" : ""));
+        }
+
         if (total == 0) {
-            Label empty = new Label("Aucun article disponible.");
-            empty.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 13px; -fx-padding: 20;");
-            articleFlowPane.getChildren().add(empty);
+            VBox emptyBox = new VBox(8);
+            emptyBox.setAlignment(Pos.CENTER);
+            emptyBox.setPadding(new Insets(40));
+            Label icon = new Label("📭");
+            icon.setStyle("-fx-font-size: 40px;");
+            Label msg = new Label("Aucun article disponible");
+            msg.setStyle("-fx-text-fill: #94A3B8; -fx-font-size: 14px; -fx-font-weight: bold;");
+            Label sub = new Label("Essayez un autre filtre ou créez un nouvel article");
+            sub.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 12px;");
+            emptyBox.getChildren().addAll(icon, msg, sub);
+            articleFlowPane.getChildren().add(emptyBox);
         } else {
             for (Article article : articles.subList(from, to)) {
                 articleFlowPane.getChildren().add(buildCard(article));
@@ -213,6 +266,34 @@ public class ArticleListController {
         return btn;
     }
 
+    private String formatRelativeDate(LocalDate date) {
+        if (date == null) return "";
+        long days = ChronoUnit.DAYS.between(date, LocalDate.now());
+        if (days == 0)   return "Aujourd'hui";
+        if (days == 1)   return "Hier";
+        if (days < 7)    return "Il y a " + days + " j";
+        if (days < 30)   return "Il y a " + (days / 7) + " sem.";
+        if (days < 365)  return "Il y a " + (days / 30) + " mois";
+        return "Il y a " + (days / 365) + " an(s)";
+    }
+
+    private String organeAccentColor(String organe) {
+        String[] colors = {"#5B35A5","#2BBCB0","#F97316","#0EA5E9","#10B981","#8B5CF6","#EC4899"};
+        if (organe == null || organe.isEmpty()) return "#5B35A5";
+        return colors[Math.abs(organe.hashCode()) % colors.length];
+    }
+
+    private void updateStats(List<Article> all) {
+        if (statsBar == null || !statsBar.isVisible()) return;
+        long publie    = all.stream().filter(a -> "PUBLIE".equals(a.getStatut())).count();
+        long brouillon = all.stream().filter(a -> "BROUILLON".equals(a.getStatut())).count();
+        long archive   = all.stream().filter(a -> "ARCHIVE".equals(a.getStatut())).count();
+        statsTotal.setText(String.valueOf(all.size()));
+        statsPublie.setText(String.valueOf(publie));
+        statsBrouillon.setText(String.valueOf(brouillon));
+        statsArchive.setText(String.valueOf(archive));
+    }
+
     private static final int CARD_W = 340;
 
     private VBox buildCard(Article article) {
@@ -248,27 +329,43 @@ public class ArticleListController {
         inner.setPadding(new Insets(12, 16, 14, 16));
         card.getChildren().add(inner);
 
-        // Statut — ligne dédiée, toujours visible
-        HBox statutRow = new HBox();
+        // Statut + "Nouveau" badge row
+        HBox statutRow = new HBox(6);
         statutRow.setAlignment(Pos.CENTER_RIGHT);
+        // "Nouveau" badge for articles published in the last 7 days
+        LocalDate pub = article.getDatePublication();
+        if (pub != null && ChronoUnit.DAYS.between(pub, LocalDate.now()) < 7) {
+            Label newBadge = new Label("✨ Nouveau");
+            newBadge.setStyle(
+                "-fx-background-color: #DCFCE7; -fx-text-fill: #059669;" +
+                "-fx-font-size: 9px; -fx-font-weight: bold;" +
+                "-fx-padding: 2 7; -fx-background-radius: 8;"
+            );
+            statutRow.getChildren().add(newBadge);
+        }
+        Region sr = new Region(); HBox.setHgrow(sr, Priority.ALWAYS);
+        statutRow.getChildren().add(sr);
         Label badge = new Label(statutLabel(article.getStatut()));
         badge.getStyleClass().add(getBadgeStyle(article.getStatut()));
         statutRow.getChildren().add(badge);
         inner.getChildren().add(statutRow);
 
-        // Organe + médecin badges
+        // Organe (with color dot) + médecin badges
         HBox badgeRow = new HBox(6);
         badgeRow.setAlignment(Pos.CENTER_LEFT);
         if (article.getOrgane() != null && !article.getOrgane().isEmpty()) {
-            Label organeBadge = new Label("🏥 " + article.getOrgane());
+            String accentColor = organeAccentColor(article.getOrgane());
+            Label dot = new Label("●");
+            dot.setStyle("-fx-text-fill: " + accentColor + "; -fx-font-size: 9px;");
+            Label organeBadge = new Label(article.getOrgane());
             organeBadge.setStyle(
                 "-fx-background-color: #EEF2FF; -fx-text-fill: #5B35A5;" +
                 "-fx-padding: 3 8; -fx-background-radius: 10; -fx-font-size: 10px;"
             );
-            badgeRow.getChildren().add(organeBadge);
+            badgeRow.getChildren().addAll(dot, organeBadge);
         }
         if (article.getMedecinNom() != null && !article.getMedecinNom().isBlank()) {
-            Label drBadge = new Label("🩺 Dr. " + article.getMedecinNom());
+            Label drBadge = new Label("Dr. " + article.getMedecinNom());
             drBadge.setStyle(
                 "-fx-background-color: rgba(43,188,176,0.12); -fx-text-fill: #2BBCB0;" +
                 "-fx-padding: 3 8; -fx-background-radius: 10; -fx-font-size: 10px; -fx-font-weight: bold;"
@@ -310,16 +407,24 @@ public class ArticleListController {
             inner.getChildren().add(tagsRow);
         }
 
+        // Read time
+        String rawContenu = article.getContenu() != null ? article.getContenu() : "";
+        int wordCount = rawContenu.trim().isEmpty() ? 0 : rawContenu.trim().split("\\s+").length;
+        int readMin = Math.max(1, (int) Math.ceil(wordCount / 200.0));
+        Label readTime = new Label("⏱ " + readMin + " min de lecture");
+        readTime.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 10px; -fx-padding: 0 0 2 0;");
+        inner.getChildren().add(readTime);
+
         // Separator
         Separator sep = new Separator();
         sep.setStyle("-fx-background-color: #F0EBF8;");
         inner.getChildren().add(sep);
 
-        // Footer: date, likes, views, comments
+        // Footer: date (relative), likes, views, comments
         HBox footer = new HBox(10);
         footer.setAlignment(Pos.CENTER_LEFT);
         if (article.getDatePublication() != null) {
-            Label date = new Label("📅 " + article.getDatePublication());
+            Label date = new Label("📅 " + formatRelativeDate(article.getDatePublication()));
             date.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 11px;");
             footer.getChildren().add(date);
         }
@@ -339,8 +444,10 @@ public class ArticleListController {
         footer.getChildren().add(comments);
         int evalCount = serviceEval.getCount(article.getId());
         if (evalCount > 0) {
-            int pct = (int) Math.round(serviceEval.getAverage(article.getId()) / 5.0 * 100);
-            Label evalLbl = new Label("⭐ " + pct + "% (" + evalCount + ")");
+            double avg = serviceEval.getAverage(article.getId());
+            int rounded = (int) Math.round(avg);
+            String stars = "★".repeat(rounded) + "☆".repeat(5 - rounded);
+            Label evalLbl = new Label(stars + " (" + evalCount + ")");
             evalLbl.setStyle("-fx-text-fill: #D97706; -fx-font-size: 11px; -fx-font-weight: bold;");
             footer.getChildren().add(evalLbl);
         }
@@ -390,9 +497,19 @@ public class ArticleListController {
             article.setViews(article.getViews() + 1);
 
         articleTitreLabel.setText(article.getTitre());
+        if (readTimeLabel != null) {
+            String rc = article.getContenu() != null ? article.getContenu() : "";
+            int wc = rc.trim().isEmpty() ? 0 : rc.trim().split("\\s+").length;
+            int rm = Math.max(1, (int) Math.ceil(wc / 200.0));
+            readTimeLabel.setText("⏱ " + rm + " min");
+            readTimeLabel.setVisible(true);
+            readTimeLabel.setManaged(true);
+        }
         statutBadge.setText(article.getStatut());
         statutBadge.getStyleClass().setAll(getBadgeStyle(article.getStatut()));
-        dateLabel.setText(article.getDatePublication() != null ? "📅 " + article.getDatePublication() : "");
+        dateLabel.setText(article.getDatePublication() != null
+            ? "📅 " + formatRelativeDate(article.getDatePublication()) + "  (" + article.getDatePublication() + ")"
+            : "");
         organeLabel.setText(article.getOrgane() != null ? "🏥 " + article.getOrgane() : "");
         viewsLabel.setText("👁 " + article.getViews() + " vues");
 
@@ -590,10 +707,33 @@ public class ArticleListController {
         commentsContainer.getChildren().clear();
         if (selectedArticle == null) return;
         List<Commentaire> comments = serviceCommentaire.getByArticle(selectedArticle.getId());
+
+        String sort = sortComboBox != null ? sortComboBox.getValue() : "Plus récents";
+        if ("Plus anciens".equals(sort)) {
+            comments.sort(Comparator.comparing(Commentaire::getDateCommentaire));
+        } else if ("Plus aimés".equals(sort)) {
+            comments.sort(Comparator.comparingInt(Commentaire::getLikes).reversed());
+        } else {
+            comments.sort(Comparator.comparing(Commentaire::getDateCommentaire).reversed());
+        }
+
+        if (commentHeaderLabel != null) {
+            int n = comments.size();
+            commentHeaderLabel.setText("💬 Commentaires" + (n > 0 ? " (" + n + ")" : ""));
+        }
+
         if (comments.isEmpty()) {
-            Label empty = new Label("Aucun commentaire pour l'instant.");
-            empty.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 12px;");
-            commentsContainer.getChildren().add(empty);
+            VBox emptyBox = new VBox(6);
+            emptyBox.setAlignment(Pos.CENTER);
+            emptyBox.setPadding(new Insets(20, 0, 10, 0));
+            Label icon = new Label("💬");
+            icon.setStyle("-fx-font-size: 28px;");
+            Label msg = new Label("Aucun commentaire pour l'instant");
+            msg.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 12px; -fx-font-weight: bold;");
+            Label sub = new Label("Soyez le premier à réagir !");
+            sub.setStyle("-fx-text-fill: #CBD5E0; -fx-font-size: 11px;");
+            emptyBox.getChildren().addAll(icon, msg, sub);
+            commentsContainer.getChildren().add(emptyBox);
             return;
         }
         for (Commentaire c : comments) {
@@ -602,19 +742,37 @@ public class ArticleListController {
     }
 
     private VBox createCommentCard(Commentaire c) {
-        VBox card = new VBox(5);
-        card.setStyle("-fx-background-color: #F4F9FF; -fx-background-radius: 8; -fx-border-color: #C8DCF0; -fx-border-radius: 8; -fx-border-width: 1;");
-        card.setPadding(new Insets(10));
+        VBox card = new VBox(8);
+        card.setStyle(
+            "-fx-background-color: white; -fx-background-radius: 12;" +
+            "-fx-border-color: #EDE9F8; -fx-border-radius: 12; -fx-border-width: 1;" +
+            "-fx-effect: dropshadow(gaussian, rgba(90,53,165,0.06), 6, 0, 0, 2);"
+        );
+        card.setPadding(new Insets(12, 14, 12, 14));
+
+        String auteurStr = c.getAuteur() != null ? c.getAuteur() : "?";
+        String initiale = auteurStr.isEmpty() ? "?" : String.valueOf(auteurStr.charAt(0)).toUpperCase();
+        String avatarColor = AVATAR_COLORS[Math.abs(auteurStr.hashCode()) % AVATAR_COLORS.length];
+
+        Label avatarLbl = new Label(initiale);
+        avatarLbl.setMinSize(36, 36); avatarLbl.setMaxSize(36, 36);
+        avatarLbl.setAlignment(Pos.CENTER);
+        avatarLbl.setStyle(
+            "-fx-background-color: " + avatarColor + "; -fx-text-fill: white;" +
+            "-fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 20;"
+        );
 
         HBox header = new HBox(10);
         header.setAlignment(Pos.CENTER_LEFT);
-        Label auteur = new Label("👤 " + c.getAuteur());
-        auteur.setStyle("-fx-font-weight: bold; -fx-text-fill: #5B35A5; -fx-font-size: 12px;");
+        VBox authorMeta = new VBox(1);
+        Label auteur = new Label(auteurStr);
+        auteur.setStyle("-fx-font-weight: bold; -fx-text-fill: #2D1B69; -fx-font-size: 12px;");
+        Label date = new Label(c.getFormattedDate());
+        date.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 10px;");
+        authorMeta.getChildren().addAll(auteur, date);
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        Label date = new Label(c.getFormattedDate());
-        date.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 11px;");
-        header.getChildren().addAll(auteur, spacer, date);
+        header.getChildren().addAll(avatarLbl, authorMeta, spacer);
 
         Label contenu = new Label(c.getContenu());
         contenu.setWrapText(true);
@@ -701,29 +859,57 @@ public class ArticleListController {
 
         likeRow.getChildren().addAll(cLikeBtn, likeCount, replyBtn);
         card.getChildren().addAll(header, contenu, likeRow, repliesBox, replyInputBox);
+
+        // Subtle hover
+        String baseStyle =
+            "-fx-background-color: white; -fx-background-radius: 12;" +
+            "-fx-border-color: #EDE9F8; -fx-border-radius: 12; -fx-border-width: 1;" +
+            "-fx-effect: dropshadow(gaussian, rgba(90,53,165,0.06), 6, 0, 0, 2);";
+        String hoverStyle =
+            "-fx-background-color: #FDFBFF; -fx-background-radius: 12;" +
+            "-fx-border-color: #C4B5FD; -fx-border-radius: 12; -fx-border-width: 1;" +
+            "-fx-effect: dropshadow(gaussian, rgba(90,53,165,0.12), 10, 0, 0, 3);";
+        card.setOnMouseEntered(e -> card.setStyle(hoverStyle));
+        card.setOnMouseExited(e -> card.setStyle(baseStyle));
         return card;
     }
 
-    private VBox createReplyCard(Commentaire r, TextArea parentReplyField, VBox parentReplyInputBox) {
-        VBox card = new VBox(4);
-        card.setStyle("-fx-background-color: #EEF4FF; -fx-background-radius: 6; " +
-            "-fx-border-color: #B8D4F0; -fx-border-radius: 6; -fx-border-width: 1;");
-        card.setPadding(new Insets(7, 10, 7, 10));
+    private HBox createReplyCard(Commentaire r, TextArea parentReplyField, VBox parentReplyInputBox) {
+        // Left teal accent stripe
+        VBox stripe = new VBox();
+        stripe.setMinWidth(3); stripe.setPrefWidth(3);
+        stripe.setStyle("-fx-background-color: #2BBCB0; -fx-background-radius: 6 0 0 6;");
+
+        VBox card = new VBox(6);
+        card.setStyle("-fx-background-color: #F0FBF9; -fx-background-radius: 0 10 10 0; -fx-padding: 8 12 8 12;");
+        HBox.setHgrow(card, Priority.ALWAYS);
+
+        String auteurStr = r.getAuteur() != null ? r.getAuteur() : "?";
+        String initiale = auteurStr.isEmpty() ? "?" : String.valueOf(auteurStr.charAt(0)).toUpperCase();
+        Label avatarLbl = new Label(initiale);
+        avatarLbl.setMinSize(26, 26); avatarLbl.setMaxSize(26, 26);
+        avatarLbl.setAlignment(Pos.CENTER);
+        avatarLbl.setStyle(
+            "-fx-background-color: #2BBCB0; -fx-text-fill: white;" +
+            "-fx-font-weight: bold; -fx-font-size: 10px; -fx-background-radius: 20;"
+        );
 
         HBox header = new HBox(8);
         header.setAlignment(Pos.CENTER_LEFT);
-        Label auteur = new Label("↳ " + r.getAuteur());
-        auteur.setStyle("-fx-font-weight: bold; -fx-text-fill: #2BBCB0; -fx-font-size: 11px;");
-        Region sp = new Region(); HBox.setHgrow(sp, Priority.ALWAYS);
+        VBox authorMeta = new VBox(1);
+        Label auteur = new Label("↳ " + auteurStr);
+        auteur.setStyle("-fx-font-weight: bold; -fx-text-fill: #0D9488; -fx-font-size: 11px;");
         Label date = new Label(r.getFormattedDate());
         date.setStyle("-fx-text-fill: #B0C4D8; -fx-font-size: 10px;");
-        header.getChildren().addAll(auteur, sp, date);
+        authorMeta.getChildren().addAll(auteur, date);
+        Region sp = new Region(); HBox.setHgrow(sp, Priority.ALWAYS);
+        header.getChildren().addAll(avatarLbl, authorMeta, sp);
 
         Label contenu = new Label(r.getContenu());
         contenu.setWrapText(true);
-        contenu.setStyle("-fx-text-fill: #2D3748; -fx-font-size: 12px;");
+        contenu.setStyle("-fx-text-fill: #374151; -fx-font-size: 12px;");
 
-        Button replyBtn = new Button("💬 Répondre");
+        Button replyBtn = new Button("↩ Répondre");
         replyBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #2BBCB0; " +
             "-fx-font-size: 10px; -fx-cursor: hand; -fx-padding: 0 2; -fx-border-width: 0;");
         replyBtn.setOnAction(ev -> {
@@ -735,7 +921,13 @@ public class ArticleListController {
         });
 
         card.getChildren().addAll(header, contenu, replyBtn);
-        return card;
+
+        HBox wrapper = new HBox(0, stripe, card);
+        wrapper.setStyle(
+            "-fx-background-color: #F0FBF9; -fx-background-radius: 6;" +
+            "-fx-border-color: #A7EDE8; -fx-border-radius: 6; -fx-border-width: 1;"
+        );
+        return wrapper;
     }
 
     // ─── Actions ──────────────────────────────────────────────
@@ -922,6 +1114,11 @@ public class ArticleListController {
     @FXML void handleAddComment(ActionEvent event) {
         String text = commentField.getText().trim();
         if (text.isEmpty() || selectedArticle == null) return;
+        if (text.length() > 500) {
+            charCountLabel.setText(text.length() + " / 500 — trop long !");
+            charCountLabel.setStyle("-fx-font-size:10px;-fx-text-fill:#E53E3E;-fx-font-weight:bold;");
+            return;
+        }
         Utilisateur user = UserSession.getInstance().getCurrentUser();
         String auteur = "MEDECIN".equals(user.getRole())
             ? "Dr. " + user.getNom()
