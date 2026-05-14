@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+
+<BorderPane stylesheets="@../css/style.css"
+            xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.oncoreminder.controllers.RendezVousController">
+
+    <!-- ══ SIDEBAR MÉDECIN (partagée) ══ -->
+    <left>
+        <fx:include fx:id="doctorSidebar" source="DoctorSidebar.fxml"/>
+    </left>
+
+    <!-- ══ CONTENU ══ -->
+    <center>
+        <VBox spacing="0" style="-fx-background-color:#F5F7FF;">
+
+            <!-- Top bar -->
+            <HBox alignment="CENTER_LEFT" spacing="16" styleClass="topbar" style="-fx-padding:14 24 14 24;">
+                <Label text="Gestion des Rendez-vous" style="-fx-font-size:16px;-fx-font-weight:bold;-fx-text-fill:#4A2D8F;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="📊 Export Excel" onAction="#onExportExcel" styleClass="btn-secondary"
+                        style="-fx-font-size:12px;-fx-padding:6 14;-fx-background-radius:8;"/>
+                <Button text="↻ Actualiser" onAction="#onRefresh" styleClass="btn-secondary"
+                        style="-fx-font-size:12px;-fx-padding:6 14;-fx-background-radius:8;"/>
+            </HBox>
+
+            <!-- Stats -->
+            <HBox spacing="16" style="-fx-padding:20 24 0 24;">
+                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS">
+                    <Label text="TOTAL" styleClass="stat-label"/>
+                    <Label fx:id="totalLabel" text="0" styleClass="stat-value"/>
+                </VBox>
+                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS">
+                    <Label text="EN ATTENTE" styleClass="stat-label" style="-fx-text-fill:#D97706;"/>
+                    <Label fx:id="attenteLabel" text="0" styleClass="stat-value" style="-fx-text-fill:#D97706;"/>
+                </VBox>
+                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS">
+                    <Label text="ACCEPTÉS" styleClass="stat-label" style="-fx-text-fill:#059669;"/>
+                    <Label fx:id="accepteLabel" text="0" styleClass="stat-value" style="-fx-text-fill:#059669;"/>
+                </VBox>
+                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS">
+                    <Label text="REFUSÉS" styleClass="stat-label" style="-fx-text-fill:#DC2626;"/>
+                    <Label fx:id="refuseLabel" text="0" styleClass="stat-value" style="-fx-text-fill:#DC2626;"/>
+                </VBox>
+            </HBox>
+
+            <!-- Filtres -->
+            <HBox spacing="12" style="-fx-padding:16 24 8 24;">
+                <TextField fx:id="searchField" promptText="🔍 Rechercher par patient, lieu, notes..." styleClass="search-field" HBox.hgrow="ALWAYS"/>
+                <ComboBox fx:id="filterStatut" prefWidth="160" styleClass="field-combo"/>
+            </HBox>
+
+            <!-- Table -->
+            <VBox VBox.vgrow="ALWAYS" style="-fx-padding:0 24 0 24;">
+                <TableView fx:id="table" VBox.vgrow="ALWAYS" styleClass="main-table">
+                    <columns>
+                        <TableColumn fx:id="colId"      prefWidth="55"  text="ID"/>
+                        <TableColumn fx:id="colPatient" prefWidth="160" text="Patient"/>
+                        <TableColumn fx:id="colDate"    prefWidth="140" text="Date / Heure"/>
+                        <TableColumn fx:id="colLieu"    prefWidth="140" text="Lieu"/>
+                        <TableColumn fx:id="colNotes"   prefWidth="180" text="Notes"/>
+                        <TableColumn fx:id="colStatut"  prefWidth="120" text="Statut"/>
+                        <TableColumn fx:id="colActions" prefWidth="240" text="Actions"/>
+                    </columns>
+                    <placeholder><Label text="Aucun rendez-vous trouvé." style="-fx-text-fill:#B0C4D8;-fx-font-style:italic;"/></placeholder>
+                </TableView>
+            </VBox>
+
+            <!-- Footer -->
+            <HBox alignment="CENTER_LEFT" style="-fx-background-color:white;-fx-border-color:#C8DCF0;-fx-border-width:1 0 0 0;-fx-padding:10 24;">
+                <Label fx:id="statusLabel" text="Chargement..." style="-fx-text-fill:#6B7280;-fx-font-size:12px;"/>
+            </HBox>
+        </VBox>
+    </center>
+</BorderPane>

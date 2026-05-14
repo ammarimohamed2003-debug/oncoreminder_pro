@@ -11,80 +11,9 @@
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.oncoreminder.controllers.ArticleListController">
 
-    <!-- ── Sidebar médecin ── -->
+    <!-- ── Sidebar médecin (partagée) ── -->
     <left>
-        <VBox prefWidth="255" styleClass="doctor-sidebar">
-
-            <!-- Branding -->
-            <HBox spacing="10" alignment="CENTER_LEFT"
-                  style="-fx-padding: 18 18 15 18;
-                         -fx-border-color: transparent transparent rgba(255,255,255,0.10) transparent;
-                         -fx-border-width: 0 0 1 0;">
-                <StackPane>
-                    <Circle radius="17" fill="rgba(43,188,176,0.15)"/>
-                    <Circle radius="17" fill="transparent" stroke="#2BBCB0" strokeWidth="1.5"/>
-                    <Rectangle width="5" height="16" fill="white" arcWidth="4" arcHeight="4"/>
-                    <Rectangle width="16" height="5" fill="white" arcWidth="4" arcHeight="4"/>
-                    <Circle radius="2.5" fill="#2BBCB0"/>
-                </StackPane>
-                <VBox spacing="2">
-                    <HBox spacing="0">
-                        <Label text="Onco" style="-fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold;"/>
-                        <Label text="Reminder" style="-fx-text-fill: #2BBCB0; -fx-font-size: 12px; -fx-font-weight: bold;"/>
-                    </HBox>
-                    <Label text="PRO" style="-fx-background-color: rgba(43,188,176,0.25); -fx-text-fill: #2BBCB0;
-                                   -fx-background-radius: 4; -fx-padding: 1 6; -fx-font-size: 9px; -fx-font-weight: bold;"/>
-                </VBox>
-            </HBox>
-
-            <!-- Avatar médecin -->
-            <VBox alignment="CENTER" spacing="8" style="-fx-padding: 20 16 16 16;">
-                <StackPane>
-                    <Circle radius="44" fill="#2BBCB0" opacity="0.12"/>
-                    <Circle radius="38" fill="#1A3452"/>
-                    <Circle radius="33" fill="#2A5080"/>
-                    <Label text="👨‍⚕️" style="-fx-font-size: 26px; -fx-font-family: 'Segoe UI Emoji';"/>
-                </StackPane>
-                <Label fx:id="userNameLabel" text=""
-                       style="-fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold; -fx-alignment: center;"
-                       wrapText="true" maxWidth="210" textAlignment="CENTER" alignment="CENTER"/>
-                <Label text="Médecin"
-                       style="-fx-background-color: rgba(43,188,176,0.20); -fx-text-fill: #2BBCB0;
-                              -fx-background-radius: 20; -fx-padding: 3 14; -fx-font-size: 11px; -fx-font-weight: bold;"/>
-            </VBox>
-
-            <!-- Divider -->
-            <Pane prefHeight="1" style="-fx-background-color: rgba(255,255,255,0.10);">
-                <VBox.margin><Insets left="18" right="18" bottom="6"/></VBox.margin>
-            </Pane>
-
-            <!-- Navigation -->
-            <VBox spacing="2" style="-fx-padding: 10 10 0 10;">
-                <Label text="NAVIGATION"
-                       style="-fx-text-fill: rgba(255,255,255,0.32); -fx-font-size: 10px;
-                              -fx-font-weight: bold; -fx-padding: 0 8 5 8;"/>
-                <Button text="🏠  Mon Espace" onAction="#handleBack"
-                        maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
-                <Button text="📰  Mes Articles"
-                        maxWidth="Infinity" styleClass="sidebar-nav-btn-doctor-active"/>
-                <Button text="📅  Événements" onAction="#handleRendezVous"
-                        maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
-            </VBox>
-
-            <Region VBox.vgrow="ALWAYS"/>
-
-            <!-- Divider avant logout -->
-            <Pane prefHeight="1" style="-fx-background-color: rgba(255,255,255,0.10);">
-                <VBox.margin><Insets left="18" right="18" top="6"/></VBox.margin>
-            </Pane>
-
-            <!-- Logout -->
-            <VBox style="-fx-padding: 8 10 18 10;">
-                <Button text="🔓  Déconnexion" onAction="#handleLogout"
-                        maxWidth="Infinity" styleClass="sidebar-logout-btn"/>
-            </VBox>
-
-        </VBox>
+        <fx:include fx:id="doctorSidebar" source="DoctorSidebar.fxml"/>
     </left>
 
     <!-- ── Centre : grille ou détail ── -->

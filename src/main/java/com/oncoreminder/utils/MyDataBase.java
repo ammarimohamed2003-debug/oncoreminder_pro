@@ -52,7 +52,6 @@ public class MyDataBase {
             "  `taille` double DEFAULT NULL," +
             "  `traitements` text DEFAULT NULL," +
             "  `notes` text DEFAULT NULL," +
-            "  `medecin_id` int(11) DEFAULT NULL," +
             "  PRIMARY KEY (`id`)," +
             "  UNIQUE KEY `UNIQ_EMAIL` (`email`)" +
             ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
@@ -83,8 +82,7 @@ public class MyDataBase {
                 "ALTER TABLE `utilisateur` ADD COLUMN `poids` double DEFAULT NULL",
                 "ALTER TABLE `utilisateur` ADD COLUMN `taille` double DEFAULT NULL",
                 "ALTER TABLE `utilisateur` ADD COLUMN `traitements` text DEFAULT NULL",
-                "ALTER TABLE `utilisateur` ADD COLUMN `notes` text DEFAULT NULL",
-                "ALTER TABLE `utilisateur` ADD COLUMN `medecin_id` int(11) DEFAULT NULL"
+                "ALTER TABLE `utilisateur` ADD COLUMN `notes` text DEFAULT NULL"
             };
 
             String[] articleAlters = {
@@ -125,6 +123,50 @@ public class MyDataBase {
                 "  PRIMARY KEY (`id`)" +
                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
             );
+
+            // RendezVous & Ordonnance tables
+            stmt.execute(
+                "CREATE TABLE IF NOT EXISTS `rendez_vous` (" +
+                "  `id` int NOT NULL AUTO_INCREMENT," +
+                "  `patient_id` int NOT NULL," +
+                "  `medecin_id` int DEFAULT NULL," +
+                "  `date_rdv` datetime NOT NULL," +
+                "  `lieu` varchar(255) DEFAULT NULL," +
+                "  `notes` text DEFAULT NULL," +
+                "  `statut` varchar(20) DEFAULT 'EN_ATTENTE'," +
+                "  PRIMARY KEY (`id`)" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
+            );
+            stmt.execute(
+                "CREATE TABLE IF NOT EXISTS `ordonnance` (" +
+                "  `id` int NOT NULL AUTO_INCREMENT," +
+                "  `rendez_vous_id` int NOT NULL," +
+                "  `medicaments` text NOT NULL," +
+                "  `posologie` varchar(300) NOT NULL," +
+                "  `duree_jours` int NOT NULL," +
+                "  `date_emission` date NOT NULL," +
+                "  PRIMARY KEY (`id`)" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
+            );
+            // Cleanup: remove traitement table, its FK column, and medecin_id from utilisateur
+            String[] cleanupLegacy = {
+                "DROP TABLE IF EXISTS `traitement`",
+                "ALTER TABLE `rendez_vous` DROP COLUMN `traitement_id`",
+                "ALTER TABLE `utilisateur` DROP COLUMN `medecin_id`"
+            };
+            for (String q : cleanupLegacy) {
+                try { stmt.execute(q); } catch (SQLException ignored) {}
+            }
+
+            // Migrate old rendez_vous schema if needed (add new columns)
+            String[] rdvAlters = {
+                "ALTER TABLE `rendez_vous` ADD COLUMN `patient_id` int NOT NULL DEFAULT 0",
+                "ALTER TABLE `rendez_vous` ADD COLUMN `medecin_id` int DEFAULT NULL",
+                "ALTER TABLE `rendez_vous` ADD COLUMN `statut` varchar(20) DEFAULT 'EN_ATTENTE'"
+            };
+            for (String alter : rdvAlters) {
+                try { stmt.execute(alter); } catch (SQLException ignored) {}
+            }
 
             // Patch: add missing columns to event table if it already existed without them
             String[] eventAlters = {

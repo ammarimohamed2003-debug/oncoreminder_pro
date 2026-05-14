@@ -210,66 +210,25 @@ public class ServiceUtilisateur {
         u.setGroupeSanguin(rs.getString("groupe_sanguin"));
         u.setPoids(rs.getObject("poids", Double.class));
         u.setTaille(rs.getObject("taille", Double.class));
-        try { u.setTraitements(rs.getString("traitements")); }                  catch (SQLException ignored) {}
-        try { u.setNotes(rs.getString("notes")); }                              catch (SQLException ignored) {}
-        try { u.setMedecinId(rs.getObject("medecin_id", Integer.class)); }     catch (SQLException ignored) {}
+        try { u.setTraitements(rs.getString("traitements")); } catch (SQLException ignored) {}
+        try { u.setNotes(rs.getString("notes")); }           catch (SQLException ignored) {}
         return u;
     }
 
-    public List<Utilisateur> getPatientsByMedecin(int medecinId) {
-        List<Utilisateur> patients = new ArrayList<>();
-        if (!updateConnection()) return patients;
-        String req = "SELECT * FROM utilisateur WHERE role = 'PATIENT' AND medecin_id = ?";
-        try {
-            PreparedStatement pst = cnx.prepareStatement(req);
-            pst.setInt(1, medecinId);
-            ResultSet rs = pst.executeQuery();
-            while (rs.next()) patients.add(mapResultSetToUser(rs));
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-        return patients;
-    }
-
-    public List<Utilisateur> getUnassignedPatients() {
-        List<Utilisateur> patients = new ArrayList<>();
-        if (!updateConnection()) return patients;
-        String req = "SELECT * FROM utilisateur WHERE role = 'PATIENT' AND medecin_id IS NULL";
+    public List<Utilisateur> getAllMedecins() {
+        List<Utilisateur> medecins = new ArrayList<>();
+        if (!updateConnection()) return medecins;
+        String req = "SELECT * FROM utilisateur WHERE role = 'MEDECIN' ORDER BY nom, prenom";
         try {
             Statement st = cnx.createStatement();
             ResultSet rs = st.executeQuery(req);
-            while (rs.next()) patients.add(mapResultSetToUser(rs));
+            while (rs.next()) medecins.add(mapResultSetToUser(rs));
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-        return patients;
+        return medecins;
     }
 
-    public void assignMedecin(int patientId, int medecinId) {
-        if (!updateConnection()) return;
-        String req = "UPDATE utilisateur SET medecin_id = ? WHERE id = ?";
-        try {
-            PreparedStatement pst = cnx.prepareStatement(req);
-            pst.setInt(1, medecinId);
-            pst.setInt(2, patientId);
-            pst.executeUpdate();
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    public void unassignMedecin(int patientId) {
-        if (!updateConnection()) return;
-        String req = "UPDATE utilisateur SET medecin_id = NULL WHERE id = ?";
-        try {
-            PreparedStatement pst = cnx.prepareStatement(req);
-            pst.setInt(1, patientId);
-            pst.executeUpdate();
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-    
     public Utilisateur getById(int id) {
         if (!updateConnection()) return null;
         String req = "SELECT * FROM utilisateur WHERE id = ?";

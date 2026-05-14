@@ -30,7 +30,8 @@ import java.nio.file.StandardCopyOption;
 
 public class ArticleFormController {
 
-    @FXML private Label            userNameLabel;
+    @FXML private DoctorSidebarController doctorSidebarController;
+
     @FXML private Label            formTitleLabel;
     @FXML private TextField        titreField;
     @FXML private TextField        organeField;
@@ -62,9 +63,7 @@ public class ArticleFormController {
 
     @FXML
     public void initialize() {
-        Utilisateur doc = UserSession.getInstance().getCurrentUser();
-        if (doc != null)
-            userNameLabel.setText("Dr. " + doc.getNom() + " " + doc.getPrenom());
+        if (doctorSidebarController != null) doctorSidebarController.setActivePage("articles");
 
         statutCombo.getItems().addAll("BROUILLON", "PUBLIE");
         statutCombo.setValue("BROUILLON");
@@ -369,13 +368,6 @@ public class ArticleFormController {
     @FXML void handleCancel(ActionEvent event) {
         articleToEdit = null;
         App.navigate("ArticleList");
-    }
-
-    @FXML void handleRendezVous(ActionEvent event) { DoctorDashboardController.showEventsOnLoad = true; App.navigate("DoctorDashboard"); }
-
-    @FXML void handleLogout(ActionEvent event) {
-        UserSession.getInstance().logout();
-        App.navigate("Login");
     }
 
     private void fieldErr(javafx.scene.control.Control field, Label lbl, String msg) {

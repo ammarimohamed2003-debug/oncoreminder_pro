@@ -44,6 +44,7 @@ public class AppLauncher {
 
     private static void checkDatabaseConnection() {
         try {
+
             var cnx = MyDataBase.getInstance().getCnx();
             if (cnx == null || cnx.isClosed()) {
                 System.err.println("[BD] Connexion indisponible — vérifiez MySQL.");

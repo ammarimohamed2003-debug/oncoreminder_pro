@@ -29,6 +29,9 @@ import java.util.stream.Collectors;
 
 public class ArticleListController {
 
+    // ── Sidebar (partagée via fx:include) ─────────────────────────────
+    @FXML private DoctorSidebarController doctorSidebarController;
+
     // ── Grid view ─────────────────────────────────────────────
     @FXML private VBox      gridView;
     @FXML private FlowPane  articleFlowPane;
@@ -36,7 +39,6 @@ public class ArticleListController {
     @FXML private HBox      paginationBar;
     @FXML private TextField searchField;
     @FXML private Button    newArticleBtn;
-    @FXML private Label     userNameLabel;
 
     // ── Statut filters (médecin) ──────────────────────────────
     @FXML private HBox   statutFilterBar;
@@ -92,7 +94,7 @@ public class ArticleListController {
         if (user == null) return;
 
         boolean isMedecin = "MEDECIN".equals(user.getRole());
-        userNameLabel.setText(isMedecin ? "Dr. " + user.getNom() : user.getPrenom() + " " + user.getNom());
+        if (doctorSidebarController != null) doctorSidebarController.setActivePage("articles");
         newArticleBtn.setVisible(isMedecin);
         newArticleBtn.setManaged(isMedecin);
         filterBar.setVisible(isMedecin);
@@ -934,15 +936,4 @@ public class ArticleListController {
         renderGrid(currentArticles);
     }
 
-    @FXML void handleBack(ActionEvent event) {
-        Utilisateur user = UserSession.getInstance().getCurrentUser();
-        App.navigate("MEDECIN".equals(user.getRole()) ? "DoctorDashboard" : "PatientDashboard");
-    }
-
-    @FXML void handleRendezVous(ActionEvent event) { DoctorDashboardController.showEventsOnLoad = true; App.navigate("DoctorDashboard"); }
-
-    @FXML void handleLogout(ActionEvent event) {
-        UserSession.getInstance().logout();
-        App.navigate("Login");
-    }
 }

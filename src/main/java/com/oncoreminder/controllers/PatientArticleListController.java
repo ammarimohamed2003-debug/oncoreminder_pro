@@ -33,8 +33,8 @@ import java.util.List;
 
 public class PatientArticleListController {
 
-    // Sidebar
-    @FXML private Label patientNameLabel;
+    // Sidebar (partagée via fx:include)
+    @FXML private PatientSidebarController patientSidebarController;
 
     // Grid view
     @FXML private VBox      gridView;
@@ -51,7 +51,6 @@ public class PatientArticleListController {
     @FXML private Label     tagsLabel;
     @FXML private Label     viewsLabel;
     @FXML private Label     medecinLabel;
-    @FXML private Label     medecinSidebarLabel;
     @FXML private VBox      contenuContainer;
     @FXML private StackPane imageContainer;
     @FXML private ImageView detailImageView;
@@ -83,17 +82,8 @@ public class PatientArticleListController {
     @FXML
     public void initialize() {
         Utilisateur user = UserSession.getInstance().getCurrentUser();
-        if (user != null) {
-            patientNameLabel.setText(user.getPrenom() + " " + user.getNom());
-            if (user.getMedecinId() != null) {
-                Utilisateur dr = serviceUtilisateur.getById(user.getMedecinId());
-                if (dr != null) {
-                    medecinSidebarLabel.setText("🩺 Dr. " + dr.getPrenom() + " " + dr.getNom());
-                    medecinSidebarLabel.setVisible(true);
-                    medecinSidebarLabel.setManaged(true);
-                }
-            }
-        }
+        if (patientSidebarController != null)
+            patientSidebarController.setActivePage("articles");
         searchField.textProperty().addListener((obs, o, n) -> filterBySearch(n));
         loadArticles();
     }
@@ -794,12 +784,4 @@ public class PatientArticleListController {
         loadComments();
     }
 
-    @FXML void handleDashboard(ActionEvent event)     { App.navigate("PatientDashboard"); }
-    @FXML void handleRendezVous(ActionEvent event)    { PatientDashboardController.showEventsOnLoad = true; App.navigate("PatientDashboard"); }
-    @FXML void handleReclamations(ActionEvent event)  { PatientDashboardController.showReclamationsOnLoad = true; App.navigate("PatientDashboard"); }
-
-    @FXML void handleLogout(ActionEvent event) {
-        UserSession.getInstance().logout();
-        App.navigate("Login");
-    }
 }

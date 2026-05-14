@@ -12,16 +12,10 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.FlowPane?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
-<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.shape.Circle?>
-<?import javafx.scene.shape.Rectangle?>
 <?import javafx.geometry.Insets?>
 
 <BorderPane styleClass="root-pane bg-dashboard" stylesheets="@../css/style.css"
@@ -29,80 +23,9 @@
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.oncoreminder.controllers.DoctorDashboardController">
 
-    <!-- ── Sidebar médecin ── -->
+    <!-- ── Sidebar médecin (partagée) ── -->
     <left>
-        <VBox prefWidth="255" styleClass="doctor-sidebar">
-
-            <!-- Branding -->
-            <HBox spacing="10" alignment="CENTER_LEFT"
-                  style="-fx-padding: 18 18 15 18;
-                         -fx-border-color: transparent transparent rgba(255,255,255,0.10) transparent;
-                         -fx-border-width: 0 0 1 0;">
-                <StackPane>
-                    <Circle radius="17" fill="rgba(43,188,176,0.15)"/>
-                    <Circle radius="17" fill="transparent" stroke="#2BBCB0" strokeWidth="1.5"/>
-                    <Rectangle width="5" height="16" fill="white" arcWidth="4" arcHeight="4"/>
-                    <Rectangle width="16" height="5" fill="white" arcWidth="4" arcHeight="4"/>
-                    <Circle radius="2.5" fill="#2BBCB0"/>
-                </StackPane>
-                <VBox spacing="2">
-                    <HBox spacing="0">
-                        <Label text="Onco" style="-fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold;"/>
-                        <Label text="Reminder" style="-fx-text-fill: #2BBCB0; -fx-font-size: 12px; -fx-font-weight: bold;"/>
-                    </HBox>
-                    <Label text="PRO" style="-fx-background-color: rgba(43,188,176,0.25); -fx-text-fill: #2BBCB0;
-                                   -fx-background-radius: 4; -fx-padding: 1 6; -fx-font-size: 9px; -fx-font-weight: bold;"/>
-                </VBox>
-            </HBox>
-
-            <!-- Avatar médecin -->
-            <VBox alignment="CENTER" spacing="8" style="-fx-padding: 20 16 16 16;">
-                <StackPane>
-                    <Circle radius="44" fill="#2BBCB0" opacity="0.12"/>
-                    <Circle radius="38" fill="#1A3452"/>
-                    <Circle radius="33" fill="#2A5080"/>
-                    <Label text="👨‍⚕️" style="-fx-font-size: 26px; -fx-font-family: 'Segoe UI Emoji';"/>
-                </StackPane>
-                <Label fx:id="doctorSidebarLabel" text=""
-                       style="-fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold; -fx-alignment: center;"
-                       wrapText="true" maxWidth="210" textAlignment="CENTER" alignment="CENTER"/>
-                <Label text="Médecin"
-                       style="-fx-background-color: rgba(43,188,176,0.20); -fx-text-fill: #2BBCB0;
-                              -fx-background-radius: 20; -fx-padding: 3 14; -fx-font-size: 11px; -fx-font-weight: bold;"/>
-            </VBox>
-
-            <!-- Divider -->
-            <Pane prefHeight="1" style="-fx-background-color: rgba(255,255,255,0.10);">
-                <VBox.margin><Insets left="18" right="18" bottom="6"/></VBox.margin>
-            </Pane>
-
-            <!-- Navigation -->
-            <VBox spacing="2" style="-fx-padding: 10 10 0 10;">
-                <Label text="NAVIGATION"
-                       style="-fx-text-fill: rgba(255,255,255,0.32); -fx-font-size: 10px;
-                              -fx-font-weight: bold; -fx-padding: 0 8 5 8;"/>
-                <Button fx:id="btnMonEspace" text="🏠  Mon Espace" onAction="#handleMonEspace"
-                        maxWidth="Infinity" styleClass="sidebar-nav-btn-doctor-active"/>
-                <Button text="📰  Mes Articles" onAction="#handleArticles"
-                        maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
-                <Button fx:id="btnEvenements" text="📅  Événements" onAction="#handleRendezVous"
-                        maxWidth="Infinity" styleClass="sidebar-nav-btn"/>
-            </VBox>
-
-            <Region VBox.vgrow="ALWAYS"/>
-
-            <!-- Divider avant logout -->
-            <Pane prefHeight="1" style="-fx-background-color: rgba(255,255,255,0.10);">
-                <VBox.margin><Insets left="18" right="18" top="6"/></VBox.margin>
-            </Pane>
-
-            <!-- Logout -->
-            <VBox style="-fx-padding: 8 10 18 10;">
-                <Button text="🔓  Déconnexion" onAction="#handleLogout"
-                        maxWidth="Infinity" styleClass="sidebar-logout-btn"/>
-            </VBox>
-
-        </VBox>
+        <fx:include fx:id="doctorSidebar" source="DoctorSidebar.fxml"/>
     </left>
 
     <!-- ══════════════ CONTENU ══════════════ -->
@@ -115,217 +38,12 @@
                 <padding><Insets bottom="12" left="20" right="20" top="12"/></padding>
                 <Label text="Espace Médecin" styleClass="brand-subtitle"
                        style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #4A2D8F;"/>
-                <Region HBox.hgrow="ALWAYS"/>
-                <TextField fx:id="searchField" promptText="🔍  Rechercher un patient..."
-                           styleClass="search-field" prefWidth="280" prefHeight="36"/>
             </HBox>
 
             <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE" styleClass="tab-pane" VBox.vgrow="ALWAYS">
             <tabs>
 
-            <!-- ════ ONGLET 1 — MES PATIENTS ════ -->
-            <Tab text="👥  Mes Patients">
-                <HBox spacing="0">
-                    <!-- ── Liste patients ── -->
-                    <VBox spacing="0" HBox.hgrow="ALWAYS"
-                          style="-fx-background-color: #F5F7FF;">
-                        <padding><Insets bottom="20" left="20" right="10" top="20"/></padding>
-
-                        <HBox alignment="CENTER_LEFT" spacing="12">
-                            <Label text="Mes Patients" styleClass="section-title"
-                                   style="-fx-font-size: 17px;"/>
-                            <Label fx:id="patientCountLabel" text="(0)"
-                                   style="-fx-text-fill: #2BBCB0; -fx-font-weight: bold; -fx-font-size: 13px;"/>
-                            <Region HBox.hgrow="ALWAYS"/>
-                            <Button text="+ Ajouter" onAction="#handleAddPatient"
-                                    styleClass="btn-primary"
-                                    style="-fx-font-size: 11px; -fx-padding: 6 12 6 12;
-                                           -fx-background-radius: 8; -fx-border-radius: 8;"/>
-                            <Button text="↻ Actualiser" onAction="#handleRefresh"
-                                    styleClass="btn-secondary"
-                                    style="-fx-font-size: 11px; -fx-padding: 6 12 6 12;
-                                           -fx-background-radius: 8; -fx-border-radius: 8;"/>
-                        </HBox>
-                        <VBox style="-fx-padding: 0 0 8 0;"/>
-
-                        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
-                                    style="-fx-background-color: transparent; -fx-background: transparent;
-                                           -fx-border-color: transparent;">
-                            <FlowPane fx:id="patientFlowPane" hgap="14" vgap="14">
-                                <padding><Insets bottom="10" left="0" right="10" top="5"/></padding>
-                            </FlowPane>
-                        </ScrollPane>
-                    </VBox>
-
-                    <!-- ── Panneau dossier patient ── -->
-                    <VBox fx:id="detailPanel" minWidth="380" prefWidth="400"
-                          style="-fx-background-color: #FFFFFF;
-                                 -fx-border-color: #D6CBFF; -fx-border-width: 0 0 0 2;">
-
-                        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" hbarPolicy="NEVER"
-                                    style="-fx-background-color: transparent; -fx-background: transparent;
-                                           -fx-border-color: transparent;">
-                            <VBox spacing="14">
-                                <padding><Insets bottom="20" left="22" right="22" top="20"/></padding>
-
-                                <!-- En-tête dossier -->
-                                <HBox alignment="CENTER_LEFT" spacing="14">
-                                    <StackPane>
-                                        <Circle radius="28" fill="rgba(43,188,176,0.15)"/>
-                                        <Circle radius="20" fill="rgba(43,188,176,0.25)"/>
-                                        <Label fx:id="patientIconLabel" text="👤" style="-fx-font-size: 20px;"/>
-                                    </StackPane>
-                                    <VBox spacing="2" HBox.hgrow="ALWAYS">
-                                        <Label fx:id="selectedPatientLabel" text="Sélectionnez un patient"
-                                               styleClass="brand-title" wrapText="true"/>
-                                        <Label fx:id="patientEmailLabel" text=""
-                                               style="-fx-text-fill: #888; -fx-font-size: 11px;"/>
-                                    </VBox>
-                                </HBox>
-
-                                <Separator/>
-
-                                <!-- Stats -->
-                                <GridPane hgap="10" vgap="8">
-                                    <columnConstraints>
-                                        <ColumnConstraints hgrow="ALWAYS"/>
-                                        <ColumnConstraints hgrow="ALWAYS"/>
-                                        <ColumnConstraints hgrow="ALWAYS"/>
-                                    </columnConstraints>
-                                    <VBox styleClass="stat-card" alignment="CENTER" GridPane.columnIndex="0">
-                                        <padding><Insets bottom="10" left="8" right="8" top="10"/></padding>
-                                        <Label text="🩸 SANG" styleClass="stat-label"/>
-                                        <Label fx:id="bloodGroupLabel" text="--" styleClass="stat-value"/>
-                                    </VBox>
-                                    <VBox styleClass="stat-card" alignment="CENTER" GridPane.columnIndex="1">
-                                        <padding><Insets bottom="10" left="8" right="8" top="10"/></padding>
-                                        <Label text="⚖️ POIDS" styleClass="stat-label"/>
-                                        <Label fx:id="weightLabel" text="--" styleClass="stat-value"/>
-                                    </VBox>
-                                    <VBox styleClass="stat-card" alignment="CENTER" GridPane.columnIndex="2">
-                                        <padding><Insets bottom="10" left="8" right="8" top="10"/></padding>
-                                        <Label text="📏 TAILLE" styleClass="stat-label"/>
-                                        <Label fx:id="heightLabel" text="--" styleClass="stat-value"/>
-                                    </VBox>
-                                </GridPane>
-
-                                <!-- Mode lecture -->
-                                <VBox fx:id="readPanel" spacing="10" visible="true" managed="true">
-                                    <VBox spacing="4">
-                                        <Label text="Antécédents" styleClass="field-label"/>
-                                        <TextArea fx:id="antecedentsArea" styleClass="field-input"
-                                                  editable="false" wrapText="true" prefHeight="80"/>
-                                    </VBox>
-                                    <VBox spacing="4">
-                                        <Label text="Allergies" styleClass="field-label"/>
-                                        <TextArea fx:id="allergiesArea" styleClass="field-input"
-                                                  editable="false" wrapText="true" prefHeight="80"/>
-                                    </VBox>
-
-                                    <VBox fx:id="actionButtons" spacing="10" visible="false" managed="false">
-                                        <Separator/>
-                                        <Button fx:id="editButton" text="✏️  Modifier le dossier"
-                                                onAction="#handleEdit" styleClass="btn-primary"
-                                                maxWidth="Infinity" prefHeight="40"/>
-                                        <Button fx:id="deleteButton" text="🗑  Supprimer ce patient"
-                                                onAction="#handleDelete" styleClass="btn-danger"
-                                                maxWidth="Infinity" prefHeight="36"/>
-                                    </VBox>
-                                </VBox>
-
-                                <!-- Mode édition -->
-                                <VBox fx:id="editPanel" spacing="12" visible="false" managed="false">
-                                    <Label text="✏️  Modifier le dossier patient"
-                                           style="-fx-text-fill: #4A2D8F; -fx-font-size: 14px;
-                                                  -fx-font-weight: bold; -fx-padding: 4 0 4 0;
-                                                  -fx-border-color: #EEF4FB; -fx-border-width: 0 0 2 0;"/>
-                                    <HBox spacing="10">
-                                        <VBox spacing="3" HBox.hgrow="ALWAYS">
-                                            <Label text="Nom" styleClass="field-label"/>
-                                            <TextField fx:id="editNomField" styleClass="field-input" prefHeight="36"/>
-                                        </VBox>
-                                        <VBox spacing="3" HBox.hgrow="ALWAYS">
-                                            <Label text="Prénom" styleClass="field-label"/>
-                                            <TextField fx:id="editPrenomField" styleClass="field-input" prefHeight="36"/>
-                                        </VBox>
-                                    </HBox>
-                                    <VBox spacing="3">
-                                        <Label text="Email" styleClass="field-label"/>
-                                        <TextField fx:id="editEmailField" styleClass="field-input" prefHeight="36"/>
-                                        <Label fx:id="editErrorEmail" text="" styleClass="field-error"
-                                               visible="false" managed="false"/>
-                                    </VBox>
-                                    <HBox spacing="10">
-                                        <VBox spacing="3" HBox.hgrow="ALWAYS">
-                                            <Label text="Groupe sanguin" styleClass="field-label"/>
-                                            <ComboBox fx:id="editGroupeSanguinCombo" styleClass="field-combo"
-                                                      maxWidth="Infinity" prefHeight="36"/>
-                                        </VBox>
-                                        <VBox spacing="3" HBox.hgrow="ALWAYS">
-                                            <Label text="Poids (kg)" styleClass="field-label"/>
-                                            <TextField fx:id="editPoidsField" promptText="ex: 70.5"
-                                                       styleClass="field-input" prefHeight="36"/>
-                                        </VBox>
-                                        <VBox spacing="3" HBox.hgrow="ALWAYS">
-                                            <Label text="Taille (cm)" styleClass="field-label"/>
-                                            <TextField fx:id="editTailleField" promptText="ex: 175"
-                                                       styleClass="field-input" prefHeight="36"/>
-                                        </VBox>
-                                    </HBox>
-                                    <Label fx:id="editErrorMesures" text="" styleClass="field-error"
-                                           visible="false" managed="false"/>
-                                    <VBox spacing="3">
-                                        <Label text="Antécédents" styleClass="field-label"/>
-                                        <TextArea fx:id="editAntecedentsArea" styleClass="field-input"
-                                                  wrapText="true" prefHeight="70"/>
-                                    </VBox>
-                                    <VBox spacing="3">
-                                        <Label text="Allergies" styleClass="field-label"/>
-                                        <TextArea fx:id="editAllergiesArea" styleClass="field-input"
-                                                  wrapText="true" prefHeight="55"/>
-                                    </VBox>
-                                    <VBox spacing="3">
-                                        <Label text="Traitements" styleClass="field-label"/>
-                                        <TextArea fx:id="editTraitementsArea" styleClass="field-input"
-                                                  wrapText="true" prefHeight="55"/>
-                                    </VBox>
-                                    <VBox spacing="3">
-                                        <Label text="Notes médicales" styleClass="field-label"/>
-                                        <TextArea fx:id="editNotesArea" styleClass="field-input"
-                                                  wrapText="true" prefHeight="55"/>
-                                    </VBox>
-
-                                    <Label fx:id="editFeedbackLabel" text="" wrapText="true"
-                                           visible="false" managed="false"
-                                           style="-fx-font-size: 12px; -fx-font-weight: bold;
-                                                  -fx-padding: 8 12 8 12; -fx-background-radius: 6;
-                                                  -fx-border-radius: 6; -fx-border-width: 1;"/>
-
-                                    <HBox spacing="10">
-                                        <Button fx:id="saveButton" text="💾  Enregistrer"
-                                                onAction="#handleSave" styleClass="btn-primary"
-                                                HBox.hgrow="ALWAYS" maxWidth="Infinity" prefHeight="40"/>
-                                        <Button text="✕  Annuler" onAction="#handleCancelEdit"
-                                                styleClass="btn-secondary" prefWidth="100" prefHeight="40"/>
-                                    </HBox>
-                                </VBox>
-
-                                <!-- État vide -->
-                                <VBox fx:id="emptyPanel" alignment="CENTER" spacing="16"
-                                      visible="true" managed="true" prefHeight="280">
-                                    <Label text="👥" style="-fx-font-size: 44px;"/>
-                                    <Label text="Sélectionnez un patient" styleClass="section-title"/>
-                                    <Label text="Cliquez sur une carte pour voir&#10;et modifier le dossier médical."
-                                           styleClass="auth-right-sub" alignment="CENTER" wrapText="true"/>
-                                </VBox>
-
-                            </VBox>
-                        </ScrollPane>
-                    </VBox>
-                </HBox>
-            </Tab>
-
-            <!-- ════ ONGLET 2 — MON PROFIL ════ -->
+            <!-- ════ ONGLET 1 — MON PROFIL ════ -->
             <Tab text="👨‍⚕️  Mon Profil">
                 <ScrollPane fitToWidth="true"
                             style="-fx-background-color: #F5F7FF; -fx-background: #F5F7FF;

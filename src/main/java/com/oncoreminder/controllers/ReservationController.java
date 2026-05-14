@@ -28,6 +28,9 @@ import java.util.stream.Collectors;
 
 public class ReservationController {
 
+    // Sidebar (partagée via fx:include — présente uniquement en page standalone)
+    @FXML private DoctorSidebarController doctorSidebarController;
+
     @FXML private ComboBox<Event> cbEvent;
 
     @FXML private TableView<Reservation> tableReservation;
@@ -52,6 +55,7 @@ public class ReservationController {
 
     @FXML
     void initialize() {
+        if (doctorSidebarController != null) doctorSidebarController.setActivePage("evenements");
         configurerComboEvents();
         configurerTable();
         chargerEventsDisponibles();
@@ -102,8 +106,6 @@ public class ReservationController {
     }
 
     @FXML void handleDashboard(ActionEvent e) { retourEvents(e); }
-    @FXML void handleArticles(ActionEvent e) { App.navigate("ArticleList"); }
-    @FXML void handleLogout(ActionEvent e) { UserSession.getInstance().logout(); App.navigate("Login"); }
 
     private void configurerTable() {
         colId.setCellValueFactory(c -> new SimpleIntegerProperty(c.getValue().getId()).asObject());
