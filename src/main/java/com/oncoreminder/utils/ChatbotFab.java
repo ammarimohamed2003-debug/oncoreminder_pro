@@ -39,7 +39,7 @@ public class ChatbotFab {
         chatPanel.setVisible(false);
         chatPanel.setManaged(false);
         StackPane.setAlignment(chatPanel, Pos.BOTTOM_RIGHT);
-        StackPane.setMargin(chatPanel, new Insets(0, 20, 84, 0));
+        StackPane.setMargin(chatPanel, new Insets(0, 20, 72, 0));
 
         Button fab = buildFab();
         StackPane.setAlignment(fab, Pos.BOTTOM_RIGHT);
@@ -49,7 +49,7 @@ public class ChatbotFab {
             boolean showing = chatPanel.isVisible();
             chatPanel.setVisible(!showing);
             chatPanel.setManaged(!showing);
-            fab.setText(showing ? "💬" : "✕");
+            fab.setText(showing ? "🤖" : "✕");
         });
 
         // Welcome message + quick replies
@@ -63,19 +63,19 @@ public class ChatbotFab {
     // ── FAB button ────────────────────────────────────────────────────────────
 
     private static Button buildFab() {
-        Button fab = new Button("💬");
-        fab.setPrefSize(56, 56);
-        fab.setStyle(fabStyle(false));
+        Button fab = new Button("🤖");
+        fab.setPrefSize(44, 44);
+        fab.setStyle(fabStyle());
         fab.setOnMouseEntered(e -> fab.setOpacity(0.88));
         fab.setOnMouseExited(e  -> fab.setOpacity(1.0));
         return fab;
     }
 
-    private static String fabStyle(boolean open) {
+    private static String fabStyle() {
         return "-fx-background-color: linear-gradient(to bottom right, #2BBCB0, #1A9E93);"
-             + "-fx-text-fill: white; -fx-font-size: " + (open ? "18" : "22") + "px;"
-             + "-fx-background-radius: 28; -fx-border-width: 0; -fx-cursor: hand;"
-             + "-fx-effect: dropshadow(gaussian, rgba(43,188,176,0.50), 14, 0, 0, 4);";
+             + "-fx-text-fill: white; -fx-font-size: 18px;"
+             + "-fx-background-radius: 22; -fx-border-width: 0; -fx-cursor: hand;"
+             + "-fx-effect: dropshadow(gaussian, rgba(43,188,176,0.50), 12, 0, 0, 3);";
     }
 
     // ── Chat panel ────────────────────────────────────────────────────────────
