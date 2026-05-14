@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.oncoreminder.controllers.CalendrierController">
+
+    <left>
+        <fx:include source="DoctorSidebar.fxml" fx:id="doctorSidebar"/>
+    </left>
+
+    <center>
+        <VBox style="-fx-background-color: #F0F4FF;">
+
+            <!-- Top bar -->
+            <HBox alignment="CENTER_LEFT" spacing="16"
+                  style="-fx-background-color: white;
+                         -fx-padding: 14 24 14 24;
+                         -fx-border-color: transparent transparent #E2E8F0 transparent;
+                         -fx-border-width: 0 0 1 0;
+                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 4, 0, 0, 2);">
+                <Label text="📆  Calendrier"
+                       style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1E293B;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <!-- Legend -->
+                <HBox spacing="20" alignment="CENTER">
+                    <HBox spacing="6" alignment="CENTER">
+                        <Circle radius="5" fill="#2BBCB0"/>
+                        <Label text="Rendez-vous"
+                               style="-fx-font-size: 12px; -fx-text-fill: #475569;"/>
+                    </HBox>
+                    <HBox spacing="6" alignment="CENTER">
+                        <Circle radius="5" fill="#5B35A5"/>
+                        <Label text="Événements"
+                               style="-fx-font-size: 12px; -fx-text-fill: #475569;"/>
+                    </HBox>
+                    <HBox spacing="6" alignment="CENTER">
+                        <Circle radius="5" fill="#F59E0B"/>
+                        <Label text="En attente"
+                               style="-fx-font-size: 12px; -fx-text-fill: #475569;"/>
+                    </HBox>
+                </HBox>
+            </HBox>
+
+            <!-- Main content: calendar + detail -->
+            <HBox VBox.vgrow="ALWAYS" spacing="16"
+                  style="-fx-padding: 20 20 20 24;">
+
+                <!-- Left: calendar -->
+                <VBox HBox.hgrow="ALWAYS" spacing="0"
+                      style="-fx-background-color: white; -fx-background-radius: 16;
+                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 10, 0, 0, 3);">
+
+                    <!-- Month navigation -->
+                    <HBox alignment="CENTER" spacing="0"
+                          style="-fx-padding: 18 24 14 24;
+                                 -fx-border-color: transparent transparent #F1F5F9 transparent;
+                                 -fx-border-width: 0 0 1 0;">
+                        <Button fx:id="btnPrevMonth" text="‹" onAction="#handlePrevMonth"
+                                style="-fx-background-color: #F8FAFC; -fx-text-fill: #475569;
+                                       -fx-background-radius: 8; -fx-border-width: 0;
+                                       -fx-font-size: 20px; -fx-font-weight: bold;
+                                       -fx-padding: 4 14; -fx-cursor: hand;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="monthYearLabel" text=""
+                               style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1E293B;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="btnTodayBtn" text="Aujourd'hui" onAction="#handleToday"
+                                style="-fx-background-color: #EEF2FF; -fx-text-fill: #4F46E5;
+                                       -fx-background-radius: 8; -fx-border-width: 0;
+                                       -fx-font-size: 12px; -fx-font-weight: bold;
+                                       -fx-padding: 6 14; -fx-cursor: hand;"/>
+                        <Region prefWidth="10"/>
+                        <Button fx:id="btnNextMonth" text="›" onAction="#handleNextMonth"
+                                style="-fx-background-color: #F8FAFC; -fx-text-fill: #475569;
+                                       -fx-background-radius: 8; -fx-border-width: 0;
+                                       -fx-font-size: 20px; -fx-font-weight: bold;
+                                       -fx-padding: 4 14; -fx-cursor: hand;"/>
+                    </HBox>
+
+                    <!-- Day-of-week headers -->
+                    <GridPane fx:id="calHeaderGrid"
+                              style="-fx-background-color: #F8FAFC; -fx-padding: 8 16;"/>
+
+                    <!-- Calendar cells -->
+                    <GridPane fx:id="calGrid" VBox.vgrow="ALWAYS"
+                              style="-fx-padding: 0 8 8 8;"/>
+
+                </VBox>
+
+                <!-- Right: detail panel -->
+                <VBox prefWidth="290" minWidth="270" maxWidth="320"
+                      style="-fx-background-color: white; -fx-background-radius: 16;
+                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 10, 0, 0, 3);">
+
+                    <!-- Empty state -->
+                    <VBox fx:id="detailEmpty" VBox.vgrow="ALWAYS" alignment="CENTER" spacing="12">
+                        <Label text="📅" style="-fx-font-size: 44px;"/>
+                        <Label text="Sélectionnez un jour"
+                               style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;"/>
+                        <Label text="Cliquez sur une date pour voir les rendez-vous et événements prévus"
+                               style="-fx-font-size: 12px; -fx-text-fill: #CBD5E1;"
+                               wrapText="true" textAlignment="CENTER" maxWidth="220"/>
+                    </VBox>
+
+                    <!-- Detail content -->
+                    <VBox fx:id="detailContent" VBox.vgrow="ALWAYS"
+                          visible="false" managed="false">
+
+                        <!-- Date header -->
+                        <VBox fx:id="detailHeader"
+                              style="-fx-padding: 18 18 14 18;
+                                     -fx-border-color: transparent transparent #F1F5F9 transparent;
+                                     -fx-border-width: 0 0 1 0;">
+                            <Label fx:id="detailDayLabel" text=""
+                                   style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #1E293B;"/>
+                            <Label fx:id="detailMonthLabel" text=""
+                                   style="-fx-font-size: 13px; -fx-text-fill: #64748B;"/>
+                        </VBox>
+
+                        <!-- Stats chips -->
+                        <HBox fx:id="detailStatsRow" spacing="8"
+                              style="-fx-padding: 12 18 8 18;">
+                            <Label fx:id="detailRdvCount" text=""
+                                   style="-fx-background-color: #F0FDF4; -fx-text-fill: #059669;
+                                          -fx-background-radius: 20; -fx-padding: 4 12;
+                                          -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                            <Label fx:id="detailEventCount" text=""
+                                   style="-fx-background-color: #EEF2FF; -fx-text-fill: #4F46E5;
+                                          -fx-background-radius: 20; -fx-padding: 4 12;
+                                          -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        </HBox>
+
+                        <!-- Items list -->
+                        <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" hbarPolicy="NEVER"
+                                    style="-fx-background-color: transparent; -fx-background: transparent;">
+                            <VBox fx:id="detailItemsContainer" spacing="8"
+                                  style="-fx-padding: 4 12 16 12;"/>
+                        </ScrollPane>
+                    </VBox>
+
+                </VBox>
+
+            </HBox>
+        </VBox>
+    </center>
+
+</BorderPane>

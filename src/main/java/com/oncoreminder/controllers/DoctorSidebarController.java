@@ -17,6 +17,7 @@ public class DoctorSidebarController {
     @FXML private Button btnArticles;
     @FXML private Button btnEvenements;
     @FXML private Button btnRendezVous;
+    @FXML private Button btnCalendrier;
     @FXML private Button btnPatients;
     @FXML private Button btnOrdonnances;
 
@@ -39,6 +40,7 @@ public class DoctorSidebarController {
         btnArticles.getStyleClass().setAll(NORMAL);
         btnEvenements.getStyleClass().setAll(which >= 1 ? ACTIVE : NORMAL);
         btnRendezVous.getStyleClass().setAll(NORMAL);
+        btnCalendrier.getStyleClass().setAll(NORMAL);
         btnPatients.getStyleClass().setAll(NORMAL);
         btnOrdonnances.getStyleClass().setAll(NORMAL);
     }
@@ -49,6 +51,7 @@ public class DoctorSidebarController {
         btnArticles.getStyleClass().setAll("articles".equals(page) ? ACTIVE : NORMAL);
         btnEvenements.getStyleClass().setAll("evenements".equals(page) ? ACTIVE : NORMAL);
         btnRendezVous.getStyleClass().setAll("rendezvous".equals(page) ? ACTIVE : NORMAL);
+        btnCalendrier.getStyleClass().setAll("calendrier".equals(page) ? ACTIVE : NORMAL);
         btnPatients.getStyleClass().setAll("patients".equals(page) ? ACTIVE : NORMAL);
         btnOrdonnances.getStyleClass().setAll("ordonnance".equals(page) ? ACTIVE : NORMAL);
     }
@@ -65,6 +68,7 @@ public class DoctorSidebarController {
 
     @FXML void handleArticles()    { App.navigate("ArticleList"); }
     @FXML void handleRendezVous()  { App.navigate("RendezVous"); }
+    @FXML void handleCalendrier()  { App.navigate("Calendrier"); }
     @FXML void handlePatients()    { App.navigate("MesPatients"); }
     @FXML void handleOrdonnances() { App.navigate("Ordonnance"); }
 
